@@ -34,8 +34,8 @@
     <!-- JdbcTemplate 등록 -->
     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
         <property name="dataSource" ref="dataSource"/>
-        <property name="mapperLocations" value="classpath:/mapper/*.xml"/>
-        <property name="typeAliasesPackage" value="com.jaegokeeper.psj.entity"/>
+<!--        <property name="mapperLocations" value="classpath:/mapper/*.xml"/>-->
+<!--        <property name="typeAliasesPackage" value="com.jaegokeeper.psj.entity"/>-->
     </bean>
 
     <!-- psj 패키지 Mapper 스캔 -->
