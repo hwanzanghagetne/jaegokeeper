@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jaegokeeper.hwan.mapper.ItemMapper">
+
+    <insert id="insertItem"
+            parameterType="com.jaegokeeper.hwan.domain.Item"
+            useGeneratedKeys="true"
+            keyProperty="itemId">
+
+        INSERT INTO item (
+            store_id,
+            item_name,
+            image_id,
+            created_at,
+            del_yn
+        )
+        VALUES (
+                   #{storeId},
+                   #{itemName},
+                   #{imageId},
+                   NOW(),
+                   b'0'
+               )
+    </insert>
+
+    <update id="softDeleteItem">
+        UPDATE item
+        SET del_yn = b'1',
+            updated_at = NOW()
+        WHERE store_id = #{storeId}
+        AND item_id = #{itemId}
+        AND del_yn = b'0'
+    </update>
+
+    <select id="countItemList" resultType="long">
+        SELECT COUNT(*)
+        FROM item i
+        JOIN stock s
+        ON s.item_id = i.item_id
+        AND s.store_id = i.store_id
+
+        <where>
+            i.store_id = #{storeId}
+            AND i.del_yn = b'0'
+
+            <if test="filters != null and filters.contains('FAVORITE')">
+                AND s.favorite_yn = 1
+            </if>
+            <if test="filters != null and filters.contains('ZERO_STOCK')">
+                AND s.quantity = 0
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND i.item_name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="findItemList"
+            parameterType="map"
+            resultType="com.jaegokeeper.hwan.dto.ItemListDTO">
+        SELECT
+        i.item_id   AS itemId,
+        i.item_name AS itemName,
+        s.stock_id as stockId,
+        s.quantity  AS quantity,
+        s.favorite_yn AS favoriteYn,
+        im.path        AS imageUrl
+        FROM item i
+        JOIN stock s
+        ON s.item_id = i.item_id
+        AND s.store_id = i.store_id
+        LEFT JOIN image im
+            ON im.image_id = i.image_id
+        AND im.is_active = b'1'
+
+        <where>
+            i.store_id = #{storeId}
+            AND i.del_yn = b'0'
+
+            <if test="filters != null and filters.contains('FAVORITE')">
+                AND s.favorite_yn = 1
+            </if>
+            <if test="filters != null and filters.contains('ZERO_STOCK')">
+                AND s.quantity = 0
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND i.item_name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+
+        ORDER BY i.item_id DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="findItemDetail"
+            resultType="com.jaegokeeper.hwan.dto.ItemDetailDTO">
+
+        SELECT
+            i.item_id   AS itemId,
+            s.stock_id  AS stockId,
+            i.item_name AS itemName,
+            s.quantity  AS quantity,
+            s.favorite_yn AS favoriteYn,
+            im.path AS imageUrl,
+            sa.safe_quantity AS safeQuantity,
+            sh.his_type AS lastHisType,
+            sh.created_at AS lastHis
+
+        FROM item i
+        JOIN stock s
+            ON s.item_id = i.item_id
+            AND s.store_id = i.store_id
+
+        LEFT JOIN safe sa
+         ON sa.stock_id = s.stock_id
+
+        LEFT JOIN image im
+         ON im.image_id = i.image_id
+        AND im.is_active = b'1'
+
+        LEFT JOIN stock_history sh
+            ON sh.history_id = (
+                SELECT MAX(h2.history_id)
+                FROM stock_history h2
+                WHERE h2.stock_id = s.stock_id
+                    )
+        WHERE i.store_id = #{storeId}
+          AND i.item_id  = #{itemId}
+          AND i.del_yn   = b'0'
+    </select>
+
+    <update id="updateItem">
+        UPDATE item
+        SET item_name = #{itemName},
+            image_id = #{imageId}
+        WHERE store_id = #{storeId}
+            AND item_id = #{itemId}
+            AND del_yn = b'0'
+    </update>
+
+
+</mapper>

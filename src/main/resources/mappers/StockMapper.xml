@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jaegokeeper.hwan.mapper.StockMapper">
+
+    <insert id="insertStock"
+            parameterType="com.jaegokeeper.hwan.domain.Stock"
+            useGeneratedKeys="true"
+            keyProperty="stockId">
+
+        INSERT INTO stock (
+            item_id,
+            store_id,
+            quantity,
+            favorite_yn
+        )
+        VALUES (
+                   #{itemId},
+                   #{storeId},
+                   #{quantity},
+                   0
+               )
+    </insert>
+
+    <select id="findQuantityByStockId" resultType="int">
+        SELECT quantity
+        FROM stock
+        WHERE stock_id = #{stockId}
+    </select>
+
+
+<!--    재고 직접 조정용-->
+    <update id="updateQuantity">
+            UPDATE stock
+            SET quantity = #{quantity},
+                favorite_yn = #{favoriteYn}
+            WHERE stock_id = #{stockId}
+    </update>
+
+    <update id="increaseQuantity">
+        UPDATE stock
+        SET quantity = quantity + #{amount}
+        WHERE stock_id = #{stockId}
+    </update>
+
+    <update id="decreaseQuantity">
+        UPDATE stock
+        SET quantity = quantity - #{amount}
+        WHERE stock_id = #{stockId}
+        AND quantity >= #{amount}
+    </update>
+    
+    <select id="findStockIdByStoreAndItem" resultType="int">
+        SELECT stock_id
+        FROM stock
+        WHERE store_id = #{storeId}
+        AND item_id = #{itemId}
+    </select>
+</mapper>
