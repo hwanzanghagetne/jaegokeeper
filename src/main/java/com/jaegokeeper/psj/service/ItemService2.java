@@ -1,27 +1,27 @@
 package com.jaegokeeper.psj.service;
 
-import com.jaegokeeper.psj.dto.ItemDto;
+import com.jaegokeeper.psj.dto.ItemDto2;
 import com.jaegokeeper.psj.mapper.AlbaMapper;
-import com.jaegokeeper.psj.mapper.ItemMapper;
-import com.jaegokeeper.psj.mapper.StoreMapper;
+import com.jaegokeeper.psj.mapper.ItemMapper2;
+import com.jaegokeeper.psj.mapper.StoreMapper2;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class ItemService {
-    private final StoreMapper storeMapper;
-    private final ItemMapper itemMapper;
+public class ItemService2 {
+    private final StoreMapper2 storeMapper;
+    private final ItemMapper2 itemMapper;
     private final AlbaMapper albaMapper;
 
-    public ItemService(StoreMapper storeMapper, ItemMapper itemMapper, AlbaMapper albaMapper) {
+    public ItemService2(StoreMapper2 storeMapper, ItemMapper2 itemMapper, AlbaMapper albaMapper) {
         this.storeMapper = storeMapper;
         this.itemMapper = itemMapper;
         this.albaMapper = albaMapper;
     }
 
     // 저장 메서드
-    public void saveDto(ItemDto dto) {
+    public void saveDto(ItemDto2 dto) {
         // Store 존재 확인
         if(!albaMapper.existsByStoreId(dto.getStoreId())) {
             throw new IllegalArgumentException("store가 존재하지 않습니다.");
@@ -38,7 +38,7 @@ public class ItemService {
     }
 
     // 전체 조회 메서드 (saveDto 밖에 독립적으로)
-    public List<ItemDto> getAllItems() {
+    public List<ItemDto2> getAllItems() {
         return itemMapper.selectAllItems();
     }
 }

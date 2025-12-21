@@ -2,14 +2,11 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
        xsi:schemaLocation="
            http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans.xsd
            http://www.springframework.org/schema/context
-           https://www.springframework.org/schema/context/spring-context.xsd
-           http://mybatis.org/schema/mybatis-spring
-           https://mybatis.org/schema/mybatis-spring-2.0.xsd">
+           https://www.springframework.org/schema/context/spring-context.xsd">
 
     <!-- Component Scan -->
     <context:component-scan base-package="com.jaegokeeper"/>
@@ -22,23 +19,24 @@
         <property name="password" value="is2jaegosafe?"/>
     </bean>
 
-
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="dataSource" ref="dataSource"/>
         <property name="mapperLocations" value="classpath*:mappers/*.xml"/>
         <property name="typeAliasesPackage" value="com.jaegokeeper.hwan.domain"/>
     </bean>
 
-    <mybatis:scan base-package="com.jaegokeeper.hwan.mapper"/>
+    <!-- hwan 패키지 Mapper 스캔 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.jaegokeeper.hwan.mapper"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
 
     <!-- JdbcTemplate 등록 -->
     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
         <property name="dataSource" ref="dataSource"/>
-        <property name="mapperLocations" value="classpath:/mapper/*.xml"/>
-        <property name="typeAliasesPackage" value="com.jaegokeeper.psj.entity"/>
     </bean>
 
-    <!-- MyBatis MapperScannerConfigurer (Mapper 자동 등록) -->
+    <!-- psj 패키지 Mapper 스캔 -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
         <property name="basePackage" value="com.jaegokeeper.psj.mapper"/>
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>

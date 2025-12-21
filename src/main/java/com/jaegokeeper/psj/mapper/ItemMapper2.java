@@ -1,21 +1,21 @@
 package com.jaegokeeper.psj.mapper;
 
-import com.jaegokeeper.psj.dto.ItemDto;
+import com.jaegokeeper.psj.dto.ItemDto2;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
 @Mapper
-public interface ItemMapper {
+public interface ItemMapper2 {
 
-    void insertItem(ItemDto dto);
+    void insertItem(ItemDto2 dto);
 
     boolean existsByName(String itemName);
 
-    ItemDto selectItemById(int itemId);
+    ItemDto2 selectItemById(int itemId);
 
     boolean existsByStoreId(int storeId);
 
     // 전체조회
-    List<ItemDto> selectAllItems();
+    List<ItemDto2> selectAllItems();
 }

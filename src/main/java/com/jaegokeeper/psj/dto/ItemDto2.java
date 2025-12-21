@@ -12,7 +12,7 @@ import javax.validation.constraints.Size;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ItemDto {
+public class ItemDto2 {
     private int itemId;
 
     @NotNull(message = "스토어 아이디는 null입니다.")
