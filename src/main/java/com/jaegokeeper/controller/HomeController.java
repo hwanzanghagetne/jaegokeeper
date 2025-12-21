@@ -5,10 +5,12 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Api(tags = "홈")
 @RestController
+@RequestMapping("/")
 public class HomeController {
 
     @ApiOperation(value = "홈 페이지", notes = "JaegoKeeper 메인 페이지를 반환합니다.")

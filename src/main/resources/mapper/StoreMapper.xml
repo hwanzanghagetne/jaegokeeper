@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jaegokeeper.psj.mapper.StoreMapper">
+
+    <!-- Alba용 store 존재 확인 -->
+    <select id="existsByStoreId" parameterType="int" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM store
+        WHERE store_id = #{storeId}
+    </select>
+
+</mapper>
