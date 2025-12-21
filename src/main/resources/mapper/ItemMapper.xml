@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.jaegokeeper.psj.mapper.ItemMapper">
+<mapper namespace="com.jaegokeeper.psj.mapper.ItemMapper2">
 
     <!-- Item용 store 존재 확인 -->
     <select id="existsStoreById" parameterType="int" resultType="boolean">
@@ -12,18 +12,18 @@
         WHERE store_id = #{storeId}
     </select>
     <!-- 아이템 저장 -->
-    <insert id="insertItem" parameterType="com.jaegokeeper.psj.dto.ItemDto">
+    <insert id="insertItem" parameterType="com.jaegokeeper.psj.dto.ItemDto2">
         INSERT INTO item (store_id, item_name)
         VALUES (#{storeId}, #{itemName})
     </insert>
     <!-- 아이템 이름 중복 체크 -->
-    <select id="existsByName" parameterType="com.jaegokeeper.psj.dto.ItemDto">
+    <select id="existsByName" parameterType="com.jaegokeeper.psj.dto.ItemDto2">
         SELECT COUNT(*) > 0
         FROM item
         WHERE item_name = #{itemName}
     </select>
     <!-- 아이템 조회 -->
-    <select id="selectItemById" parameterType="com.jaegokeeper.psj.dto.ItemDto">
+    <select id="selectItemById" parameterType="com.jaegokeeper.psj.dto.ItemDto2">
         SELECT item_id AS itemId,
                 store_id AS storeId,
                 item_name AS itemName
@@ -31,7 +31,7 @@
         WHERE item_id = #{itemId}
     </select>
     <!-- 전체 아이템 조회 -->
-    <select id="selectAllItems" resultType="com.jaegokeeper.psj.dto.ItemDto">
+    <select id="selectAllItems" resultType="com.jaegokeeper.psj.dto.ItemDto2">
         SELECT item_id AS itemId,
         store_id AS storeId,
         item_name AS itemName

@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.jaegokeeper.psj.mapper.StoreMapper">
+<mapper namespace="com.jaegokeeper.psj.mapper.StoreMapper2">
 
     <!-- Alba용 store 존재 확인 -->
     <select id="existsByStoreId" parameterType="int" resultType="boolean">
