@@ -16,7 +16,10 @@ public class Item {
 
     private String itemName;
 
+    private Integer imageId;
+
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     private Boolean delYn;
 }

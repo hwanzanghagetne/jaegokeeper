@@ -15,6 +15,7 @@ public class ItemListDTO {
     private String itemName;
 
     //stock
+    private Integer stockId;
     private Integer quantity;
     private Boolean favoriteYn;
 

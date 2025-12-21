@@ -5,8 +5,9 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class  ItemCreateResponseDTO {
+public class StockKeyDTO {
 
-    private Integer itemId;
+    private Integer stockId;
+    private Integer quantity;
 
 }

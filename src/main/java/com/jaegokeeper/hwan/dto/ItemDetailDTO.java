@@ -11,10 +11,13 @@ import java.time.LocalDateTime;
 public class ItemDetailDTO {
 
     private Integer itemId;
+    private Integer stockId;
     private String itemName;
     private Integer quantity;
     private Boolean favoriteYn;
     private String imageUrl;
     private Integer safeQuantity;
+
+    private String lastHisType;
     private LocalDateTime lastUpdatedAt;
 }

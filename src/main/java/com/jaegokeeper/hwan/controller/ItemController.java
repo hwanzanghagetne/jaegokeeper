@@ -20,7 +20,7 @@ public class ItemController {
     public ResponseEntity<ItemCreateResponseDTO> createItem(@Valid @RequestBody ItemCreateRequestDTO itemCreateRequestDTO) {
 
 
-        Integer itemId = itemService.registerItem(itemCreateRequestDTO);
+        Integer itemId = itemService.createItem(itemCreateRequestDTO);
 
         return ResponseEntity
                 .status(201)
@@ -45,5 +45,24 @@ public class ItemController {
     ) {
         ItemDetailDTO dto = itemService.getItemDetail(storeId, itemId);
         return ResponseEntity.ok(dto);
+    }
+
+    @PatchMapping("/{itemId}")
+    public ResponseEntity<Void> modifyItem(
+            @RequestParam Integer storeId,
+            @PathVariable Integer itemId,
+            @Valid @RequestBody ItemModifyRequestDTO dto
+    ) {
+        itemService.modifyItem(storeId, itemId, dto);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{itemId}")
+    public ResponseEntity<Void> deleteItem(
+            @RequestParam Integer storeId,
+            @PathVariable Integer itemId
+    ) {
+        itemService.softDeleteItem(storeId, itemId);
+        return ResponseEntity.noContent().build();
     }
 }
