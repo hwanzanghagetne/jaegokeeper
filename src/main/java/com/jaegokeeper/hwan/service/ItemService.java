@@ -7,7 +7,7 @@ import java.util.List;
 public interface ItemService {
 
     //아이템 생성
-    Integer createItem(ItemCreateRequestDTO itemCreateRequestDTO);
+    int createItem(ItemCreateRequestDTO itemCreateRequestDTO);
 
     //아이템 삭제
     void softDeleteItem(Integer storeId, Integer itemId);

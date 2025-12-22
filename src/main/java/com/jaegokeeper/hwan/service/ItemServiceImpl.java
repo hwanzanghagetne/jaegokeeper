@@ -2,7 +2,7 @@ package com.jaegokeeper.hwan.service;
 
 import com.jaegokeeper.hwan.domain.Item;
 import com.jaegokeeper.hwan.domain.Stock;
-import com.jaegokeeper.hwan.domain.enums.StockHistoryType;
+import com.jaegokeeper.hwan.domain.enums.ItemFilter;
 import com.jaegokeeper.hwan.dto.*;
 import com.jaegokeeper.hwan.mapper.*;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
-import static com.jaegokeeper.hwan.domain.enums.StockHistoryType.*;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +27,7 @@ public class ItemServiceImpl implements ItemService {
     //아이템 생성
     @Transactional
     @Override
-    public Integer createItem(ItemCreateRequestDTO itemCreateRequestDTO) {
+    public int createItem(ItemCreateRequestDTO itemCreateRequestDTO) {
 
         String itemName = itemCreateRequestDTO.getItemName();
         Integer storeId = itemCreateRequestDTO.getStoreId();
@@ -52,7 +50,10 @@ public class ItemServiceImpl implements ItemService {
         item.setItemName(itemName);
         item.setImageId(itemCreateRequestDTO.getImageId());
 
-        itemMapper.insertItem(item);
+        int itemInserted = itemMapper.insertItem(item);
+        if (itemInserted != 1) {
+            throw new IllegalStateException("아이템 등록 실패");
+        }
 
 
         Stock stock = new Stock();
@@ -60,9 +61,14 @@ public class ItemServiceImpl implements ItemService {
         stock.setStoreId(storeId);
         stock.setQuantity(quantity);
 
-        stockMapper.insertStock(stock);
-        int inserted = safeMapper.insertSafe(stock.getStockId(), 0);
-        if (inserted != 1) {
+        int stockInserted = stockMapper.insertStock(stock);
+        if (stockInserted != 1
+        ) {
+            throw new IllegalStateException("stock 생성 실패");
+        }
+
+        int safeInserted = safeMapper.insertSafe(stock.getStockId(), 0);
+        if (safeInserted != 1) {
             throw new IllegalStateException("safe 생성 실패");
         }
 
@@ -92,14 +98,17 @@ public class ItemServiceImpl implements ItemService {
             throw new IllegalArgumentException("size는 1 이상 50 이하만 허용됩니다.");
         }
 
-        //추후 enum으로 빼면 좋을까?
-        if (filters != null) {
+        List<String> normalizedFilters = null;
+
+        if (filters != null && !filters.isEmpty()) {
             for (String f : filters) {
-                if (!f.equals("FAVORITE") && !f.equals("ZERO_STOCK")) {
-                    throw new IllegalArgumentException("filters에는 FAVORITE 또는 ZERO_STOCK 만 허용됩니다.");
-                }
+                ItemFilter.from(f);
             }
+            normalizedFilters = filters.stream()
+                    .map(s -> s.trim().toUpperCase())
+                    .toList();
         }
+
 
         if (keyword != null && keyword.isBlank()) {
             keyword = null;
@@ -108,8 +117,8 @@ public class ItemServiceImpl implements ItemService {
         }
 
         int offset = (page - 1) * size;
-        long totalElements = itemMapper.countItemList(storeId,filters,keyword);
-        List<ItemListDTO> content = itemMapper.findItemList(storeId, filters,keyword, offset, size);
+        long totalElements = itemMapper.countItemList(storeId,normalizedFilters,keyword);
+        List<ItemListDTO> content = itemMapper.findItemList(storeId, normalizedFilters,keyword, offset, size);
         int totalPages = (int) Math.ceil(((double) totalElements / size));
 
         return new PageResponseDTO<>(content, page, size, totalElements, totalPages);

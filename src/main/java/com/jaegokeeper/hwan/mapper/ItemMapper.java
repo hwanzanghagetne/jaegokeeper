@@ -10,7 +10,7 @@ import java.util.List;
 public interface ItemMapper {
 
     //아이템 등록
-    void insertItem(Item item);
+    int insertItem(Item item);
 
     //아이템 삭제
     int softDeleteItem(@Param("storeId") Integer storeId,

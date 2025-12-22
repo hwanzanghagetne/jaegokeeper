@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Param;
 public interface StockMapper {
 
     //아이템 생성시 stock 삽입용 추후 변경 가능??
-    void insertStock(Stock stock);
+    int insertStock(Stock stock);
 
     // 현재 재고수량 구하기
     Integer findQuantityByStockId(@Param("stockId") Integer stockId);
@@ -28,4 +28,7 @@ public interface StockMapper {
     //검증용
     Integer findStockIdByStoreAndItem(@Param("storeId") Integer storeId,
                                       @Param("itemId") Integer itemId);
+
+    Integer countByStockIdAndStoreId(@Param("stockId") Integer stockId,
+                                     @Param("storeId") Integer storeId);
 }

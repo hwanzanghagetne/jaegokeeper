@@ -58,4 +58,11 @@
         WHERE store_id = #{storeId}
         AND item_id = #{itemId}
     </select>
+
+    <select id="countByStockIdAndStoreId" resultType="int">
+        SELECT count(*)
+        FROM stock
+        WHERE stock_id = #{stockId}
+        AND store_id = #{storeId}
+    </select>
 </mapper>
