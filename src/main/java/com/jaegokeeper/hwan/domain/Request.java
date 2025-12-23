@@ -19,9 +19,5 @@ public class Request {
     private RequestType requestType;
     private RequestStatus requestStatus;
 
-    private Boolean delYn;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
 
 }

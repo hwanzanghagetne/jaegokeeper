@@ -18,8 +18,4 @@ public class Item {
 
     private Integer imageId;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
-    private Boolean delYn;
 }

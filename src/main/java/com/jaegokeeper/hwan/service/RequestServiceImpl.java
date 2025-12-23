@@ -3,10 +3,7 @@ package com.jaegokeeper.hwan.service;
 import com.jaegokeeper.hwan.domain.Request;
 import com.jaegokeeper.hwan.domain.enums.RequestStatus;
 import com.jaegokeeper.hwan.domain.enums.RequestType;
-import com.jaegokeeper.hwan.dto.PageResponseDTO;
-import com.jaegokeeper.hwan.dto.RequestCreateBatchRequestDTO;
-import com.jaegokeeper.hwan.dto.RequestCreateRequestDTO;
-import com.jaegokeeper.hwan.dto.RequestListDTO;
+import com.jaegokeeper.hwan.dto.*;
 import com.jaegokeeper.hwan.mapper.RequestMapper;
 import com.jaegokeeper.hwan.mapper.StockMapper;
 import lombok.RequiredArgsConstructor;
@@ -77,7 +74,6 @@ public class RequestServiceImpl implements RequestService {
         return createdCount;
     }
 
-    @Transactional
     @Override
     public PageResponseDTO<RequestListDTO> getRequestList(Integer storeId, int page, int size, RequestType requestType, RequestStatus requestStatus) {
 
@@ -99,5 +95,43 @@ public class RequestServiceImpl implements RequestService {
         int totalPages = (int) Math.ceil(((double) totalElements / size));
 
         return new PageResponseDTO<>(content, page, size, totalElements, totalPages);
+    }
+
+    // 임시 요청용 알바 리스트
+    @Override
+    public List<AlbaOptionDTO> findAlbaOptionsForRequest(Integer storeId) {
+        List<AlbaOptionDTO> albaOptionsForRequest = requestMapper.findAlbaOptionsForRequest(storeId);
+        return albaOptionsForRequest;
+    }
+
+
+    //삭제
+    @Transactional
+    @Override
+    public void deleteRequest(Integer storeId, Integer requestId) {
+        int deleted = requestMapper.softDeleteRequest(storeId, requestId);
+        if (deleted != 1) {
+            throw new IllegalArgumentException("삭제 실패");
+        }
+    }
+
+    // 수정
+    @Transactional
+    @Override
+    public void updateRequest(Integer storeId, Integer requestId, RequestUpdateRequestDTO dto) {
+        int updated = requestMapper.updateRequest(storeId, requestId, dto);
+        if (updated != 1) {
+            throw new IllegalArgumentException("수정 실패");
+        }
+    }
+
+    // 상태 수정
+    @Transactional
+    @Override
+    public void updateRequestStatus(Integer storeId, Integer requestId, RequestStatusUpdateRequestDTO dto) {
+        int updated = requestMapper.updateRequestStatus(storeId, requestId, dto);
+        if (updated != 1) {
+            throw new IllegalArgumentException("상태 수정 실패");
+        }
     }
 }

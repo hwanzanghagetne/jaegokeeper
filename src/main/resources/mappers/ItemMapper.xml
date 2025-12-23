@@ -24,7 +24,8 @@
 
     <update id="softDeleteItem">
         UPDATE item
-        SET del_yn = b'1'
+        SET del_yn = b'1',
+            updated_at = NOW()
         WHERE store_id = #{storeId}
         AND item_id = #{itemId}
         AND del_yn = b'0'

@@ -82,4 +82,55 @@
     </select>
 
 
+    <!--임시 요청용 알바 리스트-->
+    <select id="findAlbaOptionsForRequest" resultType="com.jaegokeeper.hwan.dto.AlbaOptionDTO">
+        SELECT
+            a.alba_id AS albaId,
+            a.alba_name AS albaName
+        FROM alba a
+        WHERE a.store_id = #{storeId}
+        AND a.alba_status IN ('재직', '단기')
+        ORDER BY a.alba_name ASC
+    </select>
+
+    <!--삭제-->
+    <update id="softDeleteRequest">
+        UPDATE request r
+        JOIN stock s
+        ON r.stock_id = s.stock_id
+        SET r.del_yn = b'1',
+            r.updated_at = NOW()
+        WHERE r.request_id = #{requestId}
+        AND s.store_id = #{storeId}
+        AND r.del_yn = b'0'
+    </update>
+
+    <!--수정-->
+    <update id="updateRequest">
+        UPDATE request r
+        JOIN stock s
+        ON r.stock_id = s.stock_id
+        SET r.request_type = #{dto.requestType},
+            r.request_amount = #{dto.requestAmount},
+            r.alba_id = #{dto.albaId},
+            r.request_date = #{dto.requestDate},
+            r.updated_at = NOW()
+        WHERE r.request_id = #{requestId}
+        AND s.store_id = #{storeId}
+        AND r.del_yn = b'0'
+        AND r.request_status = '대기'
+    </update>
+
+    <!--상태 수정-->
+    <update id="updateRequestStatus">
+        UPDATE request r
+        JOIN stock s
+        ON r.stock_id = s.stock_id
+        SET r.request_status = #{dto.requestStatus},
+            r.updated_at = NOW()
+        WHERE r.request_id = #{requestId}
+        AND s.store_Id = #{storeId}
+        AND r.del_yn = b'0'
+    </update>
+
 </mapper>

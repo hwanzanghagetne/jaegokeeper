@@ -1,6 +1,8 @@
 package com.jaegokeeper.hwan.dto;
 
 
+import com.jaegokeeper.hwan.domain.enums.RequestStatus;
+import com.jaegokeeper.hwan.domain.enums.RequestType;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -9,11 +11,11 @@ import java.time.LocalDateTime;
 public class RequestListDTO {
 
     private Integer requestId;
-    private String requestType;
+    private RequestType requestType;
     private String itemName;
     private Integer requestAmount;
     private LocalDateTime requestDate;
     private String albaName;
-    private String requestStatus;
+    private RequestStatus requestStatus;
     private LocalDateTime createdAt;
 }
