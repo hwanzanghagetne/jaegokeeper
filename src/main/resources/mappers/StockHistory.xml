@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.jaegokeeper.hwan.mapper.StockHistoryMapper">
+<mapper namespace="com.jaegokeeper.hwan.stock.mapper.StockHistoryMapper">
 
 <!--    재고조정시 히스토리 삽입-->
     <insert id="insertHistory">

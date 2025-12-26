@@ -3,10 +3,10 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.jaegokeeper.hwan.mapper.ItemMapper">
+<mapper namespace="com.jaegokeeper.hwan.item.mapper.ItemMapper">
 
     <insert id="insertItem"
-            parameterType="com.jaegokeeper.hwan.domain.Item"
+            parameterType="com.jaegokeeper.hwan.item.domain.Item"
             useGeneratedKeys="true"
             keyProperty="itemId">
 
@@ -79,7 +79,7 @@
     </select>
 
     <select id="findItemList"
-            resultType="com.jaegokeeper.hwan.dto.ItemListDTO">
+            resultType="com.jaegokeeper.hwan.item.dto.ItemListDTO">
         SELECT
         i.item_id   AS itemId,
         i.item_name AS itemName,
@@ -139,7 +139,7 @@
     </select>
 
     <select id="findItemDetail"
-            resultType="com.jaegokeeper.hwan.dto.ItemDetailDTO">
+            resultType="com.jaegokeeper.hwan.item.dto.ItemDetailDTO">
 
         SELECT
             i.item_id   AS itemId,
