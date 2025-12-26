@@ -22,7 +22,7 @@ public interface AlbaMapper {
 //
 //    boolean existsByAlbaName(String albaName);
 
-    boolean existsByAlbaPhone(String albaPhone);
+    int existsByAlbaPhone(String albaPhone);
 
     // 알바생 관리 페이지
     List<AlbaListDto> selectAllAlba(@Param("storeId") int storeId);

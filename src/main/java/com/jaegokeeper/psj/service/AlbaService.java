@@ -29,7 +29,7 @@ public class AlbaService {
             throw new IllegalArgumentException("Store가 존재하지 않습니다.");
         }
         // alba 전화번호 중복 체크
-        if(albaMapper.existsByAlbaPhone(albaRegisterDto.getAlbaPhone())) {
+        if(albaMapper.existsByAlbaPhone(albaRegisterDto.getAlbaPhone()) > 0) {
             throw new IllegalArgumentException("존재하는 알바 전화번호 입니다.");
         }
         // alba 저장
