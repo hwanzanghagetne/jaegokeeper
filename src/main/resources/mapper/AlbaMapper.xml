@@ -7,7 +7,7 @@
 
     <!-- 알바생 관리페이지(list) -->
     <!-- 전체 알바 조회 -->
-    <select id="selectAllAlba" resultType="com.jaegokeeper.psj.dto.AlbaListDto">
+    <select id="selectAllAlba" parameterType="java.lang.Integer" resultType="com.jaegokeeper.psj.dto.AlbaListDto">
         SELECT
         alba.alba_id AS albaId,
         work.work_id AS workId,

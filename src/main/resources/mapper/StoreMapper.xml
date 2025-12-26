@@ -6,7 +6,7 @@
 <mapper namespace="com.jaegokeeper.psj.mapper.StoreMapper2">
 
     <!-- Alba용 store 존재 확인 -->
-    <select id="existsByStoreId" parameterType="int" resultType="boolean">
+    <select id="existsById" parameterType="int" resultType="boolean">
         SELECT COUNT(*) > 0
         FROM store
         WHERE store_id = #{storeId}
