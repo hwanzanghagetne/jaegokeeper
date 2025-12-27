@@ -3,26 +3,22 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.jaegokeeper.hwan.mapper.ItemMapper">
+<mapper namespace="com.jaegokeeper.hwan.item.mapper.ItemMapper">
 
     <insert id="insertItem"
-            parameterType="com.jaegokeeper.hwan.domain.Item"
+            parameterType="com.jaegokeeper.hwan.item.domain.Item"
             useGeneratedKeys="true"
             keyProperty="itemId">
 
         INSERT INTO item (
             store_id,
             item_name,
-            image_id,
-            created_at,
-            del_yn
+            image_id
         )
         VALUES (
                    #{storeId},
                    #{itemName},
-                   #{imageId},
-                   NOW(),
-                   b'0'
+                   #{imageId}
                )
     </insert>
 
@@ -41,6 +37,8 @@
         JOIN stock s
         ON s.item_id = i.item_id
         AND s.store_id = i.store_id
+        LEFT JOIN safe sa
+        ON sa.stock_id = s.stock_id
 
         <where>
             i.store_id = #{storeId}
@@ -49,9 +47,31 @@
             <if test="filters != null and filters.contains('FAVORITE')">
                 AND s.favorite_yn = 1
             </if>
-            <if test="filters != null and filters.contains('ZERO_STOCK')">
-                AND s.quantity = 0
+            <if test="filters != null and filters.contains('LOW_STOCK')">
+                AND s.quantity &lt; sa.safe_quantity
             </if>
+            <if test="filters != null and filters.contains('HAS_REQUEST')">
+                AND EXISTS(
+                SELECT 1
+                FROM request r
+                WHERE r.stock_id = s.stock_id
+                AND r.del_yn = b'0'
+                AND (r.request_status IS NULL OR r.request_status NOT IN ('취소','완료'))
+                )
+            </if>
+            <if test="filters != null and filters.contains('BAD_STOCK')">
+                AND EXISTS (
+                SELECT 1
+                FROM (
+                SELECT MAX(h.created_at) AS last_inout
+                FROM stock_history h
+                WHERE h.stock_id = s.stock_id
+                AND h.his_type IN ('IN','OUT')
+                ) t
+                WHERE t.last_inout &lt; DATE_SUB(NOW(), INTERVAL 1 MONTH)
+                )
+            </if>
+
             <if test="keyword != null and keyword != ''">
                 AND i.item_name LIKE CONCAT('%', #{keyword}, '%')
             </if>
@@ -59,8 +79,7 @@
     </select>
 
     <select id="findItemList"
-            parameterType="map"
-            resultType="com.jaegokeeper.hwan.dto.ItemListDTO">
+            resultType="com.jaegokeeper.hwan.item.dto.ItemListDTO">
         SELECT
         i.item_id   AS itemId,
         i.item_name AS itemName,
@@ -75,6 +94,8 @@
         LEFT JOIN image im
             ON im.image_id = i.image_id
         AND im.is_active = b'1'
+        LEFT JOIN safe sa
+        ON sa.stock_id = s.stock_id
 
         <where>
             i.store_id = #{storeId}
@@ -83,9 +104,31 @@
             <if test="filters != null and filters.contains('FAVORITE')">
                 AND s.favorite_yn = 1
             </if>
-            <if test="filters != null and filters.contains('ZERO_STOCK')">
-                AND s.quantity = 0
+            <if test="filters != null and filters.contains('LOW_STOCK')">
+                AND s.quantity &lt; sa.safe_quantity
             </if>
+            <if test="filters != null and filters.contains('HAS_REQUEST')">
+                AND EXISTS(
+                SELECT 1
+                FROM request r
+                WHERE r.stock_id = s.stock_id
+                    AND r.del_yn = b'0'
+                    AND (r.request_status IS NULL OR r.request_status NOT IN ('취소','완료'))
+                )
+            </if>
+            <if test="filters != null and filters.contains('BAD_STOCK')">
+                AND EXISTS (
+                SELECT 1
+                FROM (
+                SELECT MAX(h.created_at) AS last_inout
+                FROM stock_history h
+                WHERE h.stock_id = s.stock_id
+                AND h.his_type IN ('IN','OUT')
+                ) t
+                WHERE t.last_inout &lt; DATE_SUB(NOW(), INTERVAL 1 MONTH)
+                )
+            </if>
+
             <if test="keyword != null and keyword != ''">
                 AND i.item_name LIKE CONCAT('%', #{keyword}, '%')
             </if>
@@ -96,7 +139,7 @@
     </select>
 
     <select id="findItemDetail"
-            resultType="com.jaegokeeper.hwan.dto.ItemDetailDTO">
+            resultType="com.jaegokeeper.hwan.item.dto.ItemDetailDTO">
 
         SELECT
             i.item_id   AS itemId,
