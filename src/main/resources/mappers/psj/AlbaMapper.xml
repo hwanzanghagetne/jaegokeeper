@@ -9,15 +9,15 @@
     <!-- 전체 알바 조회 -->
     <select id="selectAllAlba" resultType="com.jaegokeeper.psj.dto.AlbaListDto">
         SELECT
-        alba.alba_id AS albaId,
-        work.work_id AS workId,
-        work.work_status AS workStatus,
-        work.work_date AS workDate,
-        alba.alba_name AS albaName,
-        alba.alba_phone AS albaPhone,
-        alba.alba_status AS albaStatus
-        FROM alba
-        LEFT JOIN work ON alba.alba_id = work.alba_id
+            alba.alba_id AS albaId,
+            work.work_id AS workId,
+            work.work_status AS workStatus,
+            work.work_date AS workDate,
+            alba.alba_name AS albaName,
+            alba.alba_phone AS albaPhone,
+            alba.alba_status AS albaStatus
+        FROM alba as alba
+        LEFT JOIN work as work ON alba.alba_id = work.alba_id
         WHERE alba.store_id = #{storeId}
         ORDER BY alba.alba_id DESC
     </select>
@@ -43,8 +43,8 @@
         WHERE alba_name = #{albaName}
     </select>
     <!-- 알바 전화번호 중복 체크 -->
-    <select id="existsByAlbaPhone" parameterType="string" resultType="boolean">
-        SELECT COUNT(*) > 0
+    <select id="existsByAlbaPhone" parameterType="string" resultType="int">
+        SELECT COUNT(*)
         FROM alba
         WHERE alba_phone = #{albaPhone}
     </select>
