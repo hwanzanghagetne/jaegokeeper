@@ -23,7 +23,7 @@ public class AlbaService {
     
     // 알바생 등록 페이지
     @Transactional
-    public void saveAlbaDto(AlbaRegisterDto albaRegisterDto) {
+    public void saveAlbaRegister(AlbaRegisterDto albaRegisterDto) {
         // store 존재 확인
         if(!albaMapper.existsByStoreId(albaRegisterDto.getStoreId())) {
             throw new IllegalArgumentException("Store가 존재하지 않습니다.");
@@ -66,7 +66,7 @@ public class AlbaService {
     }
 
     // 알바생 관리 페이지
-    public List<AlbaListDto> getAllCheck(int storeId) {
+    public List<AlbaListDto> getAllAlbaList(int storeId) {
         return albaMapper.selectAllAlba(storeId);
     }
 }
