@@ -1,6 +1,7 @@
 package com.jaegokeeper.hwan.request.dto;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.Valid;
@@ -9,6 +10,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class RequestCreateBatchRequestDTO {
 
     @NotEmpty(message = "requests는 비어있을 수 없습니다.")

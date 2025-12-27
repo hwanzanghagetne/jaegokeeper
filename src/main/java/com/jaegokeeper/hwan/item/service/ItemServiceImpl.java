@@ -91,17 +91,13 @@ public class ItemServiceImpl implements ItemService {
     //아이템 리스트
     @Transactional
     @Override
-    public PageResponseDTO<ItemListDTO> getItemList(Integer storeId, int page, int size, List<String> filters, String keyword) {
+    public PageResponseDTO<ItemListDTO> getItemList(ItemPageRequestDTO dto) {
 
-        if (storeId == null || storeId <= 0) {
-            throw new IllegalArgumentException("storeId는 필수이며 1 이상이어야 합니다.");
-        }
-        if (page <= 0) {
-            throw new IllegalArgumentException("page는 1 이상이어야 합니다.");
-        }
-        if (size <= 0 || size > 50) {
-            throw new IllegalArgumentException("size는 1 이상 50 이하만 허용됩니다.");
-        }
+        Integer storeId = dto.getStoreId();
+        int pageNum = dto.getPageValue();
+        int pageSize = dto.getSizeValue();
+        String keyword = dto.getKeywordValue();
+        List<String> filters = dto.getFilters();
 
         List<String> normalizedFilters = null;
 
@@ -115,18 +111,13 @@ public class ItemServiceImpl implements ItemService {
         }
 
 
-        if (keyword != null && keyword.isBlank()) {
-            keyword = null;
-        } else if (keyword != null) {
-            keyword = keyword.trim();
-        }
+        int offset = (pageNum - 1) * pageSize;
 
-        int offset = (page - 1) * size;
         long totalElements = itemMapper.countItemList(storeId,normalizedFilters,keyword);
-        List<ItemListDTO> content = itemMapper.findItemList(storeId, normalizedFilters,keyword, offset, size);
-        int totalPages = (int) Math.ceil(((double) totalElements / size));
+        List<ItemListDTO> content = itemMapper.findItemList(storeId, normalizedFilters,keyword, offset, pageSize);
+        int totalPages = (int) Math.ceil(((double) totalElements / pageSize));
 
-        return new PageResponseDTO<>(content, page, size, totalElements, totalPages);
+        return new PageResponseDTO<>(content, pageNum, pageSize, totalElements, totalPages);
 
     }
 

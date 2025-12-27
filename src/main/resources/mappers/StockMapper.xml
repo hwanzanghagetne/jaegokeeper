@@ -24,45 +24,63 @@
                )
     </insert>
 
-    <select id="findQuantityByStockId" resultType="int">
+    <select id="findQuantityByStockId" resultType="Integer">
         SELECT quantity
-        FROM stock
+        FROM stock s
+        JOIN item i
+        ON i.item_id = s.item_id
         WHERE stock_id = #{stockId}
+        AND i.del_yn = b'0'
     </select>
 
 
 <!--    재고 직접 조정용-->
     <update id="updateQuantity">
-            UPDATE stock
+            UPDATE stock s
+            JOIN item i
+            ON i.item_id = s.item_id
             SET quantity = #{quantity},
                 favorite_yn = #{favoriteYn}
             WHERE stock_id = #{stockId}
+            AND i.del_yn = b'0'
     </update>
 
     <update id="increaseQuantity">
-        UPDATE stock
+        UPDATE stock s
+        JOIN item i
+        ON i.item_id = s.item_id
         SET quantity = quantity + #{amount}
         WHERE stock_id = #{stockId}
+        AND i.del_yn = b'0'
     </update>
 
     <update id="decreaseQuantity">
-        UPDATE stock
+        UPDATE stock s
+        JOIN item i
+        ON i.item_id = s.item_id
         SET quantity = quantity - #{amount}
         WHERE stock_id = #{stockId}
         AND quantity >= #{amount}
+        AND i.del_yn = b'0'
     </update>
     
-    <select id="findStockIdByStoreAndItem" resultType="int">
+    <select id="findStockIdByStoreAndItem" resultType="Integer">
         SELECT stock_id
-        FROM stock
+        FROM stock s
+        JOIN item i
+        ON i.item_id = s.item_id
         WHERE store_id = #{storeId}
         AND item_id = #{itemId}
+        AND i.del_yn = b'0'
     </select>
 
     <select id="countByStockIdAndStoreId" resultType="int">
         SELECT count(*)
-        FROM stock
+        FROM stock s
+        JOIN item i
+        ON i.item_id = s.item_id
         WHERE stock_id = #{stockId}
         AND store_id = #{storeId}
+        AND i.del_yn = b'0'
     </select>
 </mapper>

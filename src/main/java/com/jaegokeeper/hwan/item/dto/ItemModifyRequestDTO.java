@@ -2,6 +2,7 @@ package com.jaegokeeper.hwan.item.dto;
 
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.Min;
@@ -10,6 +11,7 @@ import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class ItemModifyRequestDTO {
 
 
@@ -18,9 +20,9 @@ public class ItemModifyRequestDTO {
     private String itemName;
 
     @NotNull
+    @Min(1)
     private Integer stockId;
 
-    @NotNull
     private Boolean favoriteYn;
 
     private Integer imageId;

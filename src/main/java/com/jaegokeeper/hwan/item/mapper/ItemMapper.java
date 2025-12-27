@@ -25,8 +25,8 @@ public interface ItemMapper {
     List<ItemListDTO> findItemList(@Param("storeId") Integer storeId,
                                    @Param("filters") List<String> filters,
                                    @Param("keyword") String keyword,
-                                   @Param("offset") int offset,
-                                   @Param("size") int size);
+                                   @Param("offset") Integer offset,
+                                   @Param("size") Integer size);
 
     //아이템 상세
     ItemDetailDTO findItemDetail(@Param("storeId") Integer storeId,
