@@ -21,6 +21,7 @@ public class ItemCreateRequestDTO {
     private String itemName;
 
     @NotNull(message = "quantity는 필수입니다.")
+    @Min(value = 0,message = "quantity는 0 이상입니다.")
     private Integer quantity;
 
     private Integer imageId;

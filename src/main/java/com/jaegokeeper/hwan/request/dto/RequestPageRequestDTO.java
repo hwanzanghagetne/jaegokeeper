@@ -15,15 +15,15 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class RequestPageRequestDTO {
-    @NotNull
+    @NotNull(message = "storeId 필수입니다.")
     @Min(1)
     private Integer storeId;
 
-    @Min(1)
+    @Min(value = 1,message = "page 1 이상입니다.")
     private Integer page;
 
-    @Min(1)
-    @Max(50)
+    @Min(value = 1,message = "size 1 이상입니다.")
+    @Max(value = 50,message = "size 50 이하입니다.")
     private Integer size;
 
     private RequestType requestType;

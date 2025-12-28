@@ -27,7 +27,7 @@ public class RequestCreateRequestDTO {
     private RequestType requestType;
 
     @NotNull(message = "requestAmount 필수입니다.")
-    @Min(0)
+    @Min(value = 0,message = "requestAmount는 0 이상입니다.")
     private Integer requestAmount;
 
     @NotNull(message = "requestDate 필수입니다.")

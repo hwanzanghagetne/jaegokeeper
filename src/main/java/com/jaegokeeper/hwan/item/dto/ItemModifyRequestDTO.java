@@ -14,12 +14,14 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 public class ItemModifyRequestDTO {
 
+    private Integer storeId;
 
+    private Integer itemId;
 
     @NotBlank(message = "itemName은 필수입니다.")
     private String itemName;
 
-    @NotNull
+    @NotNull(message = "stockId는 필수입니다.")
     @Min(1)
     private Integer stockId;
 
@@ -27,12 +29,12 @@ public class ItemModifyRequestDTO {
 
     private Integer imageId;
 
-    @NotNull
-    @Min(0)
+    @NotNull(message = "safeQuantity 필수입니다.")
+    @Min(value = 0,message = "safeQuantity는 0 이상입니다.")
     private Integer safeQuantity;
 
-    @NotNull
-    @Min(0)
+    @NotNull(message ="targetQuantity는 필수입니다." )
+    @Min(value = 0,message = "targetQuantity는 0 이상입니다.")
     private Integer targetQuantity;
 }
 

@@ -12,8 +12,8 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 public class StockInOutRequestDTO {
 
-    @NotNull
-    @Min(1)
+    @NotNull(message = "amount는 필수입니다.")
+    @Min(value = 1,message = "amount는 1 이상입니다.")
     private Integer amount;
 
 }

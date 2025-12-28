@@ -36,18 +36,11 @@ public class ItemServiceImpl implements ItemService {
 
         String itemName = itemCreateRequestDTO.getItemName();
         Integer storeId = itemCreateRequestDTO.getStoreId();
-        if (storeId <= 0) {
-            throw new IllegalArgumentException("storeId는 1 이상이어야 합니다.");
-        }
+        Integer quantity = itemCreateRequestDTO.getQuantity();
 
         int count = storeMapper.countById(storeId);
         if (count == 0) {
             throw new IllegalArgumentException("존재하지 않는 매장입니다.");
-        }
-
-        Integer quantity = itemCreateRequestDTO.getQuantity();
-        if (quantity < 0) {
-            throw new IllegalArgumentException("quantity는 0 이상이어야 합니다.");
         }
 
         Item item = new Item();
@@ -59,7 +52,6 @@ public class ItemServiceImpl implements ItemService {
         if (itemInserted != 1) {
             throw new IllegalStateException("아이템 등록 실패");
         }
-
 
         Stock stock = new Stock();
         stock.setItemId(item.getItemId());
@@ -110,7 +102,6 @@ public class ItemServiceImpl implements ItemService {
                     .toList();
         }
 
-
         int offset = (pageNum - 1) * pageSize;
 
         long totalElements = itemMapper.countItemList(storeId,normalizedFilters,keyword);
@@ -118,7 +109,6 @@ public class ItemServiceImpl implements ItemService {
         int totalPages = (int) Math.ceil(((double) totalElements / pageSize));
 
         return new PageResponseDTO<>(content, pageNum, pageSize, totalElements, totalPages);
-
     }
 
     //아이템 상세 조회
@@ -143,17 +133,17 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     @Override
-    public void modifyItem(Integer storeId, Integer itemId, ItemModifyRequestDTO dto) {
-        Integer realStockId = stockMapper.findStockIdByStoreAndItem(storeId, itemId);
+    public void modifyItem( ItemModifyRequestDTO dto) {
+        Integer realStockId = stockMapper.findStockIdByStoreAndItem(dto.getStoreId(),dto.getItemId());
         if (realStockId == null) {
             throw new IllegalStateException("재고 없음");
         }
         if (!realStockId.equals(dto.getStockId())) {
             throw new IllegalArgumentException("잘못된 stockId");
         }
-        // item 수정
 
-        int itemUpdated = itemMapper.updateItem(storeId, itemId, dto.getItemName(), dto.getImageId());
+        // item 수정
+        int itemUpdated = itemMapper.updateItem(dto.getStoreId(), dto.getItemId(), dto.getItemName(), dto.getImageId());
         if (itemUpdated != 1) {
             throw new IllegalStateException("아이템 수정 실패");
         }

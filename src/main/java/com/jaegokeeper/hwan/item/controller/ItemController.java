@@ -48,7 +48,9 @@ public class ItemController {
             @PathVariable Integer itemId,
             @Valid @RequestBody ItemModifyRequestDTO dto
     ) {
-        itemService.modifyItem(storeId, itemId, dto);
+        dto.setStoreId(storeId);
+        dto.setItemId(itemId);
+        itemService.modifyItem( dto);
         return ResponseEntity.noContent().build();
     }
 
