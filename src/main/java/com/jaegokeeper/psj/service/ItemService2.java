@@ -23,7 +23,7 @@ public class ItemService2 {
     // 저장 메서드
     public void saveDto(ItemDto2 dto) {
         // Store 존재 확인
-        if(!albaMapper.existsByStoreId(dto.getStoreId())) {
+        if(!storeMapper.existsById(dto.getStoreId())) {
             throw new IllegalArgumentException("store가 존재하지 않습니다.");
         }
 

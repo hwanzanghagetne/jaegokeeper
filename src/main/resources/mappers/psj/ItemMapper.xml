@@ -17,7 +17,7 @@
         VALUES (#{storeId}, #{itemName})
     </insert>
     <!-- 아이템 이름 중복 체크 -->
-    <select id="existsByName" parameterType="com.jaegokeeper.psj.dto.ItemDto2">
+    <select id="existsByName" parameterType="java.lang.String">
         SELECT COUNT(*) > 0
         FROM item
         WHERE item_name = #{itemName}

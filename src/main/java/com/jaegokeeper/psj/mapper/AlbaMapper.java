@@ -12,23 +12,23 @@ import java.util.List;
 public interface AlbaMapper {
     void insertAlba(AlbaRegisterDto albaDto);
 
-    boolean existsAlbaById(String albaId);
-
-    boolean existsWorkById(String workId);
+//    boolean existsAlbaById(String albaId);
+//
+//    boolean existsWorkById(String workId);
 
     boolean existsByStoreId(int StoreId);
 
-    AlbaListDto selectsAlbaById(int albaId);
+//    AlbaListDto selectsAlbaById(int albaId);
+//
+//    boolean existsByAlbaName(String albaName);
 
-    boolean existsByAlbaName(String albaName);
-
-    boolean existsByAlbaPhone(String albaPhone);
+    int existsByAlbaPhone(String albaPhone);
 
     // 알바생 관리 페이지
     List<AlbaListDto> selectAllAlba(@Param("storeId") int storeId);
 
     // 알바생 등록 페이지
-    List<AlbaRegisterDto> selectRegisterAlba(@Param("albaId") int albaId);
+//    List<AlbaRegisterDto> selectRegisterAlba(@Param("albaId") int albaId);
 
     // 알바생 수정 페이지
     int updateAlba(AlbaDetailDto albaRegisterDto);

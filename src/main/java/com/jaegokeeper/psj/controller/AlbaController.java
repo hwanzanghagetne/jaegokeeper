@@ -22,14 +22,14 @@ public class AlbaController {
 
     // 알바생 전체 조회
     @GetMapping("/list")
-    public ResponseEntity<List<AlbaListDto>> getAllItem(@RequestParam int storeId) {
-        List<AlbaListDto> items = albaService.getAllCheck(storeId);
+    public ResponseEntity<List<AlbaListDto>> getAllAlbaList(@RequestParam int storeId) {
+        List<AlbaListDto> items = albaService.getAllAlbaList(storeId);
         return  ResponseEntity.ok(items);
     }
 
     // 알바생 등록 페이지
     @PostMapping("/register")
-    public ResponseEntity<AlbaRegisterDto> mapRequest(@Valid @RequestBody AlbaRegisterDto item, HttpSession session) {
+    public ResponseEntity<AlbaRegisterDto> saveAlbaRegister(@Valid @RequestBody AlbaRegisterDto albaRegisterDto, HttpSession session) {
         Integer storeId = (Integer) session.getAttribute("storeId");
 
         // 세션에 없을 때 테스트용
@@ -37,9 +37,9 @@ public class AlbaController {
             storeId = 1;
         }
 
-        item.setStoreId(storeId);
-        albaService.saveAlbaDto(item);
-        return ResponseEntity.ok(item);
+        albaRegisterDto.setStoreId(storeId);
+        albaService.saveAlbaRegister(albaRegisterDto);
+        return ResponseEntity.ok(albaRegisterDto);
     }
 
 
