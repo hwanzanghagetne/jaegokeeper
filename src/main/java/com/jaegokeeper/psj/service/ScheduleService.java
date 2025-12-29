@@ -1,11 +1,15 @@
 package com.jaegokeeper.psj.service;
 
+import com.jaegokeeper.psj.dto.ScheduleListDto;
 import com.jaegokeeper.psj.dto.ScheduleRegisterDto;
+import com.jaegokeeper.psj.dto.ScheduleWorkInOutDto;
 import com.jaegokeeper.psj.mapper.AlbaMapper;
 import com.jaegokeeper.psj.mapper.ScheduleMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -29,11 +33,29 @@ public class ScheduleService {
         // schedule 저장 후 ID 반환
         int scheduleId = scheduleMapper.insertSchedule(scheduleRegisterDto);
         return scheduleId;
+    }
 
+    // 프론트에서 전달받은 날짜를 요일로 변환
+    public List<ScheduleRegisterDto> getScheduleByDate(String date) {
+        // 날짜를 요일로 변환
+        DayOfWeek dayOfWeek = LocalDate.parse(date).getDayOfWeek();
+        return scheduleMapper.selectSchedulesByDate(dayOfWeek.toString());
+    }
 
-//        scheduleMapper.insertSchedule(scheduleRegisterDto);
+    // 특정 날짜에 근무하는 알바생들의 출퇴근 기록 조회
+    public List<ScheduleListDto> getScheduleListByDate(String date) {
+        // 날짜를 요일로 변환
+        DayOfWeek dayOfWeek = LocalDate.parse(date).getDayOfWeek();
+        return scheduleMapper.selectSchedulesWithWorkByDate(date, dayOfWeek.toString());
+    }
 
+    // 출근 기록
+    public void recordWorkIn(ScheduleWorkInOutDto scheduleWorkInOutDto) {
+        scheduleMapper.insertWorkIn(scheduleWorkInOutDto);
+    }
 
-
+    // 퇴근 기록
+    public void recordWorkOut(ScheduleWorkInOutDto scheduleWorkInOutDto) {
+        scheduleMapper.updateWorkOut(scheduleWorkInOutDto);
     }
 }

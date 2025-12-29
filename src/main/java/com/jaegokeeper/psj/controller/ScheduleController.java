@@ -1,15 +1,17 @@
 package com.jaegokeeper.psj.controller;
 
+import com.jaegokeeper.psj.dto.ScheduleListDto;
 import com.jaegokeeper.psj.dto.ScheduleRegisterDto;
+import com.jaegokeeper.psj.dto.ScheduleWorkInOutDto;
 import com.jaegokeeper.psj.service.ScheduleService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/schedule")
@@ -33,5 +35,37 @@ public class ScheduleController {
 //        scheduleRegisterDto.setAlbaId(albaId);
         scheduleService.saveScheduleRegister(scheduleRegisterDto);
         return ResponseEntity.ok(scheduleRegisterDto);
+    }
+
+//    // 프론트에서 전달받은 날짜를 요일로 변환 후 조회
+//    @GetMapping
+//    public ResponseEntity<List<ScheduleRegisterDto>> selectSchedulesByDate(@RequestParam String date) {
+//        List<ScheduleRegisterDto> schedules = scheduleService.getScheduleByDate(date);
+//        return ResponseEntity.ok(schedules);
+//    }
+
+    // 특정 날짜에 근무하는 알바생들의 출퇴근 기록 조회
+    @GetMapping("/list")
+    public ResponseEntity<List<ScheduleListDto>> selectScheduleListByDate(@RequestParam String date) {
+        List<ScheduleListDto> scheduleList = scheduleService.getScheduleListByDate(date);
+        return ResponseEntity.ok(scheduleList);
+    }
+
+    // 출근 기록
+    @PostMapping("/workin")
+    public ResponseEntity<Void> recordWorkIn(@RequestBody ScheduleWorkInOutDto scheduleWorkInOutDto) {
+        scheduleWorkInOutDto.setWorkIn(LocalDateTime.now());
+        scheduleWorkInOutDto.setWorkDate(LocalDate.now());
+        scheduleService.recordWorkIn(scheduleWorkInOutDto);  // ← Service 호출
+        return ResponseEntity.ok().build();
+    }
+
+    // 퇴근 기록
+    @PostMapping("/workout")
+    public ResponseEntity<Void> recordWorkOut(@RequestBody ScheduleWorkInOutDto scheduleWorkInOutDto) {
+        scheduleWorkInOutDto.setWorkOut(LocalDateTime.now());  // ← workOut으로 수정!
+        scheduleWorkInOutDto.setWorkDate(LocalDate.now());
+        scheduleService.recordWorkOut(scheduleWorkInOutDto);  // ← Service 호출
+        return ResponseEntity.ok().build();
     }
 }
