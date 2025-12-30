@@ -4,6 +4,7 @@ import com.jaegokeeper.psj.dto.ScheduleListDto;
 import com.jaegokeeper.psj.dto.ScheduleRegisterDto;
 import com.jaegokeeper.psj.dto.ScheduleWorkInOutDto;
 import com.jaegokeeper.psj.service.ScheduleService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,6 +51,15 @@ public class ScheduleController {
         List<ScheduleListDto> scheduleList = scheduleService.getScheduleListByDate(date);
         return ResponseEntity.ok(scheduleList);
     }
+
+    // 알바생 출/퇴근 시간 조회
+    @GetMapping("/worktime")
+    public ResponseEntity<List<ScheduleWorkInOutDto>> selectWorkTime(@RequestParam int albaId, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        List<ScheduleWorkInOutDto> workTime = scheduleService.selectWorkTime(albaId, date);
+        return ResponseEntity.ok(workTime);
+    }
+
+
 
     // 출근 기록
     @PostMapping("/workin")

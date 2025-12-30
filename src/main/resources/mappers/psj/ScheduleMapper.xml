@@ -38,6 +38,18 @@
         ORDER BY a.alba_id
     </select>
 
+    <!--  알바생 출/퇴근 시간 조회  -->
+    <select id="selectWorkTime" resultType="com.jaegokeeper.psj.dto.ScheduleWorkInOutDto">
+        SELECT DISTINCT
+        w.alba_id AS albaId,
+        w.work_date AS workDate,
+        w.work_in AS workIn,
+        w.work_out AS workOut
+        FROM work w
+        WHERE w.alba_id = #{albaId}
+        AND w.work_date = #{date}
+    </select>
+
     <!--  출근 기록  -->
     <insert id="insertWorkIn" parameterType="com.jaegokeeper.psj.dto.ScheduleWorkInOutDto">
         INSERT INTO work (alba_id, work_in, work_date)

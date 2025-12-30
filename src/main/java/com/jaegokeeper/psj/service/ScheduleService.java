@@ -49,6 +49,11 @@ public class ScheduleService {
         return scheduleMapper.selectSchedulesWithWorkByDate(date, dayOfWeek.toString());
     }
 
+    // 알바생 출/퇴근 시간 조회
+    public List<ScheduleWorkInOutDto> selectWorkTime(int albaId, LocalDate date) {
+        return scheduleMapper.selectWorkTime(albaId, date);
+    }
+
     // 출근 기록
     public void recordWorkIn(ScheduleWorkInOutDto scheduleWorkInOutDto) {
         scheduleMapper.insertWorkIn(scheduleWorkInOutDto);
