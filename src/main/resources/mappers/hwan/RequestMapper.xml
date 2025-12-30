@@ -129,7 +129,7 @@
         SET r.request_status = #{dto.requestStatus},
             r.updated_at = NOW()
         WHERE r.request_id = #{requestId}
-        AND s.store_Id = #{storeId}
+        AND s.store_id = #{storeId}
         AND r.del_yn = b'0'
     </update>
 

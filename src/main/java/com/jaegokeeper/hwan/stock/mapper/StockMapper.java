@@ -30,6 +30,6 @@ public interface StockMapper {
     Integer findStockIdByStoreAndItem(@Param("storeId") Integer storeId,
                                       @Param("itemId") Integer itemId);
 
-    Integer countByStockIdAndStoreId(@Param("stockId") Integer stockId,
+    int countByStockIdAndStoreId(@Param("stockId") Integer stockId,
                                      @Param("storeId") Integer storeId);
 }

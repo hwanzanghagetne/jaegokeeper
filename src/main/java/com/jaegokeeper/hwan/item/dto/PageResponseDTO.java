@@ -10,8 +10,8 @@ import java.util.List;
 public class PageResponseDTO<T>{
 
     private List<T> content;
-    private int page;
-    private int size;
-    private long totalElements;
-    private int totalPages;
+    private Integer page;
+    private Integer size;
+    private Integer totalElements;
+    private Integer totalPages;
 }

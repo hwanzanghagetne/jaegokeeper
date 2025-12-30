@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/items")
@@ -29,13 +28,9 @@ public class ItemController {
 
     @GetMapping
     public ResponseEntity<PageResponseDTO<ItemListDTO>> getItems(
-            @RequestParam Integer storeId,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) List<String> filters,
-            @RequestParam(required = false) String keyword
+            @Valid @ModelAttribute ItemPageRequestDTO dto
     ) {
-        return ResponseEntity.ok(itemService.getItemList(storeId, page, size, filters, keyword));
+        return ResponseEntity.ok(itemService.getItemList(dto));
     }
 
     @GetMapping("/{itemId}")
@@ -53,7 +48,9 @@ public class ItemController {
             @PathVariable Integer itemId,
             @Valid @RequestBody ItemModifyRequestDTO dto
     ) {
-        itemService.modifyItem(storeId, itemId, dto);
+        dto.setStoreId(storeId);
+        dto.setItemId(itemId);
+        itemService.modifyItem( dto);
         return ResponseEntity.noContent().build();
     }
 
