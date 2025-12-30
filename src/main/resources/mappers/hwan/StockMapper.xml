@@ -69,8 +69,8 @@
         FROM stock s
         JOIN item i
         ON i.item_id = s.item_id
-        WHERE store_id = #{storeId}
-        AND item_id = #{itemId}
+        WHERE s.store_id = #{storeId}
+        AND s.item_id = #{itemId}
         AND i.del_yn = b'0'
     </select>
 

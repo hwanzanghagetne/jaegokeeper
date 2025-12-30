@@ -1,11 +1,12 @@
 package com.jaegokeeper.hwan.item.service;
 
+import com.jaegokeeper.hwan.exception.NotFoundException;
 import com.jaegokeeper.hwan.item.domain.Item;
 import com.jaegokeeper.hwan.item.dto.*;
 import com.jaegokeeper.hwan.item.mapper.ItemMapper;
 import com.jaegokeeper.hwan.item.mapper.StoreMapper;
+import com.jaegokeeper.hwan.stock.dto.StockAdjustRequestDTO;
 import com.jaegokeeper.hwan.stock.mapper.SafeMapper;
-import com.jaegokeeper.hwan.stock.mapper.StockHistoryMapper;
 import com.jaegokeeper.hwan.stock.mapper.StockMapper;
 import com.jaegokeeper.hwan.stock.service.StockService;
 import com.jaegokeeper.hwan.stock.domain.Stock;
@@ -25,7 +26,6 @@ public class ItemServiceImpl implements ItemService {
     private final StockMapper stockMapper;
     private final StoreMapper storeMapper;
     private final SafeMapper safeMapper;
-    private final StockHistoryMapper stockHistoryMapper;
     private final StockService stockService;
 
 
@@ -40,7 +40,7 @@ public class ItemServiceImpl implements ItemService {
 
         int count = storeMapper.countById(storeId);
         if (count == 0) {
-            throw new IllegalArgumentException("존재하지 않는 매장입니다.");
+            throw new NotFoundException("존재하지 않는 매장입니다.");
         }
 
         Item item = new Item();
@@ -89,23 +89,13 @@ public class ItemServiceImpl implements ItemService {
         int pageNum = dto.getPageValue();
         int pageSize = dto.getSizeValue();
         String keyword = dto.getKeywordValue();
-        List<String> filters = dto.getFilters();
+        ItemFilter filter = dto.getFilter();
 
-        List<String> normalizedFilters = null;
-
-        if (filters != null && !filters.isEmpty()) {
-            for (String f : filters) {
-                ItemFilter.from(f);
-            }
-            normalizedFilters = filters.stream()
-                    .map(s -> s.trim().toUpperCase())
-                    .toList();
-        }
 
         int offset = (pageNum - 1) * pageSize;
 
-        long totalElements = itemMapper.countItemList(storeId,normalizedFilters,keyword);
-        List<ItemListDTO> content = itemMapper.findItemList(storeId, normalizedFilters,keyword, offset, pageSize);
+        int totalElements = itemMapper.countItemList(storeId,filter,keyword);
+        List<ItemListDTO> content = itemMapper.findItemList(storeId, filter,keyword, offset, pageSize);
         int totalPages = (int) Math.ceil(((double) totalElements / pageSize));
 
         return new PageResponseDTO<>(content, pageNum, pageSize, totalElements, totalPages);
@@ -125,7 +115,7 @@ public class ItemServiceImpl implements ItemService {
         ItemDetailDTO dto = itemMapper.findItemDetail(storeId, itemId);
 
         if (dto == null) {
-            throw new IllegalArgumentException("존재하지 않는 아이템입니다.");
+            throw new NotFoundException("존재하지 않는 아이템입니다.");
         }
 
         return dto;
@@ -134,27 +124,28 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Override
     public void modifyItem( ItemModifyRequestDTO dto) {
-        Integer realStockId = stockMapper.findStockIdByStoreAndItem(dto.getStoreId(),dto.getItemId());
-        if (realStockId == null) {
-            throw new IllegalStateException("재고 없음");
-        }
-        if (!realStockId.equals(dto.getStockId())) {
-            throw new IllegalArgumentException("잘못된 stockId");
+        Integer stockId = stockMapper.findStockIdByStoreAndItem(dto.getStoreId(),dto.getItemId());
+        if (stockId == null) {
+            throw new NotFoundException("재고 없음");
         }
 
         // item 수정
-        int itemUpdated = itemMapper.updateItem(dto.getStoreId(), dto.getItemId(), dto.getItemName(), dto.getImageId());
+        int itemUpdated = itemMapper.updateItem(
+                dto.getStoreId(),
+                dto.getItemId(),
+                dto.getItemName(),
+                dto.getImageId());
         if (itemUpdated != 1) {
             throw new IllegalStateException("아이템 수정 실패");
         }
 
         // 재고 수정
-        Integer stockId = dto.getStockId();
-        Integer targetQuantity = dto.getTargetQuantity();
-        Integer safeQuantity = dto.getSafeQuantity();
-        Boolean favoriteYn = dto.getFavoriteYn();
+        StockAdjustRequestDTO stockAdjustRequestDTO = new StockAdjustRequestDTO(
+                dto.getTargetQuantity(),
+                dto.getSafeQuantity(),
+                dto.getFavoriteYn());
 
-        stockService.adjustStock(stockId,targetQuantity,safeQuantity,favoriteYn);
+        stockService.adjustStock(stockId,stockAdjustRequestDTO);
     }
 
 }

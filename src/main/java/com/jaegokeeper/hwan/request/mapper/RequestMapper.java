@@ -17,7 +17,7 @@ public interface RequestMapper {
 
     int insertRequest(Request request);
 
-    long countRequestList(@Param("storeId") Integer storeId,
+    int countRequestList(@Param("storeId") Integer storeId,
                           @Param("requestType") RequestType requestType,
                           @Param("requestStatus") RequestStatus requestStatus);
 

@@ -16,7 +16,6 @@ public interface ItemService {
     //아이템 상세
     ItemDetailDTO getItemDetail(Integer storeId, Integer itemId);
 
-
     //아이템 수정 (상세페이지용)
     void modifyItem( ItemModifyRequestDTO dto);
 

@@ -3,8 +3,6 @@ package com.jaegokeeper.hwan.request.controller;
 import com.jaegokeeper.hwan.alba.dto.AlbaOptionDTO;
 import com.jaegokeeper.hwan.item.dto.PageResponseDTO;
 import com.jaegokeeper.hwan.request.dto.*;
-import com.jaegokeeper.hwan.request.enums.RequestStatus;
-import com.jaegokeeper.hwan.request.enums.RequestType;
 import com.jaegokeeper.hwan.request.service.RequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

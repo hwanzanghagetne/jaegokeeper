@@ -1,5 +1,6 @@
 package com.jaegokeeper.hwan.stock.service;
 
+import com.jaegokeeper.hwan.stock.dto.StockAdjustRequestDTO;
 import com.jaegokeeper.hwan.stock.dto.StockInOutRequestDTO;
 
 public interface StockService {
@@ -9,6 +10,6 @@ public interface StockService {
     void outStock(Integer stockId, StockInOutRequestDTO dto);
 
     //아이템 재고 수정 (상세)
-    void adjustStock(Integer stockId, Integer targetQuantity, Integer safeQuantity, Boolean favoriteYn);
+    void adjustStock(Integer stockId, StockAdjustRequestDTO dto);
 
 }

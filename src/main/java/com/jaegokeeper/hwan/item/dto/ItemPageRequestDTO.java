@@ -1,5 +1,6 @@
 package com.jaegokeeper.hwan.item.dto;
 
+import com.jaegokeeper.hwan.item.enums.ItemFilter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,7 +25,7 @@ public class ItemPageRequestDTO {
     @Max(value = 50,message = "size 50 이하입니다.")
     private Integer size;
 
-    private List<String> filters;
+    private ItemFilter filter;
     private String keyword;
 
     //기본값 1
