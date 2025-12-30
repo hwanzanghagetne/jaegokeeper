@@ -42,6 +42,12 @@
         FROM alba
         WHERE alba_name = #{albaName}
     </select>
+    <!--  알바 ID 중복 체크  -->
+    <select id="existsAlbaById" parameterType="int" resultType="boolean">
+        SELECT COUNT(*)
+        FROM alba
+        WHERE alba_id = #{albaId}
+    </select>
     <!-- 알바 전화번호 중복 체크 -->
     <select id="existsByAlbaPhone" parameterType="string" resultType="int">
         SELECT COUNT(*)

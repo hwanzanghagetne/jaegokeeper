@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jaegokeeper.psj.mapper.ScheduleMapper">
+
+    <!--  스케줄에 저장  -->
+    <insert id="insertSchedule" parameterType="com.jaegokeeper.psj.dto.ScheduleRegisterDto"
+            useGeneratedKeys="true" keyProperty="scheduleId">
+        INSERT INTO schedule (alba_id, schedule_time)
+        VALUES (#{albaId}, #{scheduleTime})
+    </insert>
+
+    <!--  프론트에서 전달받은 날짜를 요일로 변환  -->
+    <select id="selectSchedulesByDate" resultType="com.jaegokeeper.psj.dto.ScheduleRegisterDto">
+        SELECT
+        schedule_id AS scheduleId,
+        alba_id AS albaId,
+        schedule_time AS scheduleTime
+        FROM schedule
+        WHERE schedule_time = #{scheduleTime}
+    </select>
+
+    <!--  특정 날짜에 근무하는 알바생들의 출퇴근 기록 조회  -->
+    <select id="selectSchedulesWithWorkByDate" resultType="com.jaegokeeper.psj.dto.ScheduleListDto">
+        SELECT
+            a.alba_id AS albaId,
+            s.schedule_id AS scheduleId,
+            w.work_id AS workId,
+            w.work_in AS workIn,
+            w.work_out AS workOut
+        FROM alba a
+        INNER JOIN schedule s ON a.alba_id = s.alba_id
+        LEFT JOIN work w ON a.alba_id = w.alba_id
+                        AND DATE(work_in) = #{date}
+        WHERE s.schedule_time = #{scheduleTime}
+        ORDER BY a.alba_id
+    </select>
+
+    <!--  알바생 출/퇴근 시간 조회  -->
+    <select id="selectWorkTime" resultType="com.jaegokeeper.psj.dto.ScheduleWorkInOutDto">
+        SELECT DISTINCT
+        w.alba_id AS albaId,
+        w.work_date AS workDate,
+        w.work_in AS workIn,
+        w.work_out AS workOut
+        FROM work w
+        WHERE w.alba_id = #{albaId}
+        AND w.work_date = #{date}
+    </select>
+
+    <!--  출근 기록  -->
+    <insert id="insertWorkIn" parameterType="com.jaegokeeper.psj.dto.ScheduleWorkInOutDto">
+        INSERT INTO work (alba_id, work_in, work_date)
+        VALUES (#{albaId}, #{workIn}, #{workDate})
+    </insert>
+
+    <!--  퇴근 기록  -->
+    <update id="updateWorkOut" parameterType="com.jaegokeeper.psj.dto.ScheduleWorkInOutDto">
+        UPDATE work
+        SET work_out = #{workOut}
+        WHERE alba_id = #{albaId}
+            AND DATE(work_in) = #{workDate}
+            AND work_out IS NULL
+    </update>
+</mapper>

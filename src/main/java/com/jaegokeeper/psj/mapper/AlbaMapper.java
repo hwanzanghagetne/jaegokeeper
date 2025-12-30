@@ -12,7 +12,7 @@ import java.util.List;
 public interface AlbaMapper {
     void insertAlba(AlbaRegisterDto albaDto);
 
-//    boolean existsAlbaById(String albaId);
+    boolean existsAlbaById(int albaId);
 //
 //    boolean existsWorkById(String workId);
 
