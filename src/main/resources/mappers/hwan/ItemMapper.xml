@@ -31,7 +31,7 @@
         AND del_yn = b'0'
     </update>
 
-    <select id="countItemList" resultType="long">
+    <select id="countItemList" resultType="int">
         SELECT COUNT(*)
         FROM item i
         JOIN stock s
@@ -44,13 +44,13 @@
             i.store_id = #{storeId}
             AND i.del_yn = b'0'
 
-            <if test="filters != null and filters.contains('FAVORITE')">
+            <if test="filter != null and filter == 'FAVORITE'">
                 AND s.favorite_yn = 1
             </if>
-            <if test="filters != null and filters.contains('LOW_STOCK')">
+            <if test="filter != null and filter == 'LOW_STOCK'">
                 AND s.quantity &lt; sa.safe_quantity
             </if>
-            <if test="filters != null and filters.contains('HAS_REQUEST')">
+            <if test="filter != null and filter == 'HAS_REQUEST'">
                 AND EXISTS(
                 SELECT 1
                 FROM request r
@@ -59,7 +59,7 @@
                 AND (r.request_status IS NULL OR r.request_status NOT IN ('취소','완료'))
                 )
             </if>
-            <if test="filters != null and filters.contains('BAD_STOCK')">
+            <if test="filter != null and filter == 'BAD_STOCK'">
                 AND EXISTS (
                 SELECT 1
                 FROM (
@@ -72,7 +72,7 @@
                 )
             </if>
 
-            <if test="keyword != null and keyword != ''">
+            <if test="keyword != null">
                 AND i.item_name LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
@@ -101,13 +101,13 @@
             i.store_id = #{storeId}
             AND i.del_yn = b'0'
 
-            <if test="filters != null and filters.contains('FAVORITE')">
+            <if test="filter != null and filter == 'FAVORITE'">
                 AND s.favorite_yn = 1
             </if>
-            <if test="filters != null and filters.contains('LOW_STOCK')">
+            <if test="filter != null and filter == 'LOW_STOCK'">
                 AND s.quantity &lt; sa.safe_quantity
             </if>
-            <if test="filters != null and filters.contains('HAS_REQUEST')">
+            <if test="filter != null and filter == 'HAS_REQUEST'">
                 AND EXISTS(
                 SELECT 1
                 FROM request r
@@ -116,7 +116,7 @@
                     AND (r.request_status IS NULL OR r.request_status NOT IN ('취소','완료'))
                 )
             </if>
-            <if test="filters != null and filters.contains('BAD_STOCK')">
+            <if test="filter  != null and filter == 'BAD_STOCK'">
                 AND EXISTS (
                 SELECT 1
                 FROM (
@@ -129,7 +129,7 @@
                 )
             </if>
 
-            <if test="keyword != null and keyword != ''">
+            <if test="keyword != null">
                 AND i.item_name LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>

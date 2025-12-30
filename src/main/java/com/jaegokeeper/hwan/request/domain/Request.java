@@ -19,5 +19,4 @@ public class Request {
     private RequestType requestType;
     private RequestStatus requestStatus;
 
-
 }

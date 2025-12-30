@@ -3,6 +3,7 @@ package com.jaegokeeper.hwan.item.mapper;
 import com.jaegokeeper.hwan.item.domain.Item;
 import com.jaegokeeper.hwan.item.dto.ItemDetailDTO;
 import com.jaegokeeper.hwan.item.dto.ItemListDTO;
+import com.jaegokeeper.hwan.item.enums.ItemFilter;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -18,15 +19,15 @@ public interface ItemMapper {
     int softDeleteItem(@Param("storeId") Integer storeId,
                        @Param("itemId") Integer itemId);
 
-    long countItemList(@Param("storeId") Integer storeId,
-                       @Param("filters") List<String> filters,
+    int countItemList(@Param("storeId") Integer storeId,
+                       @Param("filter") ItemFilter filter,
                        @Param("keyword")String keyword);
 
     List<ItemListDTO> findItemList(@Param("storeId") Integer storeId,
-                                   @Param("filters") List<String> filters,
+                                   @Param("filter") ItemFilter filter,
                                    @Param("keyword") String keyword,
-                                   @Param("offset") int offset,
-                                   @Param("size") int size);
+                                   @Param("offset") Integer offset,
+                                   @Param("size") Integer size);
 
     //아이템 상세
     ItemDetailDTO findItemDetail(@Param("storeId") Integer storeId,

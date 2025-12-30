@@ -2,12 +2,7 @@ package com.jaegokeeper.hwan.request.controller;
 
 import com.jaegokeeper.hwan.alba.dto.AlbaOptionDTO;
 import com.jaegokeeper.hwan.item.dto.PageResponseDTO;
-import com.jaegokeeper.hwan.request.dto.RequestCreateBatchRequestDTO;
-import com.jaegokeeper.hwan.request.dto.RequestListDTO;
-import com.jaegokeeper.hwan.request.dto.RequestStatusUpdateRequestDTO;
-import com.jaegokeeper.hwan.request.dto.RequestUpdateRequestDTO;
-import com.jaegokeeper.hwan.request.enums.RequestStatus;
-import com.jaegokeeper.hwan.request.enums.RequestType;
+import com.jaegokeeper.hwan.request.dto.*;
 import com.jaegokeeper.hwan.request.service.RequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,14 +21,10 @@ public class RequestController {
     // 요청 리스트
     @GetMapping
     public ResponseEntity<PageResponseDTO<RequestListDTO>> getRequests(
-            @RequestParam Integer storeId,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) RequestType requestType,
-            @RequestParam(required = false) RequestStatus requestStatus
+            @Valid @ModelAttribute RequestPageRequestDTO dto
     ) {
         return ResponseEntity.ok(
-                requestService.getRequestList(storeId, page, size, requestType, requestStatus)
+                requestService.getRequestList(dto)
         );
     }
 
