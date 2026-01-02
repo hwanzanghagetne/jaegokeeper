@@ -14,12 +14,6 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 public class ItemModifyRequestDTO {
 
-    @NotNull(message = "storeId 필수입니다.")
-    @Min(0)
-    private Integer storeId;
-    @NotNull(message = "itemId 필수입니다.")
-    @Min(0)
-    private Integer itemId;
 
     @NotBlank(message = "itemName은 필수입니다.")
     private String itemName;

@@ -13,12 +13,14 @@
         INSERT INTO item (
             store_id,
             item_name,
-            image_id
+            image_id,
+            created_at
         )
         VALUES (
                    #{storeId},
                    #{itemName},
-                   #{imageId}
+                   #{imageId},
+                    NOW()
                )
     </insert>
 
@@ -56,7 +58,7 @@
                 FROM request r
                 WHERE r.stock_id = s.stock_id
                 AND r.del_yn = b'0'
-                AND (r.request_status IS NULL OR r.request_status NOT IN ('취소','완료'))
+                AND r.request_status NOT IN ('CANCEL','DONE','CONFIRM')
                 )
             </if>
             <if test="filter != null and filter == 'BAD_STOCK'">
@@ -86,16 +88,32 @@
         s.stock_id as stockId,
         s.quantity  AS quantity,
         s.favorite_yn AS favoriteYn,
-        im.path        AS imageUrl
+        im.path        AS imageUrl,
+        r.request_type AS latestRequestType
         FROM item i
         JOIN stock s
         ON s.item_id = i.item_id
         AND s.store_id = i.store_id
+
         LEFT JOIN image im
             ON im.image_id = i.image_id
         AND im.is_active = b'1'
+
         LEFT JOIN safe sa
         ON sa.stock_id = s.stock_id
+
+        LEFT JOIN request r
+        ON r.request_id = (
+            SELECT r2.request_id
+            FROM request r2
+            WHERE r2.stock_id = s.stock_id
+            AND r2.del_yn = b'0'
+            AND r2.request_status NOT IN ('CANCEL','DONE','CONFIRM')
+            ORDER BY
+                r2.request_date DESC,
+                r2.created_at DESC
+            LIMIT 1
+        )
 
         <where>
             i.store_id = #{storeId}
@@ -113,7 +131,7 @@
                 FROM request r
                 WHERE r.stock_id = s.stock_id
                     AND r.del_yn = b'0'
-                    AND (r.request_status IS NULL OR r.request_status NOT IN ('취소','완료'))
+                    AND r.request_status NOT IN ('CANCEL','DONE','CONFIRM')
                 )
             </if>
             <if test="filter  != null and filter == 'BAD_STOCK'">
@@ -178,7 +196,8 @@
     <update id="updateItem">
         UPDATE item
         SET item_name = #{itemName},
-            image_id = #{imageId}
+            image_id = #{imageId},
+            updated_at = NOW()
         WHERE store_id = #{storeId}
             AND item_id = #{itemId}
             AND del_yn = b'0'

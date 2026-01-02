@@ -15,6 +15,7 @@ public class ItemController {
 
     private final ItemService itemService;
 
+    // 아이템 생성
     @PostMapping
     public ResponseEntity<ItemCreateResponseDTO> createItem(@Valid @RequestBody ItemCreateRequestDTO itemCreateRequestDTO) {
 
@@ -26,6 +27,7 @@ public class ItemController {
                 .body(new ItemCreateResponseDTO(itemId));
     }
 
+    // 아이템 조회
     @GetMapping
     public ResponseEntity<PageResponseDTO<ItemListDTO>> getItems(
             @Valid @ModelAttribute ItemPageRequestDTO dto
@@ -33,6 +35,7 @@ public class ItemController {
         return ResponseEntity.ok(itemService.getItemList(dto));
     }
 
+    // 아이템 상세 조회
     @GetMapping("/{itemId}")
     public ResponseEntity<ItemDetailDTO> getItemDetail(
             @RequestParam Integer storeId,
@@ -42,18 +45,18 @@ public class ItemController {
         return ResponseEntity.ok(dto);
     }
 
+    // 아이템 수정
     @PatchMapping("/{itemId}")
     public ResponseEntity<Void> modifyItem(
             @RequestParam Integer storeId,
             @PathVariable Integer itemId,
             @Valid @RequestBody ItemModifyRequestDTO dto
     ) {
-        dto.setStoreId(storeId);
-        dto.setItemId(itemId);
-        itemService.modifyItem( dto);
+        itemService.modifyItem(storeId,itemId,dto);
         return ResponseEntity.noContent().build();
     }
 
+    // 아이템 삭제
     @DeleteMapping("/{itemId}")
     public ResponseEntity<Void> deleteItem(
             @RequestParam Integer storeId,

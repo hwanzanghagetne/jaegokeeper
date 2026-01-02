@@ -1,5 +1,6 @@
 package com.jaegokeeper.hwan.item.dto;
 
+import com.jaegokeeper.hwan.request.enums.RequestType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -17,6 +18,8 @@ public class ItemListDTO {
 
     //이미지 일단 null
     private String imageUrl;
+
+    private RequestType latestRequestType;
 
 
 }

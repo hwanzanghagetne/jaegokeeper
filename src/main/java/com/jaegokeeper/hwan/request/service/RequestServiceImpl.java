@@ -43,7 +43,7 @@ public class RequestServiceImpl implements RequestService {
             Integer requestAmount = reqDto.getRequestAmount();
             LocalDateTime requestDate = reqDto.getRequestDate();
 
-            if (requestType == RequestType.입고요청 && requestAmount < 1) {
+            if (requestType == RequestType.ORDER && requestAmount < 1) {
                     throw new IllegalArgumentException("입고요청은 수량이 1 이상 필수입니다.");
             }
             if (requestDate == null) {
@@ -59,7 +59,7 @@ public class RequestServiceImpl implements RequestService {
             request.setRequestType(requestType);
             request.setRequestAmount(requestAmount);
             request.setRequestDate(requestDate);
-            request.setRequestStatus(RequestStatus.대기);
+            request.setRequestStatus(RequestStatus.WAIT);
 
             int inserted = requestMapper.insertRequest(request);
             if (inserted != 1) {

@@ -16,7 +16,8 @@
                             request_amount,
                             request_date,
                             request_type,
-                            request_status
+                            request_status,
+                            created_at
         )
         VALUES (
                 #{stockId},
@@ -24,7 +25,8 @@
                 #{requestAmount},
                 #{requestDate},
                 #{requestType},
-                #{requestStatus}
+                #{requestStatus},
+                NOW()
                )
     </insert>
 
@@ -89,7 +91,7 @@
             a.alba_name AS albaName
         FROM alba a
         WHERE a.store_id = #{storeId}
-        AND a.alba_status IN ('재직', '단기')
+        AND a.alba_status IN ('STAFF', 'PART')
         ORDER BY a.alba_name ASC
     </select>
 
@@ -118,7 +120,7 @@
         WHERE r.request_id = #{requestId}
         AND s.store_id = #{storeId}
         AND r.del_yn = b'0'
-        AND r.request_status = '대기'
+        AND r.request_status = 'WAIT'
     </update>
 
     <!--상태 수정-->

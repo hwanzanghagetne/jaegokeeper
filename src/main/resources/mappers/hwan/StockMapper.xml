@@ -14,7 +14,7 @@
             item_id,
             store_id,
             quantity,
-            favorite_yn
+            favorite_yn,
         )
         VALUES (
                    #{itemId},

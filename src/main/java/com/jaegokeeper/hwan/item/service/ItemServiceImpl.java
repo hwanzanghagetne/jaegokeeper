@@ -123,16 +123,15 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     @Override
-    public void modifyItem( ItemModifyRequestDTO dto) {
-        Integer stockId = stockMapper.findStockIdByStoreAndItem(dto.getStoreId(),dto.getItemId());
+    public void modifyItem( Integer storeId, Integer itemId,ItemModifyRequestDTO dto) {
+        Integer stockId = stockMapper.findStockIdByStoreAndItem(storeId, itemId);
         if (stockId == null) {
             throw new NotFoundException("재고 없음");
         }
 
         // item 수정
         int itemUpdated = itemMapper.updateItem(
-                dto.getStoreId(),
-                dto.getItemId(),
+                storeId, itemId,
                 dto.getItemName(),
                 dto.getImageId());
         if (itemUpdated != 1) {
