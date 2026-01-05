@@ -27,7 +27,8 @@ public interface ScheduleMapper {
 
     // 알바생 출/퇴근 시간 조회
     // List로 변경
-    List<ScheduleWorkInOutDto> selectWorkTime(@Param("albaId") Integer albaId, @Param("date") LocalDate date);
+    List<ScheduleWorkInOutDto> selectWorkTime(@Param("albaId") Integer albaId,
+                                              @Param("date") LocalDate date);
 
     // 출근 기록
     void insertWorkIn(ScheduleWorkInOutDto dto);

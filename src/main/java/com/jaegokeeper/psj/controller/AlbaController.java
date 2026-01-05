@@ -20,47 +20,44 @@ public class AlbaController {
         this.albaService = albaService;
     }
 
-    // 알바생 전체 조회
+    // 알바생 전체 조회 & 스토어 별로 조회하는 페이지
+    // list?storeId=1 형태로 조회
     @GetMapping("/list")
-    public ResponseEntity<List<AlbaListDto>> getAllAlbaList(@RequestParam int storeId) {
+    public ResponseEntity<List<AlbaListDto>> getAllAlbaList(
+            @RequestParam(required = false) Integer storeId) {
         List<AlbaListDto> items = albaService.getAllAlbaList(storeId);
         return  ResponseEntity.ok(items);
     }
 
     // 알바생 등록 페이지
+    // storeId & albaName & albaPhone & albaStatus & workDate & workStatus를 POST
     @PostMapping("/register")
     public ResponseEntity<AlbaRegisterDto> saveAlbaRegister(@Valid @RequestBody AlbaRegisterDto albaRegisterDto, HttpSession session) {
         Integer storeId = (Integer) session.getAttribute("storeId");
-
-        // 세션에 없을 때 테스트용
-        if (storeId == null) {
-            storeId = 1;
-        }
-
         albaRegisterDto.setStoreId(storeId);
         albaService.saveAlbaRegister(albaRegisterDto);
         return ResponseEntity.ok(albaRegisterDto);
     }
 
-
-    // 알바생 상세 페이지
-    @GetMapping("/list/{id}")
-    public ResponseEntity<AlbaDetailDto> getAlbaById(@PathVariable int id) {
-        return ResponseEntity.ok(albaService.getByIdCheck(id));
+    // 알바생 상세페이지 조회
+    // list?albaId=1 형태로 조회
+    @GetMapping("/detail/{albaId}")
+    public ResponseEntity<AlbaDetailDto> getAlbaById(@PathVariable int albaId) {
+        return ResponseEntity.ok(albaService.getAlbaById(albaId));
     }
 
     // 알바생 수정 페이지
-    @PutMapping("/list/{id}")
-    public ResponseEntity<AlbaDetailDto> updateById(@PathVariable int id, @RequestBody AlbaDetailDto albaDetailDto) {
-        albaDetailDto.setAlbaId(id);
+    @PutMapping("/detail/{albaId}")
+    public ResponseEntity<AlbaDetailDto> updateById(@PathVariable int albaId, @RequestBody AlbaDetailDto albaDetailDto) {
+        albaDetailDto.setAlbaId(albaId);
         albaService.updateAlba(albaDetailDto);
         return ResponseEntity.ok(albaDetailDto);
     }
 
     // 알바생 삭제 페이지
-    @DeleteMapping("/list/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable("id") int id) {
-        albaService.deleteAlba(id);
+    @DeleteMapping("/detail/{albaId}")
+    public ResponseEntity<Void> deleteById(@PathVariable("albaId") int albaId) {
+        albaService.deleteAlba(albaId);
         return ResponseEntity.noContent().build();
     }
 }

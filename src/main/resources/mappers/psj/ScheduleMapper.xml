@@ -44,7 +44,8 @@
         w.alba_id AS albaId,
         w.work_date AS workDate,
         w.work_in AS workIn,
-        w.work_out AS workOut
+        w.work_out AS workOut,
+        w.work_status AS workStatus
         FROM work w
         WHERE w.alba_id = #{albaId}
         AND w.work_date = #{date}
@@ -52,8 +53,8 @@
 
     <!--  출근 기록  -->
     <insert id="insertWorkIn" parameterType="com.jaegokeeper.psj.dto.ScheduleWorkInOutDto">
-        INSERT INTO work (alba_id, work_in, work_date)
-        VALUES (#{albaId}, #{workIn}, #{workDate})
+        INSERT INTO work (alba_id, work_date, work_in, work_status)
+        VALUES (#{albaId}, #{workDate}, #{workIn}, #{workStatus})
     </insert>
 
     <!--  퇴근 기록  -->

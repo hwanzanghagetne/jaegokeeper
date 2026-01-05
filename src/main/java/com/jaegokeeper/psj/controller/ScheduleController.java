@@ -26,14 +26,6 @@ public class ScheduleController {
     // 알바가 등록되면 해당 알바가 언제 근로하는지 스케줄 타임에 등록
     @PostMapping("/register")
     public ResponseEntity<ScheduleRegisterDto> saveScheduleRegister(@Valid @RequestBody ScheduleRegisterDto scheduleRegisterDto, HttpSession session) {
-//        Integer albaId = (Integer) session.getAttribute("albaId");
-//
-//        // 세션에 없을 때 테스트용
-//        if (albaId == null) {
-//            albaId = 2;
-//        }
-//
-//        scheduleRegisterDto.setAlbaId(albaId);
         scheduleService.saveScheduleRegister(scheduleRegisterDto);
         return ResponseEntity.ok(scheduleRegisterDto);
     }
@@ -46,6 +38,7 @@ public class ScheduleController {
 //    }
 
     // 특정 날짜에 근무하는 알바생들의 출퇴근 기록 조회
+    // list?date=2025-12-26 형태로 조회
     @GetMapping("/list")
     public ResponseEntity<List<ScheduleListDto>> selectScheduleListByDate(@RequestParam String date) {
         List<ScheduleListDto> scheduleList = scheduleService.getScheduleListByDate(date);
@@ -53,15 +46,15 @@ public class ScheduleController {
     }
 
     // 알바생 출/퇴근 시간 조회
+    // worktime?albaId=2&date=2025-12-29 형태로 조회
     @GetMapping("/worktime")
     public ResponseEntity<List<ScheduleWorkInOutDto>> selectWorkTime(@RequestParam int albaId, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         List<ScheduleWorkInOutDto> workTime = scheduleService.selectWorkTime(albaId, date);
         return ResponseEntity.ok(workTime);
     }
 
-
-
     // 출근 기록
+    // albaId & workStatus를 POST
     @PostMapping("/workin")
     public ResponseEntity<Void> recordWorkIn(@RequestBody ScheduleWorkInOutDto scheduleWorkInOutDto) {
         scheduleWorkInOutDto.setWorkIn(LocalDateTime.now());
@@ -71,6 +64,7 @@ public class ScheduleController {
     }
 
     // 퇴근 기록
+    // albaId를 POST
     @PostMapping("/workout")
     public ResponseEntity<Void> recordWorkOut(@RequestBody ScheduleWorkInOutDto scheduleWorkInOutDto) {
         scheduleWorkInOutDto.setWorkOut(LocalDateTime.now());  // ← workOut으로 수정!

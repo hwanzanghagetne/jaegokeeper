@@ -9,22 +9,25 @@
     <!-- 전체 알바 조회 -->
     <select id="selectAllAlba" resultType="com.jaegokeeper.psj.dto.AlbaListDto">
         SELECT
-            alba.alba_id AS albaId,
-            work.work_id AS workId,
-            work.work_status AS workStatus,
-            work.work_date AS workDate,
-            alba.alba_name AS albaName,
-            alba.alba_phone AS albaPhone,
-            alba.alba_status AS albaStatus
+        alba.alba_id AS albaId,
+        work.work_id AS workId,
+        work.work_status AS workStatus,
+        work.work_date AS workDate,
+        alba.alba_name AS albaName,
+        alba.alba_phone AS albaPhone,
+        alba.alba_status AS albaStatus
         FROM alba as alba
         LEFT JOIN work as work ON alba.alba_id = work.alba_id
-        WHERE alba.store_id = #{storeId}
+        <where>
+            <if test="storeId != null">
+                alba.store_id = #{storeId}
+            </if>
+        </where>
         ORDER BY alba.alba_id DESC
     </select>
 
     <!-- 알바생 상세 페이지(클릭 시) -->
-    <!-- 알바 조회 -->
-    <select id="selectAlba" parameterType="int" resultType="com.jaegokeeper.psj.dto.AlbaDetailDto">
+    <select id="getAlbaById" parameterType="int" resultType="com.jaegokeeper.psj.dto.AlbaDetailDto">
         SELECT alba_id AS albaId,
         store_id AS storeId,
         alba_name AS albaName,
@@ -32,6 +35,18 @@
         alba_status AS albaStatus
         FROM alba
         WHERE alba_id = #{albaId}
+    </select>
+
+
+    <!-- 알생 스토어 별로 조회하는 페이지 -->
+    <select id="getAlbaByStore" parameterType="int" resultType="com.jaegokeeper.psj.dto.AlbaDetailDto">
+        SELECT alba_id AS albaId,
+        store_id AS storeId,
+        alba_name AS albaName,
+        alba_phone AS albaPhone,
+        alba_status AS albaStatus
+        FROM alba
+        WHERE alba_id = #{storeId}
     </select>
 
 
@@ -57,8 +72,8 @@
     <!-- 알바 저장 -->
     <insert id="insertAlba" parameterType="com.jaegokeeper.psj.dto.AlbaDetailDto"
             useGeneratedKeys="true" keyProperty="albaId">
-        INSERT INTO alba (store_id, alba_name, alba_phone, alba_status)
-        VALUES (#{storeId}, #{albaName}, #{albaPhone}, #{albaStatus})
+        INSERT INTO alba (store_id, alba_name, alba_phone, alba_status, created_at)
+        VALUES (#{storeId}, #{albaName}, #{albaPhone}, #{albaStatus}, NOW())
     </insert>
     <select id="existsByStoreId" parameterType="int" resultType="boolean">
         SELECT EXISTS (
@@ -70,17 +85,21 @@
     <!-- 알바 수정 -->
     <update id="updateAlba" parameterType="com.jaegokeeper.psj.dto.AlbaDetailDto">
         UPDATE alba
-        SET
-        store_id = #{storeId},
-        alba_name = #{albaName},
-        alba_phone = #{albaPhone},
-        alba_status = #{albaStatus}
+        <set>
+            <if test="storeId != null">store_id = #{storeId},</if>
+            <if test="albaName != null">alba_name = #{albaName},</if>
+            <if test="albaPhone != null">alba_phone = #{albaPhone},</if>
+            <if test="albaStatus != null">alba_status = #{albaStatus},</if>
+            updated_at = NOW()
+        </set>
         WHERE alba_id = #{albaId}
     </update>
 
     <!-- 알바 삭제 -->
-    <delete id="deleteAlba">
-        DELETE FROM alba
+    <update id="deleteAlba">
+        UPDATE alba
+        SET is_active = 1,
+            updated_at = NOW()
         WHERE alba_id = #{albaId}
-    </delete>
+    </update>
 </mapper>
