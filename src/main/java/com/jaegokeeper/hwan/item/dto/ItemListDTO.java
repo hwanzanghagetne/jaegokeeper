@@ -13,8 +13,8 @@ public class ItemListDTO {
 
     //stock
     private Integer stockId;
-    private Integer quantity;
-    private Boolean favoriteYn;
+    private Integer stockAmount;
+    private Boolean isPinned;
 
     //이미지 일단 null
     private String imageUrl;

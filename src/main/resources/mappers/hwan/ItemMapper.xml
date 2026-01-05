@@ -26,11 +26,11 @@
 
     <update id="softDeleteItem">
         UPDATE item
-        SET del_yn = b'1',
+        SET is_active = b'0',
             updated_at = NOW()
         WHERE store_id = #{storeId}
         AND item_id = #{itemId}
-        AND del_yn = b'0'
+        AND is_active = b'1'
     </update>
 
     <select id="countItemList" resultType="int">
@@ -38,26 +38,25 @@
         FROM item i
         JOIN stock s
         ON s.item_id = i.item_id
-        AND s.store_id = i.store_id
-        LEFT JOIN safe sa
-        ON sa.stock_id = s.stock_id
+        LEFT JOIN buffer b
+        ON b.item_id = i.item_id
 
         <where>
             i.store_id = #{storeId}
-            AND i.del_yn = b'0'
+            AND i.is_active = b'1'
 
             <if test="filter != null and filter == 'FAVORITE'">
-                AND s.favorite_yn = 1
+                AND i.is_pinned = 1
             </if>
             <if test="filter != null and filter == 'LOW_STOCK'">
-                AND s.quantity &lt; sa.safe_quantity
+                AND s.stock_amount &lt; b.buffer_amount
             </if>
             <if test="filter != null and filter == 'HAS_REQUEST'">
                 AND EXISTS(
                 SELECT 1
                 FROM request r
-                WHERE r.stock_id = s.stock_id
-                AND r.del_yn = b'0'
+                WHERE r.item_id = i.item_id
+                AND r.is_active = b'1'
                 AND r.request_status NOT IN ('CANCEL','DONE','CONFIRM')
                 )
             </if>
@@ -65,10 +64,10 @@
                 AND EXISTS (
                 SELECT 1
                 FROM (
-                SELECT MAX(h.created_at) AS last_inout
-                FROM stock_history h
-                WHERE h.stock_id = s.stock_id
-                AND h.his_type IN ('IN','OUT')
+                SELECT MAX(l.created_at) AS last_inout
+                FROM log l
+                WHERE l.item_id = i.item_id
+                AND l.log_type IN ('IN','OUT')
                 ) t
                 WHERE t.last_inout &lt; DATE_SUB(NOW(), INTERVAL 1 MONTH)
                 )
@@ -85,29 +84,28 @@
         SELECT
         i.item_id   AS itemId,
         i.item_name AS itemName,
-        s.stock_id as stockId,
-        s.quantity  AS quantity,
-        s.favorite_yn AS favoriteYn,
+        s.stock_id AS stockId,
+        s.stock_amount  AS stockAmount,
+        s.is_pinned AS isPinned,
         im.path        AS imageUrl,
         r.request_type AS latestRequestType
         FROM item i
         JOIN stock s
         ON s.item_id = i.item_id
-        AND s.store_id = i.store_id
 
         LEFT JOIN image im
             ON im.image_id = i.image_id
         AND im.is_active = b'1'
 
-        LEFT JOIN safe sa
-        ON sa.stock_id = s.stock_id
+        LEFT JOIN buffer b
+        ON b.item_id = i.item_id
 
         LEFT JOIN request r
         ON r.request_id = (
             SELECT r2.request_id
             FROM request r2
-            WHERE r2.stock_id = s.stock_id
-            AND r2.del_yn = b'0'
+            WHERE r2.item_id = i.item_id
+            AND r2.is_active = b'1'
             AND r2.request_status NOT IN ('CANCEL','DONE','CONFIRM')
             ORDER BY
                 r2.request_date DESC,
@@ -117,31 +115,31 @@
 
         <where>
             i.store_id = #{storeId}
-            AND i.del_yn = b'0'
+            AND i.is_active = b'1'
 
             <if test="filter != null and filter == 'FAVORITE'">
-                AND s.favorite_yn = 1
+                AND i.is_pinned = 1
             </if>
             <if test="filter != null and filter == 'LOW_STOCK'">
-                AND s.quantity &lt; sa.safe_quantity
+                AND s.stock_amount &lt; b.buffer_amount
             </if>
             <if test="filter != null and filter == 'HAS_REQUEST'">
                 AND EXISTS(
                 SELECT 1
-                FROM request r
-                WHERE r.stock_id = s.stock_id
-                    AND r.del_yn = b'0'
-                    AND r.request_status NOT IN ('CANCEL','DONE','CONFIRM')
+                FROM request r3
+                WHERE r3.item_id = i.item_id
+                AND r3.is_active = b'1'
+                AND r3.request_status NOT IN ('CANCEL','DONE','CONFIRM')
                 )
             </if>
             <if test="filter  != null and filter == 'BAD_STOCK'">
                 AND EXISTS (
                 SELECT 1
                 FROM (
-                SELECT MAX(h.created_at) AS last_inout
-                FROM stock_history h
-                WHERE h.stock_id = s.stock_id
-                AND h.his_type IN ('IN','OUT')
+                SELECT MAX(l.created_at) AS last_inout
+                FROM log l
+                WHERE l.item_id = i.item_id
+                AND l.log_type IN ('IN','OUT')
                 ) t
                 WHERE t.last_inout &lt; DATE_SUB(NOW(), INTERVAL 1 MONTH)
                 )
@@ -163,34 +161,33 @@
             i.item_id   AS itemId,
             s.stock_id  AS stockId,
             i.item_name AS itemName,
-            s.quantity  AS quantity,
-            s.favorite_yn AS favoriteYn,
+            s.stock_amount  AS stockAmount,
+            s.is_pinned AS isPinned,
             im.path AS imageUrl,
-            sa.safe_quantity AS safeQuantity,
-            sh.his_type AS lastHisType,
-            sh.created_at AS lastHis
+            b.buffer_amount AS bufferAmount,
+            l.log_type AS lastLogType,
+            l.created_at AS lastLogAt
 
         FROM item i
         JOIN stock s
             ON s.item_id = i.item_id
-            AND s.store_id = i.store_id
 
-        LEFT JOIN safe sa
-         ON sa.stock_id = s.stock_id
+        LEFT JOIN buffer b
+         ON b.item_id = i.item_id
 
         LEFT JOIN image im
          ON im.image_id = i.image_id
         AND im.is_active = b'1'
 
-        LEFT JOIN stock_history sh
-            ON sh.history_id = (
-                SELECT MAX(h2.history_id)
-                FROM stock_history h2
-                WHERE h2.stock_id = s.stock_id
+        LEFT JOIN log l
+            ON l.log_id = (
+                SELECT MAX(l2.log_id)
+                FROM log l2
+                WHERE l2.item_id = i.item_id
                     )
         WHERE i.store_id = #{storeId}
           AND i.item_id  = #{itemId}
-          AND i.del_yn   = b'0'
+          AND i.is_active   = b'1'
     </select>
 
     <update id="updateItem">
@@ -200,7 +197,7 @@
             updated_at = NOW()
         WHERE store_id = #{storeId}
             AND item_id = #{itemId}
-            AND del_yn = b'0'
+            AND is_ative = b'1'
     </update>
 
 

@@ -13,11 +13,11 @@ public class ItemDetailDTO {
     private Integer itemId;
     private Integer stockId;
     private String itemName;
-    private Integer quantity;
-    private Boolean favoriteYn;
+    private Integer stockAmount;
+    private Boolean isPinned;
     private String imageUrl;
-    private Integer safeQuantity;
+    private Integer bufferAmount;
 
-    private String lastHisType;
-    private LocalDateTime lastUpdatedAt;
+    private String lastLogType;
+    private LocalDateTime lastLogAt;
 }
