@@ -33,8 +33,8 @@ public class AlbaController {
     // storeId & albaName & albaPhone & albaStatus & workDate & workStatus를 POST
     @PostMapping("/register")
     public ResponseEntity<AlbaRegisterDto> saveAlbaRegister(@Valid @RequestBody AlbaRegisterDto albaRegisterDto, HttpSession session) {
-        Integer storeId = (Integer) session.getAttribute("storeId");
-        albaRegisterDto.setStoreId(storeId);
+//        Integer storeId = (Integer) session.getAttribute("storeId");
+//        albaRegisterDto.setStoreId(storeId);
         albaService.saveAlbaRegister(albaRegisterDto);
         return ResponseEntity.ok(albaRegisterDto);
     }
