@@ -14,13 +14,20 @@
             store_id,
             item_name,
             image_id,
-            created_at
+            is_active,
+            is_pinned,
+            created_at,
+            updated_at
+
         )
         VALUES (
                    #{storeId},
                    #{itemName},
                    #{imageId},
-                    NOW()
+                    b'1',
+                    b'0',
+                    CURRENT_TIMESTAMP,
+                    CURRENT_TIMESTAMP
                )
     </insert>
 
@@ -38,8 +45,6 @@
         FROM item i
         JOIN stock s
         ON s.item_id = i.item_id
-        LEFT JOIN buffer b
-        ON b.item_id = i.item_id
 
         <where>
             i.store_id = #{storeId}
@@ -49,7 +54,10 @@
                 AND i.is_pinned = 1
             </if>
             <if test="filter != null and filter == 'LOW_STOCK'">
-                AND s.stock_amount &lt; b.buffer_amount
+                AND s.stock_amount &lt; (
+                SELECT b.buffer_amount
+                FROM buffer b
+                WHERE b.item_id = i.item_id
             </if>
             <if test="filter != null and filter == 'HAS_REQUEST'">
                 AND EXISTS(
@@ -61,16 +69,12 @@
                 )
             </if>
             <if test="filter != null and filter == 'BAD_STOCK'">
-                AND EXISTS (
-                SELECT 1
-                FROM (
-                SELECT MAX(l.created_at) AS last_inout
+                AND (
+                SELECT MAX(l.created_at)
                 FROM log l
                 WHERE l.item_id = i.item_id
-                AND l.log_type IN ('IN','OUT')
-                ) t
-                WHERE t.last_inout &lt; DATE_SUB(NOW(), INTERVAL 1 MONTH)
-                )
+                AND l.log_type IN('IN','OUT')
+                ) &lt; DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 MONTH)
             </if>
 
             <if test="keyword != null">
@@ -82,35 +86,28 @@
     <select id="findItemList"
             resultType="com.jaegokeeper.hwan.item.dto.ItemListDTO">
         SELECT
-        i.item_id   AS itemId,
-        i.item_name AS itemName,
-        s.stock_id AS stockId,
-        s.stock_amount  AS stockAmount,
-        s.is_pinned AS isPinned,
-        im.path        AS imageUrl,
-        r.request_type AS latestRequestType
+            i.item_id   AS itemId,
+            i.item_name AS itemName,
+            i.image_id  AS imageId,
+            i.is_pinned AS isPinned,
+            s.stock_amount AS stockAmount,
+
+            r.request_id AS latestRequestId,
+            r.request_type AS latestRequestType,
+            r.request_amount AS latestRequestAmount,
+            r.request_status AS latestRequestStatus,
+            r.created_at AS latestRequestCreatedAt
+
         FROM item i
         JOIN stock s
         ON s.item_id = i.item_id
 
-        LEFT JOIN image im
-            ON im.image_id = i.image_id
-        AND im.is_active = b'1'
-
-        LEFT JOIN buffer b
-        ON b.item_id = i.item_id
-
         LEFT JOIN request r
-        ON r.request_id = (
-            SELECT r2.request_id
+        ON r.item_id = i.item_id
+        AND r.created_at = (
+            SELECT MAX(r2.created_at)
             FROM request r2
             WHERE r2.item_id = i.item_id
-            AND r2.is_active = b'1'
-            AND r2.request_status NOT IN ('CANCEL','DONE','CONFIRM')
-            ORDER BY
-                r2.request_date DESC,
-                r2.created_at DESC
-            LIMIT 1
         )
 
         <where>
@@ -121,7 +118,11 @@
                 AND i.is_pinned = 1
             </if>
             <if test="filter != null and filter == 'LOW_STOCK'">
-                AND s.stock_amount &lt; b.buffer_amount
+                AND s.stock_amount &lt; (
+                SELECT b.buffer_amount
+                FROM buffer b
+                WHERE b.item_id = i.item_id
+                )
             </if>
             <if test="filter != null and filter == 'HAS_REQUEST'">
                 AND EXISTS(
@@ -133,16 +134,12 @@
                 )
             </if>
             <if test="filter  != null and filter == 'BAD_STOCK'">
-                AND EXISTS (
-                SELECT 1
-                FROM (
-                SELECT MAX(l.created_at) AS last_inout
+                AND (
+                SELECT MAX(l.created_at)
                 FROM log l
                 WHERE l.item_id = i.item_id
-                AND l.log_type IN ('IN','OUT')
-                ) t
-                WHERE t.last_inout &lt; DATE_SUB(NOW(), INTERVAL 1 MONTH)
-                )
+                AND l.log_type IN('IN','OUT')
+                ) &lt; DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 MONTH)
             </if>
 
             <if test="keyword != null">
@@ -159,11 +156,10 @@
 
         SELECT
             i.item_id   AS itemId,
-            s.stock_id  AS stockId,
             i.item_name AS itemName,
+            i.image_id AS imageId,
+            i.is_pinned AS isPinned,
             s.stock_amount  AS stockAmount,
-            s.is_pinned AS isPinned,
-            im.path AS imageUrl,
             b.buffer_amount AS bufferAmount,
             l.log_type AS lastLogType,
             l.created_at AS lastLogAt
@@ -175,16 +171,14 @@
         LEFT JOIN buffer b
          ON b.item_id = i.item_id
 
-        LEFT JOIN image im
-         ON im.image_id = i.image_id
-        AND im.is_active = b'1'
-
         LEFT JOIN log l
-            ON l.log_id = (
-                SELECT MAX(l2.log_id)
-                FROM log l2
-                WHERE l2.item_id = i.item_id
+            ON l.item_id = i.item_id
+        AND l.created_at = (
+            SELECT MAX(l2.created_at)
+            FROM log l2
+            WHERE l2.item_id = i.item_id
                     )
+
         WHERE i.store_id = #{storeId}
           AND i.item_id  = #{itemId}
           AND i.is_active   = b'1'
@@ -193,12 +187,21 @@
     <update id="updateItem">
         UPDATE item
         SET item_name = #{itemName},
+            is_pinned = #{isPinned},
             image_id = #{imageId},
-            updated_at = NOW()
+            updated_at = CURRENT_TIMESTAMP
         WHERE store_id = #{storeId}
             AND item_id = #{itemId}
             AND is_ative = b'1'
     </update>
+    
+    <select id="countByStoreIdAndItemId" resultType="int">
+        SELECT COUNT(*)
+        FROM item
+        WHERE item_id = #{itemId}
+        AND store_id = #{storeId}
+        AND is_active = b'1'
+    </select>
 
 
 </mapper>

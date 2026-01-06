@@ -11,25 +11,24 @@ public interface StockMapper {
     int insertStock(Stock stock);
 
     // 현재 재고수량 구하기
-    Integer findQuantityByStockId(@Param("stockId") Integer stockId);
+    Integer findStockAmountByStockId(@Param("stockId") Integer stockId);
+    Integer findStockAmountByItemId(@Param("itemId") Integer itemId);
 
     //재고수량를 업데이트
-    int updateQuantity(@Param("stockId") Integer stockId,
-                       @Param("quantity") Integer quantity,
-                       @Param("favoriteYn") Boolean favoriteYn);
+    int updateStockAmount(@Param("stockId") Integer stockId,
+                          @Param("amount") Integer amount);
 
 
     // 재고수량 업데이트(리스트에서)
-    int increaseQuantity(@Param("stockId") Integer stockId,
+    int increaseQuantity(@Param("storeId") Integer storeId,
+                         @Param("stockId") Integer stockId,
                          @Param("amount") Integer amount);
 
-    int decreaseQuantity(@Param("stockId") Integer stockId,
+    int decreaseQuantity(@Param("storeId") Integer storeId,
+                         @Param("stockId") Integer stockId,
                          @Param("amount") Integer amount);
 
     //검증용
-    Integer findStockIdByStoreAndItem(@Param("storeId") Integer storeId,
-                                      @Param("itemId") Integer itemId);
+    Integer findStockIdByStoreAndItem(@Param("itemId") Integer itemId);
 
-    int countByStockIdAndStoreId(@Param("stockId") Integer stockId,
-                                     @Param("storeId") Integer storeId);
 }

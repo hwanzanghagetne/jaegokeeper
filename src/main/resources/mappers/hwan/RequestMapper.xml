@@ -11,7 +11,7 @@
             keyProperty="requestId">
 
         INSERT INTO request(
-                            stock_id,
+                            item_id,
                             alba_id,
                             request_amount,
                             request_date,
@@ -20,13 +20,13 @@
                             created_at
         )
         VALUES (
-                #{stockId},
+                #{itemId},
                 #{albaId},
                 #{requestAmount},
                 #{requestDate},
                 #{requestType},
                 #{requestStatus},
-                NOW()
+                CURRENT_TIMESTAMP
                )
     </insert>
 
@@ -41,16 +41,14 @@
             r.request_status AS requestStatus,
             r.created_at AS createdAt
         FROM request r
-        JOIN stock s
-        ON r.stock_id = s.stock_id
         JOIN item i
-        ON s.item_id = i.item_id
+        ON r.item_id = i.item_id
         JOIN alba a
         ON r.alba_id = a.alba_id
 
         <where>
-            s.store_id = #{storeId}
-        AND r.del_yn = b'0'
+            i.store_id = #{storeId}
+        AND r.is_active = b'1'
 
         <if test="requestType != null">
             AND r.request_type = #{requestType}
@@ -66,13 +64,15 @@
         LIMIT #{size} OFFSET #{offset}
     </select>
 
-    <select id="countRequestList" resultType="long">
+    <select id="countRequestList" resultType="int">
         SELECT COUNT(*)
         FROM request r
-        JOIN stock s ON r.stock_id = s.stock_id
+        JOIN item i
+            ON r.item_id = i.item_id
+
         <where>
-            s.store_id = #{storeId}
-        AND r.del_yn = b'0'
+            i.store_id = #{storeId}
+          AND r.is_active = b'1'
 
         <if test="requestType != null">
             AND r.request_type = #{requestType}
@@ -98,41 +98,41 @@
     <!--삭제-->
     <update id="softDeleteRequest">
         UPDATE request r
-        JOIN stock s
-        ON r.stock_id = s.stock_id
-        SET r.del_yn = b'1',
-            r.updated_at = NOW()
+        JOIN item i
+        ON r.item_id = i.item_id
+        AND r.is_active = b'1'
+            SET r.is_active = b'0',
+                r.updated_at = CURRENT_TIMESTAMP
         WHERE r.request_id = #{requestId}
-        AND s.store_id = #{storeId}
-        AND r.del_yn = b'0'
+          AND i.store_id = #{storeId}
     </update>
 
     <!--수정-->
     <update id="updateRequest">
         UPDATE request r
-        JOIN stock s
-        ON r.stock_id = s.stock_id
-        SET r.request_type = #{dto.requestType},
-            r.request_amount = #{dto.requestAmount},
-            r.alba_id = #{dto.albaId},
-            r.request_date = #{dto.requestDate},
-            r.updated_at = NOW()
-        WHERE r.request_id = #{requestId}
-        AND s.store_id = #{storeId}
-        AND r.del_yn = b'0'
+        JOIN item i
+        ON r.item_id = i.item_id
+        AND r.is_active = b'1'
         AND r.request_status = 'WAIT'
+            SET r.request_type = #{dto.requestType},
+                r.request_amount = #{dto.requestAmount},
+                r.alba_id = #{dto.albaId},
+                r.request_date = #{dto.requestDate},
+                r.updated_at = CURRENT_TIMESTAMP
+        WHERE r.request_id = #{requestId}
+          AND i.store_id = #{storeId}
     </update>
 
     <!--상태 수정-->
     <update id="updateRequestStatus">
         UPDATE request r
-        JOIN stock s
-        ON r.stock_id = s.stock_id
-        SET r.request_status = #{dto.requestStatus},
-            r.updated_at = NOW()
+        JOIN item i
+        ON r.item_id = i.item_id
+        AND r.is_active = b'1'
+            SET r.request_status = #{dto.requestStatus},
+            r.updated_at = CURRENT_TIMESTAMP
         WHERE r.request_id = #{requestId}
-        AND s.store_id = #{storeId}
-        AND r.del_yn = b'0'
+          AND i.store_id = #{storeId}
     </update>
 
 </mapper>

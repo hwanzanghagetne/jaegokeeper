@@ -5,13 +5,13 @@ import com.jaegokeeper.hwan.item.dto.*;
 public interface ItemService {
 
     //아이템 생성
-    int createItem(ItemCreateRequestDTO itemCreateRequestDTO);
+    ItemCreateResponseDTO createItem(Integer storeId, ItemCreateRequestDTO itemCreateRequestDTO);
 
     //아이템 삭제
     void softDeleteItem(Integer storeId, Integer itemId);
 
     //아이템 전체조회
-    PageResponseDTO<ItemListDTO> getItemList(ItemPageRequestDTO dto);
+    PageResponseDTO<ItemListDTO> getItemList(Integer storeId,ItemPageRequestDTO dto);
 
     //아이템 상세
     ItemDetailDTO getItemDetail(Integer storeId, Integer itemId);

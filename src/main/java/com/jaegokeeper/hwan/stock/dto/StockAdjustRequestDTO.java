@@ -16,12 +16,9 @@ public class StockAdjustRequestDTO {
 
     @NotNull
     @Min(0)
-    private Integer targetQuantity;
+    private Integer targetAmount;
 
     @NotNull
     @Min(0)
-    private Integer safeQuantity;
-
-    private Boolean favoriteYn;
-
+    private Integer bufferAmount;
 }

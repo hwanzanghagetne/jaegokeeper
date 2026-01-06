@@ -37,5 +37,9 @@ public interface ItemMapper {
     int updateItem(@Param("storeId") Integer storeId,
                    @Param("itemId") Integer itemId,
                    @Param("itemName") String itemName,
+                   @Param("isPinned") Boolean isPinned,
                    @Param("imageId") Integer imageId);
+
+    int countByStoreIdAndItemId(@Param("storeId") Integer storeId,
+                                @Param("itemId") Integer itemId);
 }
