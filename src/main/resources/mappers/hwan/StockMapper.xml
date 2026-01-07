@@ -59,12 +59,10 @@
         JOIN item i
         ON i.item_id = s.item_id
         AND i.is_active = b'1'
-        AND i.store_id = #{storeId}
         SET s.stock_amount = s.stock_amount + #{amount},
             s.updated_at = CURRENT_TIMESTAMP
-        WHERE stock_id = #{stockId}
-        AND s.store_id
-
+        WHERE s.stock_id = #{stockId}
+          AND i.store_id = #{storeId}
     </update>
 
     <update id="decreaseQuantity">
@@ -72,15 +70,15 @@
         JOIN item i
         ON i.item_id = s.item_id
         AND i.is_active = b'1'
-        AND i.store_id = #{storeId}
-        SET s.stock_amount = s.stock_amount - #{amount}
+        SET s.stock_amount = s.stock_amount - #{amount},
             s.updated_at = CURRENT_TIMESTAMP
-        WHERE stock_id = #{stockId}
-        AND quantity >= #{amount}
+        WHERE s.stock_id = #{stockId}
+          AND i.store_id = #{storeId}
+          AND s.stock_amount >= #{amount}
 
     </update>
     
-    <select id="findStockIdByStoreAndItem" resultType="Integer">
+    <select id="findStockIdByItem" resultType="Integer">
         SELECT stock_id
         FROM stock s
         JOIN item i

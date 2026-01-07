@@ -50,16 +50,22 @@
             i.store_id = #{storeId}
             AND i.is_active = b'1'
 
-            <if test="filter != null and filter == 'FAVORITE'">
+            <if test="excludeZero != null and excludeZero">
+                AND s.stock_amount > 0
+            </if>
+
+            <if test="filter != null and filter.name() == 'FAVORITE'">
                 AND i.is_pinned = 1
             </if>
-            <if test="filter != null and filter == 'LOW_STOCK'">
+
+            <if test="filter != null and filter.name() == 'LOW_STOCK'">
                 AND s.stock_amount &lt; (
                 SELECT b.buffer_amount
                 FROM buffer b
                 WHERE b.item_id = i.item_id
+                )
             </if>
-            <if test="filter != null and filter == 'HAS_REQUEST'">
+            <if test="filter != null and filter.name() == 'HAS_REQUEST'">
                 AND EXISTS(
                 SELECT 1
                 FROM request r
@@ -68,7 +74,7 @@
                 AND r.request_status NOT IN ('CANCEL','DONE','CONFIRM')
                 )
             </if>
-            <if test="filter != null and filter == 'BAD_STOCK'">
+            <if test="filter != null and filter.name() == 'BAD_STOCK'">
                 AND (
                 SELECT MAX(l.created_at)
                 FROM log l
@@ -114,17 +120,21 @@
             i.store_id = #{storeId}
             AND i.is_active = b'1'
 
-            <if test="filter != null and filter == 'FAVORITE'">
+            <if test="excludeZero != null and excludeZero">
+                AND s.stock_amount > 0
+            </if>
+
+            <if test="filter != null and filter.name() == 'FAVORITE'">
                 AND i.is_pinned = 1
             </if>
-            <if test="filter != null and filter == 'LOW_STOCK'">
+            <if test="filter != null and filter.name() == 'LOW_STOCK'">
                 AND s.stock_amount &lt; (
                 SELECT b.buffer_amount
                 FROM buffer b
                 WHERE b.item_id = i.item_id
                 )
             </if>
-            <if test="filter != null and filter == 'HAS_REQUEST'">
+            <if test="filter != null and filter.name() == 'HAS_REQUEST'">
                 AND EXISTS(
                 SELECT 1
                 FROM request r3
@@ -133,7 +143,7 @@
                 AND r3.request_status NOT IN ('CANCEL','DONE','CONFIRM')
                 )
             </if>
-            <if test="filter  != null and filter == 'BAD_STOCK'">
+            <if test="filter  != null and filter.name() == 'BAD_STOCK'">
                 AND (
                 SELECT MAX(l.created_at)
                 FROM log l
@@ -192,7 +202,7 @@
             updated_at = CURRENT_TIMESTAMP
         WHERE store_id = #{storeId}
             AND item_id = #{itemId}
-            AND is_ative = b'1'
+            AND is_active = b'1'
     </update>
     
     <select id="countByStoreIdAndItemId" resultType="int">

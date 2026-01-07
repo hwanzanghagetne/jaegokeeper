@@ -27,6 +27,7 @@ public class Request {
         Request request = new Request();
         request.setItemId(itemId);
         request.setAlbaId(albaId);
+        request.setRequestType(requestType);
         request.setRequestAmount(requestAmount);
         request.setRequestDate(requestDate);
         request.setRequestStatus(RequestStatus.WAIT);

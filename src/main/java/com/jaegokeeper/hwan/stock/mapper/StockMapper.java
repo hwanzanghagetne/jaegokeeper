@@ -15,7 +15,7 @@ public interface StockMapper {
     Integer findStockAmountByItemId(@Param("itemId") Integer itemId);
 
     //재고수량를 업데이트
-    int updateStockAmount(@Param("stockId") Integer stockId,
+    int updateStockAmount(@Param("itemId") Integer itemId,
                           @Param("amount") Integer amount);
 
 
@@ -29,6 +29,6 @@ public interface StockMapper {
                          @Param("amount") Integer amount);
 
     //검증용
-    Integer findStockIdByStoreAndItem(@Param("itemId") Integer itemId);
+    Integer findStockIdByItem(@Param("itemId") Integer itemId);
 
 }

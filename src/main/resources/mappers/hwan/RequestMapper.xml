@@ -17,7 +17,8 @@
                             request_date,
                             request_type,
                             request_status,
-                            created_at
+                            created_at,
+                            updated_at
         )
         VALUES (
                 #{itemId},
@@ -26,6 +27,7 @@
                 #{requestDate},
                 #{requestType},
                 #{requestStatus},
+                CURRENT_TIMESTAMP,
                 CURRENT_TIMESTAMP
                )
     </insert>

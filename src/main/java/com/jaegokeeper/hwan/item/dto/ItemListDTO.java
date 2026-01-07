@@ -15,7 +15,6 @@ public class ItemListDTO {
     private String itemName;
 
     //stock
-    private Integer stockId;
     private Integer stockAmount;
     private Boolean isPinned;
 

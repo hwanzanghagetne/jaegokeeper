@@ -48,8 +48,8 @@ public class ItemServiceImpl implements ItemService {
         int insertedStock = stockMapper.insertStock(stock);
         if (insertedStock != 1) {throw new IllegalStateException("stock 생성 실패");}
 
-        int safeInserted = bufferMapper.insertBuffer(stock.getStockId(), 0);
-        if (safeInserted != 1) {throw new IllegalStateException("safe 생성 실패");}
+        int bufferInserted = bufferMapper.insertBuffer(item.getItemId(), 0);
+        if (bufferInserted != 1) {throw new IllegalStateException("safe 생성 실패");}
 
         return new ItemCreateResponseDTO(item.getItemId(), stock.getStockId());
     }
@@ -70,12 +70,13 @@ public class ItemServiceImpl implements ItemService {
         int pageSize = dto.getSizeValue();
         String keyword = dto.getKeywordValue();
         ItemFilter filter = dto.getFilter();
+        boolean excludeZero = dto.isExcludeZero();
 
 
         int offset = (pageNum - 1) * pageSize;
 
-        int totalElements = itemMapper.countItemList(storeId,filter,keyword);
-        List<ItemListDTO> content = itemMapper.findItemList(storeId, filter,keyword, offset, pageSize);
+        int totalElements = itemMapper.countItemList(storeId,filter,keyword,excludeZero);
+        List<ItemListDTO> content = itemMapper.findItemList(storeId, filter,keyword,excludeZero, offset, pageSize);
         int totalPages = (int) Math.ceil(((double) totalElements / pageSize));
 
         return new PageResponseDTO<>(content, pageNum, pageSize, totalElements, totalPages);
@@ -95,7 +96,7 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Override
     public void modifyItem( Integer storeId, Integer itemId,ItemModifyRequestDTO dto) {
-        Integer stockId = stockMapper.findStockIdByStoreAndItem(itemId);
+        Integer stockId = stockMapper.findStockIdByItem(itemId);
         if (stockId == null) {
             throw new NotFoundException("재고 없음");
         }

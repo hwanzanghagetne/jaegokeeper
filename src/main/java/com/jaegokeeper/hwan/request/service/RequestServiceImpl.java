@@ -10,8 +10,10 @@ import com.jaegokeeper.hwan.request.enums.RequestStatus;
 import com.jaegokeeper.hwan.request.enums.RequestType;
 import com.jaegokeeper.hwan.request.mapper.RequestMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,7 +28,6 @@ public class RequestServiceImpl implements RequestService {
     @Transactional
     @Override
     public int createRequest(Integer storeId, RequestCreateBatchRequestDTO dto) {
-
         int createdCount = 0;
         //시간 분 허용
         LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);

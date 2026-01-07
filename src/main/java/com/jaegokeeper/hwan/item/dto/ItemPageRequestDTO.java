@@ -24,7 +24,7 @@ public class ItemPageRequestDTO {
 
     private ItemFilter filter;
     private String keyword;
-
+    private Boolean excludeZero;
     //기본값 1
     public int getPageValue() {
         return page == null ? 1 : page;
@@ -34,6 +34,9 @@ public class ItemPageRequestDTO {
         return size == null ? 10 : size;
     }
 
+    public boolean isExcludeZero() {
+        return Boolean.TRUE.equals(excludeZero);
+    }
     public String getKeywordValue() {
         if (keyword == null) {
             return null;
