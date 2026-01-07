@@ -40,7 +40,7 @@ public class AlbaController {
     }
 
     // 알바생 상세페이지 조회
-    // list?albaId=1 형태로 조회
+    // detail/8 형태로 조회
     @GetMapping("/detail/{albaId}")
     public ResponseEntity<AlbaDetailDto> getAlbaById(@PathVariable int albaId) {
         return ResponseEntity.ok(albaService.getAlbaById(albaId));

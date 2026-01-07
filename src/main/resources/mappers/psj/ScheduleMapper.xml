@@ -12,6 +12,13 @@
         VALUES (#{albaId}, #{scheduleTime})
     </insert>
 
+    <!--  스케줄 수정  -->
+    <update id="updateSchedule" parameterType="com.jaegokeeper.psj.dto.ScheduleRegisterDto">
+        UPDATE schedule
+        SET schedule_time = #{scheduleTime}
+        WHERE schedule_id = #{scheduleId}
+    </update>
+
     <!--  프론트에서 전달받은 날짜를 요일로 변환  -->
     <select id="selectSchedulesByDate" resultType="com.jaegokeeper.psj.dto.ScheduleRegisterDto">
         SELECT

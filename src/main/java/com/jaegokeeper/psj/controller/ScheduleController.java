@@ -30,6 +30,21 @@ public class ScheduleController {
         return ResponseEntity.ok(scheduleRegisterDto);
     }
 
+    // 스케줄 타임 수정
+    // scheduleTime를 PUT
+    @PutMapping("/register/{scheduleId}")
+    public ResponseEntity<ScheduleRegisterDto> updateScheduleRegister(@PathVariable int scheduleId, @RequestBody ScheduleRegisterDto scheduleRegisterDto) {
+        scheduleRegisterDto.setScheduleId((scheduleId));
+        scheduleService.updateSchedule(scheduleRegisterDto);
+        return ResponseEntity.ok(scheduleRegisterDto);
+    }
+    // 스케줄 타임 삭제
+//    @DeleteMapping("/register/{scheduleId}")
+//    public ResponseEntity<Void> deleteScheduleRegister(@PathVariable ("scheduleId") int scheduleId) {
+//        scheduleService.deleteSchedule(scheduleId);
+//        return ResponseEntity.noContent().build();
+//    }
+
 //    // 프론트에서 전달받은 날짜를 요일로 변환 후 조회
 //    @GetMapping
 //    public ResponseEntity<List<ScheduleRegisterDto>> selectSchedulesByDate(@RequestParam String date) {
