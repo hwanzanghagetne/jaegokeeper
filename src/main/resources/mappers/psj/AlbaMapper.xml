@@ -38,7 +38,7 @@
     </select>
 
 
-    <!-- 알생 스토어 별로 조회하는 페이지 -->
+    <!-- 알바생 스토어 별로 조회하는 페이지 -->
     <select id="getAlbaByStore" parameterType="int" resultType="com.jaegokeeper.psj.dto.AlbaDetailDto">
         SELECT alba_id AS albaId,
         store_id AS storeId,
