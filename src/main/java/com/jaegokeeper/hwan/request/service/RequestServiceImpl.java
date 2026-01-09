@@ -10,10 +10,8 @@ import com.jaegokeeper.hwan.request.enums.RequestStatus;
 import com.jaegokeeper.hwan.request.enums.RequestType;
 import com.jaegokeeper.hwan.request.mapper.RequestMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,8 +27,6 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public int createRequest(Integer storeId, RequestCreateBatchRequestDTO dto) {
         int createdCount = 0;
-        //시간 분 허용
-        LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
 
         for (RequestCreateRequestDTO reqDto : dto.getRequests()) {
 
@@ -46,12 +42,6 @@ public class RequestServiceImpl implements RequestService {
 
             if (requestType == RequestType.ORDER && requestAmount < 1) {
                     throw new IllegalArgumentException("입고요청은 수량이 1 이상 필수입니다.");
-            }
-            if (requestDate == null) {
-                requestDate = now;
-            }
-            if (requestDate.isBefore(now)) {
-                throw new IllegalArgumentException("요청 날짜는 과거로 선택할 수 없습니다.");
             }
 
             Request request = Request.create(itemId, reqDto.getAlbaId(), requestType, requestAmount, requestDate);
@@ -85,8 +75,7 @@ public class RequestServiceImpl implements RequestService {
     // 임시 요청용 알바 리스트
     @Override
     public List<AlbaOptionDTO> findAlbaOptionsForRequest(Integer storeId) {
-        List<AlbaOptionDTO> albaOptionsForRequest = requestMapper.findAlbaOptionsForRequest(storeId);
-        return albaOptionsForRequest;
+        return requestMapper.findAlbaOptionsForRequest(storeId);
     }
 
 

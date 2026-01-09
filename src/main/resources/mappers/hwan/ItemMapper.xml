@@ -34,7 +34,7 @@
     <update id="softDeleteItem">
         UPDATE item
         SET is_active = b'0',
-            updated_at = NOW()
+            updated_at = CURRENT_TIMESTAMP
         WHERE store_id = #{storeId}
         AND item_id = #{itemId}
         AND is_active = b'1'
@@ -80,7 +80,7 @@
                 FROM log l
                 WHERE l.item_id = i.item_id
                 AND l.log_type IN('IN','OUT')
-                ) &lt; DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 MONTH)
+                ) &lt; DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 3 MONTH)
             </if>
 
             <if test="keyword != null">
@@ -149,7 +149,7 @@
                 FROM log l
                 WHERE l.item_id = i.item_id
                 AND l.log_type IN('IN','OUT')
-                ) &lt; DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 MONTH)
+                ) &lt; DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 3 MONTH)
             </if>
 
             <if test="keyword != null">
