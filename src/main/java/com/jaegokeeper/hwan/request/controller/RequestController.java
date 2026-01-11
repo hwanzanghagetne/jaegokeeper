@@ -29,11 +29,10 @@ public class RequestController {
 
     //요청 생성
     @PostMapping
-    public ResponseEntity<?> createRequests(
+    public ResponseEntity<Integer> createRequests(
             @PathVariable Integer storeId,
             @Valid @RequestBody RequestCreateBatchRequestDTO dto
     ) {
-
         int createdCount = requestService.createRequest(storeId, dto);
         return ResponseEntity.status(201).body(createdCount);
     }

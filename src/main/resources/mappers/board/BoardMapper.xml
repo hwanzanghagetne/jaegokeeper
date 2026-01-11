@@ -22,17 +22,18 @@
     </select>
 
     <!--  상세 페이지  -->
-    <select id="detailBoard" parameterType="int" resultType="com.jaegokeeper.board.dto.BoardListDto">
-        SELECT board_id AS boardId,
-        board_type AS boardType,
-        title AS title,
-        content AS content,
-        writer AS writer,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+    <select id="detailBoard" resultType="com.jaegokeeper.board.dto.BoardDetailResponseDTO">
+        SELECT
+            board_id AS boardId,
+            title AS title,
+            content AS content,
+            writer AS writer,
+            updated_at AS updatedAt
+            image_id AS imageId
         FROM board
         WHERE board_id = #{boardId}
-        AND is_active = true
+          AND store_id = #{storeId}
+          AND is_active = b'1'
     </select>
 
     <!--  등록 페이지  -->

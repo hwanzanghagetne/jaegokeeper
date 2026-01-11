@@ -1,8 +1,7 @@
 package com.jaegokeeper.board.mapper;
 
-import com.jaegokeeper.board.dto.BoardCreateRequestDTO;
+import com.jaegokeeper.board.dto.BoardDetailResponseDTO;
 import com.jaegokeeper.board.dto.BoardInsertDTO;
-import com.jaegokeeper.board.dto.BoardListDto;
 import com.jaegokeeper.board.dto.BoardUpdateDTO;
 import com.jaegokeeper.board.enums.BoardType;
 import org.apache.ibatis.annotations.Mapper;
@@ -19,7 +18,8 @@ public interface BoardMapper {
 
 
     // 상세 페이지
-    BoardListDto detailBoard(@Param("boardId") int boardId);
+    BoardDetailResponseDTO getBoardDetail(@Param("storeId") Integer storeId,
+                                          @Param("boardId") Integer boardId);
 
     // 등록 페이지
     int insertBoard(BoardInsertDTO dto);

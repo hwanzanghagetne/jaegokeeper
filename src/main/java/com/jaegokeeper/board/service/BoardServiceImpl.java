@@ -1,9 +1,6 @@
 package com.jaegokeeper.board.service;
 
-import com.jaegokeeper.board.dto.BoardCreateRequestDTO;
-import com.jaegokeeper.board.dto.BoardInsertDTO;
-import com.jaegokeeper.board.dto.BoardUpdateDTO;
-import com.jaegokeeper.board.dto.BoardUpdateRequestDTO;
+import com.jaegokeeper.board.dto.*;
 import com.jaegokeeper.board.enums.BoardType;
 import com.jaegokeeper.board.mapper.BoardMapper;
 import com.jaegokeeper.hwan.alba.mapper.AlbaMapper;
@@ -17,6 +14,15 @@ public class BoardServiceImpl implements BoardService{
 
     private final BoardMapper boardMapper;
     private final AlbaMapper albaMapper;
+
+    @Override
+    public BoardDetailResponseDTO getBoardDetail(Integer storeId, Integer boardId) {
+        BoardDetailResponseDTO dto = boardMapper.getBoardDetail(storeId, boardId);
+        if (dto == null) {
+            throw new NotFoundException("존재하지 않는 게시글입니다.");
+        }
+        return dto;
+    }
 
     // 생성
     @Override

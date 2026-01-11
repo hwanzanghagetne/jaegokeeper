@@ -1,6 +1,7 @@
 package com.jaegokeeper.board.controller;
 
 import com.jaegokeeper.board.dto.BoardCreateRequestDTO;
+import com.jaegokeeper.board.dto.BoardDetailResponseDTO;
 import com.jaegokeeper.board.dto.BoardUpdateRequestDTO;
 import com.jaegokeeper.board.enums.BoardType;
 import com.jaegokeeper.board.service.BoardService;
@@ -22,7 +23,13 @@ public class BoardController {
 
     // 상세 페이지
     // GET /boards/{boardId}
-
+    @GetMapping("/{boardId}")
+    public ResponseEntity<BoardDetailResponseDTO> getBoardDetail(
+            @PathVariable Integer storeId,
+            @PathVariable Integer boardId
+    ) {
+        return ResponseEntity.ok(boardService.getBoardDetail(storeId, boardId));
+    }
     // 등록 페이지
     // POST /boards?type=NOTICE (또는 FREE, ANONYMOUS)
     @PostMapping
@@ -51,7 +58,7 @@ public class BoardController {
     // 삭제 페이지
     // DELETE /boards/{boardId}
     @DeleteMapping("/{boardId}")
-    public ResponseEntity<void> deleteBoard(
+    public ResponseEntity<Void> deleteBoard(
             @PathVariable Integer storeId,
             @PathVariable Integer boardId
     ) {

@@ -85,8 +85,7 @@ public class ItemServiceImpl implements ItemService {
     //아이템 상세 조회
     @Override
     public ItemDetailDTO getItemDetail(Integer storeId, Integer itemId) {
-
-        ItemDetailDTO dto = itemMapper.findItemDetail(storeId, itemId);
+        ItemDetailDTO dto = itemMapper.getItemDetail(storeId, itemId);
         if (dto == null) {
             throw new NotFoundException("존재하지 않는 아이템입니다.");
         }

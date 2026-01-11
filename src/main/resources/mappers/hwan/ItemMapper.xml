@@ -161,9 +161,7 @@
         LIMIT #{size} OFFSET #{offset}
     </select>
 
-    <select id="findItemDetail"
-            resultType="com.jaegokeeper.hwan.item.dto.ItemDetailDTO">
-
+    <select id="findItemDetail" resultType="com.jaegokeeper.hwan.item.dto.ItemDetailDTO">
         SELECT
             i.item_id   AS itemId,
             i.item_name AS itemName,

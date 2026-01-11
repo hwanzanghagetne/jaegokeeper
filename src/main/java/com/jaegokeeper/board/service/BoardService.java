@@ -1,6 +1,7 @@
 package com.jaegokeeper.board.service;
 
 import com.jaegokeeper.board.dto.BoardCreateRequestDTO;
+import com.jaegokeeper.board.dto.BoardDetailResponseDTO;
 import com.jaegokeeper.board.dto.BoardUpdateRequestDTO;
 import com.jaegokeeper.board.enums.BoardType;
 
@@ -10,7 +11,7 @@ public interface BoardService {
 
 
     // 상세 페이지
-
+    BoardDetailResponseDTO getBoardDetail(Integer storeId, Integer boardId);
     // 등록 페이지
     int createBoard(Integer storeId, BoardType boardType,BoardCreateRequestDTO dto);
 
