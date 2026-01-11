@@ -12,7 +12,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/requests")
+@RequestMapping("/stores/{storeId}/requests")
 @RequiredArgsConstructor
 public class RequestController {
 
@@ -21,17 +21,16 @@ public class RequestController {
     // 요청 리스트
     @GetMapping
     public ResponseEntity<PageResponseDTO<RequestListDTO>> getRequests(
+            @PathVariable Integer storeId,
             @Valid @ModelAttribute RequestPageRequestDTO dto
     ) {
-        return ResponseEntity.ok(
-                requestService.getRequestList(dto)
-        );
+        return ResponseEntity.ok(requestService.getRequestList(storeId,dto));
     }
 
     //요청 생성
     @PostMapping
     public ResponseEntity<?> createRequests(
-            @RequestParam Integer storeId,
+            @PathVariable Integer storeId,
             @Valid @RequestBody RequestCreateBatchRequestDTO dto
     ) {
 
@@ -41,33 +40,34 @@ public class RequestController {
 
     //요청 등록시 알바 목록
     @GetMapping("/albas")
-    public ResponseEntity<List<AlbaOptionDTO>> getAlbaOptions(@RequestParam Integer storeId) {
-        List<AlbaOptionDTO> albaOptionsForRequest = requestService.findAlbaOptionsForRequest(storeId);
-        return ResponseEntity.ok(albaOptionsForRequest);
+    public ResponseEntity<List<AlbaOptionDTO>> getAlbaOptions(
+            @PathVariable Integer storeId) {
+        return ResponseEntity.ok(requestService.findAlbaOptionsForRequest(storeId));
     }
 
     //삭제
     @DeleteMapping("/{requestId}")
-    public ResponseEntity<Void> deleteRequest(@RequestParam Integer storeId,
-                                              @PathVariable Integer requestId) {
-        requestService.deleteRequest(storeId, requestId);
+    public ResponseEntity<Void> deleteRequest(
+            @PathVariable Integer storeId,
+            @PathVariable Integer requestId)
+    {
+        requestService.softDeleteRequest(storeId, requestId);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{requestId}")
     public ResponseEntity<Void> updateRequest(
-            @RequestParam Integer storeId,
+            @PathVariable Integer storeId,
             @PathVariable Integer requestId,
             @Valid @RequestBody RequestUpdateRequestDTO dto
     ) {
-
         requestService.updateRequest(storeId, requestId, dto);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{requestId}/status")
     public ResponseEntity<Void> updateRequestStatus(
-            @RequestParam Integer storeId,
+            @PathVariable Integer storeId,
             @PathVariable Integer requestId,
             @Valid @RequestBody RequestStatusUpdateRequestDTO dto
 

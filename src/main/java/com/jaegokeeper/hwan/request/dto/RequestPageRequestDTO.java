@@ -15,10 +15,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class RequestPageRequestDTO {
-    @NotNull(message = "storeId 필수입니다.")
-    @Min(1)
-    private Integer storeId;
-
     @Min(value = 1,message = "page 1 이상입니다.")
     private Integer page;
 

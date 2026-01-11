@@ -13,22 +13,31 @@
         INSERT INTO item (
             store_id,
             item_name,
-            image_id
+            image_id,
+            is_active,
+            is_pinned,
+            created_at,
+            updated_at
+
         )
         VALUES (
                    #{storeId},
                    #{itemName},
-                   #{imageId}
+                   #{imageId},
+                    b'1',
+                    b'0',
+                    CURRENT_TIMESTAMP,
+                    CURRENT_TIMESTAMP
                )
     </insert>
 
     <update id="softDeleteItem">
         UPDATE item
-        SET del_yn = b'1',
-            updated_at = NOW()
+        SET is_active = b'0',
+            updated_at = CURRENT_TIMESTAMP
         WHERE store_id = #{storeId}
         AND item_id = #{itemId}
-        AND del_yn = b'0'
+        AND is_active = b'1'
     </update>
 
     <select id="countItemList" resultType="int">
@@ -36,40 +45,42 @@
         FROM item i
         JOIN stock s
         ON s.item_id = i.item_id
-        AND s.store_id = i.store_id
-        LEFT JOIN safe sa
-        ON sa.stock_id = s.stock_id
 
         <where>
             i.store_id = #{storeId}
-            AND i.del_yn = b'0'
+            AND i.is_active = b'1'
 
-            <if test="filter != null and filter == 'FAVORITE'">
-                AND s.favorite_yn = 1
+            <if test="excludeZero != null and excludeZero">
+                AND s.stock_amount > 0
             </if>
-            <if test="filter != null and filter == 'LOW_STOCK'">
-                AND s.quantity &lt; sa.safe_quantity
+
+            <if test="filter != null and filter.name() == 'FAVORITE'">
+                AND i.is_pinned = 1
             </if>
-            <if test="filter != null and filter == 'HAS_REQUEST'">
+
+            <if test="filter != null and filter.name() == 'LOW_STOCK'">
+                AND s.stock_amount &lt; (
+                SELECT b.buffer_amount
+                FROM buffer b
+                WHERE b.item_id = i.item_id
+                )
+            </if>
+            <if test="filter != null and filter.name() == 'HAS_REQUEST'">
                 AND EXISTS(
                 SELECT 1
                 FROM request r
-                WHERE r.stock_id = s.stock_id
-                AND r.del_yn = b'0'
-                AND (r.request_status IS NULL OR r.request_status NOT IN ('취소','완료'))
+                WHERE r.item_id = i.item_id
+                AND r.is_active = b'1'
+                AND r.request_status NOT IN ('CANCEL','DONE','CONFIRM')
                 )
             </if>
-            <if test="filter != null and filter == 'BAD_STOCK'">
-                AND EXISTS (
-                SELECT 1
-                FROM (
-                SELECT MAX(h.created_at) AS last_inout
-                FROM stock_history h
-                WHERE h.stock_id = s.stock_id
-                AND h.his_type IN ('IN','OUT')
-                ) t
-                WHERE t.last_inout &lt; DATE_SUB(NOW(), INTERVAL 1 MONTH)
-                )
+            <if test="filter != null and filter.name() == 'BAD_STOCK'">
+                AND (
+                SELECT MAX(l.created_at)
+                FROM log l
+                WHERE l.item_id = i.item_id
+                AND l.log_type IN('IN','OUT')
+                ) &lt; DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 3 MONTH)
             </if>
 
             <if test="keyword != null">
@@ -81,52 +92,64 @@
     <select id="findItemList"
             resultType="com.jaegokeeper.hwan.item.dto.ItemListDTO">
         SELECT
-        i.item_id   AS itemId,
-        i.item_name AS itemName,
-        s.stock_id as stockId,
-        s.quantity  AS quantity,
-        s.favorite_yn AS favoriteYn,
-        im.path        AS imageUrl
+            i.item_id   AS itemId,
+            i.item_name AS itemName,
+            i.image_id  AS imageId,
+            i.is_pinned AS isPinned,
+            s.stock_amount AS stockAmount,
+
+            r.request_id AS latestRequestId,
+            r.request_type AS latestRequestType,
+            r.request_amount AS latestRequestAmount,
+            r.request_status AS latestRequestStatus,
+            r.created_at AS latestRequestCreatedAt
+
         FROM item i
         JOIN stock s
         ON s.item_id = i.item_id
-        AND s.store_id = i.store_id
-        LEFT JOIN image im
-            ON im.image_id = i.image_id
-        AND im.is_active = b'1'
-        LEFT JOIN safe sa
-        ON sa.stock_id = s.stock_id
+
+        LEFT JOIN request r
+        ON r.item_id = i.item_id
+        AND r.created_at = (
+            SELECT MAX(r2.created_at)
+            FROM request r2
+            WHERE r2.item_id = i.item_id
+        )
 
         <where>
             i.store_id = #{storeId}
-            AND i.del_yn = b'0'
+            AND i.is_active = b'1'
 
-            <if test="filter != null and filter == 'FAVORITE'">
-                AND s.favorite_yn = 1
+            <if test="excludeZero != null and excludeZero">
+                AND s.stock_amount > 0
             </if>
-            <if test="filter != null and filter == 'LOW_STOCK'">
-                AND s.quantity &lt; sa.safe_quantity
+
+            <if test="filter != null and filter.name() == 'FAVORITE'">
+                AND i.is_pinned = 1
             </if>
-            <if test="filter != null and filter == 'HAS_REQUEST'">
+            <if test="filter != null and filter.name() == 'LOW_STOCK'">
+                AND s.stock_amount &lt; (
+                SELECT b.buffer_amount
+                FROM buffer b
+                WHERE b.item_id = i.item_id
+                )
+            </if>
+            <if test="filter != null and filter.name() == 'HAS_REQUEST'">
                 AND EXISTS(
                 SELECT 1
-                FROM request r
-                WHERE r.stock_id = s.stock_id
-                    AND r.del_yn = b'0'
-                    AND (r.request_status IS NULL OR r.request_status NOT IN ('취소','완료'))
+                FROM request r3
+                WHERE r3.item_id = i.item_id
+                AND r3.is_active = b'1'
+                AND r3.request_status NOT IN ('CANCEL','DONE','CONFIRM')
                 )
             </if>
-            <if test="filter  != null and filter == 'BAD_STOCK'">
-                AND EXISTS (
-                SELECT 1
-                FROM (
-                SELECT MAX(h.created_at) AS last_inout
-                FROM stock_history h
-                WHERE h.stock_id = s.stock_id
-                AND h.his_type IN ('IN','OUT')
-                ) t
-                WHERE t.last_inout &lt; DATE_SUB(NOW(), INTERVAL 1 MONTH)
-                )
+            <if test="filter  != null and filter.name() == 'BAD_STOCK'">
+                AND (
+                SELECT MAX(l.created_at)
+                FROM log l
+                WHERE l.item_id = i.item_id
+                AND l.log_type IN('IN','OUT')
+                ) &lt; DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 3 MONTH)
             </if>
 
             <if test="keyword != null">
@@ -143,46 +166,52 @@
 
         SELECT
             i.item_id   AS itemId,
-            s.stock_id  AS stockId,
             i.item_name AS itemName,
-            s.quantity  AS quantity,
-            s.favorite_yn AS favoriteYn,
-            im.path AS imageUrl,
-            sa.safe_quantity AS safeQuantity,
-            sh.his_type AS lastHisType,
-            sh.created_at AS lastHis
+            i.image_id AS imageId,
+            i.is_pinned AS isPinned,
+            s.stock_amount  AS stockAmount,
+            b.buffer_amount AS bufferAmount,
+            l.log_type AS lastLogType,
+            l.created_at AS lastLogAt
 
         FROM item i
         JOIN stock s
             ON s.item_id = i.item_id
-            AND s.store_id = i.store_id
 
-        LEFT JOIN safe sa
-         ON sa.stock_id = s.stock_id
+        LEFT JOIN buffer b
+         ON b.item_id = i.item_id
 
-        LEFT JOIN image im
-         ON im.image_id = i.image_id
-        AND im.is_active = b'1'
-
-        LEFT JOIN stock_history sh
-            ON sh.history_id = (
-                SELECT MAX(h2.history_id)
-                FROM stock_history h2
-                WHERE h2.stock_id = s.stock_id
+        LEFT JOIN log l
+            ON l.item_id = i.item_id
+        AND l.created_at = (
+            SELECT MAX(l2.created_at)
+            FROM log l2
+            WHERE l2.item_id = i.item_id
                     )
+
         WHERE i.store_id = #{storeId}
           AND i.item_id  = #{itemId}
-          AND i.del_yn   = b'0'
+          AND i.is_active   = b'1'
     </select>
 
     <update id="updateItem">
         UPDATE item
         SET item_name = #{itemName},
-            image_id = #{imageId}
+            is_pinned = #{isPinned},
+            image_id = #{imageId},
+            updated_at = CURRENT_TIMESTAMP
         WHERE store_id = #{storeId}
             AND item_id = #{itemId}
-            AND del_yn = b'0'
+            AND is_active = b'1'
     </update>
+    
+    <select id="countByStoreIdAndItemId" resultType="int">
+        SELECT COUNT(*)
+        FROM item
+        WHERE item_id = #{itemId}
+        AND store_id = #{storeId}
+        AND is_active = b'1'
+    </select>
 
 
 </mapper>

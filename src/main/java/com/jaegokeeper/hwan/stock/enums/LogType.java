@@ -1,6 +1,6 @@
 package com.jaegokeeper.hwan.stock.enums;
 
-public enum StockHistoryType  {
+public enum LogType {
     IN,
     OUT,
     ADJUST

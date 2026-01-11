@@ -17,6 +17,10 @@
             <beans:bean class="org.springframework.http.converter.StringHttpMessageConverter">
                 <beans:constructor-arg value="UTF-8"/>
             </beans:bean>
+    <!--json 날짜 포맷-->
+            <beans:bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                <beans:property name="objectMapper" ref="objectMapper"/>
+            </beans:bean>
         </message-converters>
     </annotation-driven>
 
@@ -28,12 +32,24 @@
     <resources mapping="/webjars/**" location="classpath:/META-INF/resources/webjars/" />
 
     <!-- 컴포넌트 스캔 -->
-    <context:component-scan base-package="com.jaegokeeper" />
+<!--    <context:component-scan base-package="com.jaegokeeper" />-->
+
+    <!-- 컴포넌트 스캔: Controller/RestController만 -->
+    <context:component-scan base-package="com.jaegokeeper" use-default-filters="false">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+        <context:include-filter type="annotation" expression="org.springframework.web.bind.annotation.RestController"/>
+    </context:component-scan>
 
     <!-- JSP ViewResolver 설정 -->
     <beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <beans:property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />
         <beans:property name="prefix" value="/WEB-INF/views/" />
         <beans:property name="suffix" value=".jsp" />
+    </beans:bean>
+
+    <!-- servlet multipartResolver 설정 -->
+    <beans:bean id="multipartResolver"
+          class="org.springframework.web.multipart.support.StandardServletMultipartResolver">
     </beans:bean>
 
 </beans:beans>
