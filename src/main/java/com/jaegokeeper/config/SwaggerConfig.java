@@ -19,7 +19,7 @@ public class SwaggerConfig {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.jaegokeeper.controller"))
+                .apis(RequestHandlerSelectors.basePackage("com.jaegokeeper"))
                 .paths(PathSelectors.any())
                 .build();
     }

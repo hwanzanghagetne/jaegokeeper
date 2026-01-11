@@ -1,4 +1,4 @@
-package com.jaegokeeper.psj.dto;
+package com.jaegokeeper.board.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
@@ -12,16 +12,20 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ScheduleListDto {
-    private Integer albaId;
+public class BoardDto {
+    private Integer boardId;
 
-    private Integer workId;
+    private String boardType;
 
-    private Integer scheduleId;
+    private String title;
+
+    private String content;
+
+    private String writer;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime workIn;
+    private LocalDateTime createdAt;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime workOut;
+    private LocalDateTime updatedAt;
 }
