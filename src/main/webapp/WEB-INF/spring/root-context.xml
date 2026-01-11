@@ -53,7 +53,14 @@
         <property name="basePackage" value="com.jaegokeeper.psj.mapper"/>
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
     </bean>
+  
+    <!-- ddan 패키지 img Mapper 스캔 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.jaegokeeper.ddan.img.mapper"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
 
+  
     <!-- Transaction Manager -->
     <bean id="transactionManager"
           class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
@@ -62,6 +69,7 @@
 
     <!-- Enable @Transactional -->
     <tx:annotation-driven transaction-manager="transactionManager"/>
+  
   
     <!-- board 패키지 Mapper 스캔 -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">

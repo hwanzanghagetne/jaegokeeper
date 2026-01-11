@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jaegokeeper.ddan.img.mapper.ImgMapper">
+
+    <resultMap id="ImgInfoResultMap" type="com.jaegokeeper.ddan.img.dto.ImgInfoDTO">
+        <result property="imageId"   column="image_id"/>
+        <result property="imagePath" column="image_path"/>
+        <result property="originName" column="origin_name"/>
+    </resultMap>
+
+
+    <insert id="insertImgInfo"
+            parameterType="com.jaegokeeper.ddan.img.dto.ImgInfoDTO"
+            useGeneratedKeys="true"
+            keyProperty="imageId"
+    >
+        INSERT INTO image (image_path, origin_name)
+        VALUES (#{imagePath}, #{originName})
+    </insert>
+    
+    <select id="findImgById"
+            parameterType="int"
+            resultMap="ImgInfoResultMap"
+    >
+        SELECT *
+        FROM image
+        WHERE image_id = #{imageId}
+    </select>
+
+</mapper>
