@@ -12,4 +12,13 @@
         WHERE store_id = #{storeId}
     </select>
 
+    <!--  store 정보 수정  -->
+    <update id="updateStore" parameterType="com.jaegokeeper.psj.dto.StoreDto">
+        UPDATE store
+        SET store_Name = #{storeName},
+            store_add1 = #{storeAdd1},
+            store_add2 = #{storeAdd2},
+            store_tel = #{storeTel}
+        WHERE store_id = #{storeId}
+    </update>
 </mapper>
