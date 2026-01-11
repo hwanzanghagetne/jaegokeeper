@@ -31,4 +31,6 @@
         WHERE a.alba_id = #{albaId}
         AND is_active = b'1'
     </select>
+
+
 </mapper>

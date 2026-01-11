@@ -50,6 +50,12 @@ public class BoardController {
 
     // 삭제 페이지
     // DELETE /boards/{boardId}
-
-
+    @DeleteMapping("/{boardId}")
+    public ResponseEntity<void> deleteBoard(
+            @PathVariable Integer storeId,
+            @PathVariable Integer boardId
+    ) {
+        boardService.softDeleteItem(storeId, boardId);
+        return ResponseEntity.noContent().build();
+    }
 }

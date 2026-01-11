@@ -29,7 +29,8 @@ public interface BoardMapper {
 
     // 삭제 페이지
 
-    int deleteBoard(@Param("boardId") int boardId);
+    int deleteBoard(@Param("storeId") Integer storeId,
+                    @Param("boardId") Integer boardId);
 
     // 게시글이 해당 스토어 소속인지 검증
     int countActiveByStoreIdAndBoardId(@Param("storeId") Integer storeId,

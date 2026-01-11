@@ -18,6 +18,7 @@ public class BoardServiceImpl implements BoardService{
     private final BoardMapper boardMapper;
     private final AlbaMapper albaMapper;
 
+    // 생성
     @Override
     public int createBoard(Integer storeId, BoardType boardType, BoardCreateRequestDTO dto) {
 
@@ -43,8 +44,9 @@ public class BoardServiceImpl implements BoardService{
 
     }
 
+    // 수정
     @Override
-    public int updateBoard(Integer storeId, Integer boardId, BoardUpdateRequestDTO dto) {
+    public void updateBoard(Integer storeId, Integer boardId, BoardUpdateRequestDTO dto) {
         int exists = boardMapper.countActiveByStoreIdAndBoardId(storeId, boardId);
         if (exists != 1) {
             throw new NotFoundException("해당 게시글이 없습니다.");
@@ -70,7 +72,21 @@ public class BoardServiceImpl implements BoardService{
         if (updatedBoard != 1) {
             throw new IllegalStateException("게시글 수정 실패");
         }
-        return updatedBoard;
-
     }
+
+    // 삭제
+    @Override
+    public void softDeleteItem(Integer storeId, Integer boardId) {
+        int exists = boardMapper.countActiveByStoreIdAndBoardId(storeId, boardId);
+        if (exists != 1) {
+            throw new NotFoundException("해당 게시글이 없습니다.");
+        }
+
+        int deletedBoard = boardMapper.deleteBoard(storeId, boardId);
+        if (deletedBoard != 1) {
+            throw new IllegalStateException("삭제 실패");
+        }
+    }
+
+
 }
