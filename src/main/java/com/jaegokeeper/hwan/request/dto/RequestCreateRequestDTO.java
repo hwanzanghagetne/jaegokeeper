@@ -14,9 +14,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class RequestCreateRequestDTO {
 
-    @NotNull(message = "stockId 필수입니다.")
+    @NotNull(message = "itemId 필수입니다.")
     @Min(1)
-    private Integer stockId;
+    private Integer itemId;
 
     //이거 맞나? storeId를 기준으로 근무자 리스트를 보내줘야한다.
     @NotNull(message = "albaId 필수입니다.")
@@ -30,6 +30,5 @@ public class RequestCreateRequestDTO {
     @Min(value = 0,message = "requestAmount는 0 이상입니다.")
     private Integer requestAmount;
 
-    @NotNull(message = "requestDate 필수입니다.")
     private LocalDateTime requestDate;
 }

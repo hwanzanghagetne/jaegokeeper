@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/api/stocks")
+@RequestMapping("/stores/{storeId}/stocks")
 @RequiredArgsConstructor
 public class StockController {
 
@@ -17,16 +17,22 @@ public class StockController {
 
 
     @PostMapping("/{stockId}/in")
-    public ResponseEntity<Void> inStock(@PathVariable Integer stockId,
-                                           @Valid @RequestBody StockInOutRequestDTO dto) {
-        stockService.inStock(stockId,dto);
+    public ResponseEntity<Void> inStock(
+            @PathVariable Integer storeId,
+            @PathVariable Integer stockId,
+            @Valid @RequestBody StockInOutRequestDTO dto)
+    {
+        stockService.inStock(storeId,stockId, dto);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{stockId}/out")
-    public ResponseEntity<Void> outStock(@PathVariable Integer stockId,
-                                        @Valid @RequestBody StockInOutRequestDTO dto) {
-        stockService.outStock(stockId,dto);
+    public ResponseEntity<Void> outStock(
+            @PathVariable Integer storeId,
+            @PathVariable Integer stockId,
+            @Valid @RequestBody StockInOutRequestDTO dto)
+    {
+        stockService.outStock(storeId,stockId, dto);
         return ResponseEntity.noContent().build();
     }
 }

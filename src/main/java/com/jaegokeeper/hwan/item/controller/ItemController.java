@@ -9,54 +9,54 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/api/items")
+@RequestMapping("/stores/{storeId}/items")
 @RequiredArgsConstructor
 public class ItemController {
 
     private final ItemService itemService;
 
+    // 아이템 생성
     @PostMapping
-    public ResponseEntity<ItemCreateResponseDTO> createItem(@Valid @RequestBody ItemCreateRequestDTO itemCreateRequestDTO) {
+    public ResponseEntity<ItemCreateResponseDTO> createItem(
+            @PathVariable Integer storeId,
+            @Valid @RequestBody ItemCreateRequestDTO dto) {
 
-
-        Integer itemId = itemService.createItem(itemCreateRequestDTO);
-
-        return ResponseEntity
-                .status(201)
-                .body(new ItemCreateResponseDTO(itemId));
+        return ResponseEntity.ok(itemService.createItem(storeId, dto));
     }
 
+    // 아이템 조회
     @GetMapping
     public ResponseEntity<PageResponseDTO<ItemListDTO>> getItems(
+            @PathVariable Integer storeId,
             @Valid @ModelAttribute ItemPageRequestDTO dto
     ) {
-        return ResponseEntity.ok(itemService.getItemList(dto));
+        return ResponseEntity.ok(itemService.getItemList(storeId, dto));
     }
 
+    // 아이템 상세 조회
     @GetMapping("/{itemId}")
     public ResponseEntity<ItemDetailDTO> getItemDetail(
-            @RequestParam Integer storeId,
+            @PathVariable Integer storeId,
             @PathVariable Integer itemId
     ) {
-        ItemDetailDTO dto = itemService.getItemDetail(storeId, itemId);
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(itemService.getItemDetail(storeId, itemId));
     }
 
-    @PatchMapping("/{itemId}")
+    // 아이템 수정
+    @PutMapping("/{itemId}")
     public ResponseEntity<Void> modifyItem(
-            @RequestParam Integer storeId,
+            @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @Valid @RequestBody ItemModifyRequestDTO dto
     ) {
-        dto.setStoreId(storeId);
-        dto.setItemId(itemId);
-        itemService.modifyItem( dto);
+        itemService.modifyItem(storeId,itemId,dto);
         return ResponseEntity.noContent().build();
     }
 
+    // 아이템 삭제
     @DeleteMapping("/{itemId}")
     public ResponseEntity<Void> deleteItem(
-            @RequestParam Integer storeId,
+            @PathVariable Integer storeId,
             @PathVariable Integer itemId
     ) {
         itemService.softDeleteItem(storeId, itemId);

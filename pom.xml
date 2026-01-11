@@ -25,6 +25,10 @@
         <jackson.version>2.13.4</jackson.version>
         <springfox.version>2.9.2</springfox.version>
         <lombok.version>1.18.32</lombok.version>
+
+        <slf4j.version>2.0.9</slf4j.version>
+        <log4j2.version>2.23.1</log4j2.version>
+
     </properties>
 
     <dependencies>
@@ -121,7 +125,14 @@
             <version>4.0.1</version>
             <scope>provided</scope>
         </dependency>
+      
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.2</version>
+        </dependency>
 
+      
         <!-- Bean Validation (Spring 5 = javax.validation) -->
         <dependency>
             <groupId>javax.validation</groupId>
@@ -149,11 +160,31 @@
             <version>3.0.1-b12</version>
         </dependency>
 
+      
+        <!-- Logging (SLF4J + Log4j2) -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
 
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>jstl</artifactId>
-            <version>1.2</version>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j2.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j2.version}</version>
+        </dependency>
+
+        <!-- SLF4J -> Log4j2 bridge -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+            <version>${log4j2.version}</version>
         </dependency>
 
     </dependencies>
