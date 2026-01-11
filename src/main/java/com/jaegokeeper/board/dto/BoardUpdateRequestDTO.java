@@ -5,10 +5,9 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 
-
 @Getter
 @NoArgsConstructor
-public class BoardCreateRequestDTO {
+public class BoardUpdateRequestDTO {
 
     @NotBlank(message = "title 필수입니다.")
     private String title;
@@ -16,11 +15,8 @@ public class BoardCreateRequestDTO {
     @NotBlank(message = "content 필수입니다.")
     private String content;
 
-
     private Integer writerId;
 
-
     private Integer imageId;
-
 
 }

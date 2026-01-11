@@ -63,12 +63,16 @@
     </insert>
 
     <!--  수정 페이지  -->
-    <update id="updateBoard" parameterType="com.jaegokeeper.board.dto.BoardListDto">
-        UPDATE board
-        SET title = #{title},
-        content = #{content},
-        updated_at = NOW()
-        WHERE board_id = #{boardId}
+    <update id="updateBoard" parameterType="com.jaegokeeper.board.dto.BoardUpdateDTO">
+        UPDATE board b
+        SET b.title = #{title},
+            b.content = #{content},
+            b.writer = #{writer},
+            b.image_id = #{imageId},
+            b.updated_at = CURRENT_TIMESTAMP
+        WHERE b.board_id = #{boardId}
+        AND b.store_id = #{storeId}
+        AND b.is_active = b'1'
     </update>
 
     <!--  삭제 페이지  -->
@@ -78,4 +82,12 @@
         updated_at = NOW()
         WHERE board_id = #{boardId}
     </update>
+
+    <select id="countActiveByStoreIdAndBoardId" resultType="int">
+        SELECT COUNT(*)
+        FROM board b
+        WHERE b.board_id = #{boardId}
+        AND store_id = #{storeId}
+        AND is_active = b'1'
+    </select>
 </mapper>

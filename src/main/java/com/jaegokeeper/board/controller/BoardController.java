@@ -1,6 +1,7 @@
 package com.jaegokeeper.board.controller;
 
 import com.jaegokeeper.board.dto.BoardCreateRequestDTO;
+import com.jaegokeeper.board.dto.BoardUpdateRequestDTO;
 import com.jaegokeeper.board.enums.BoardType;
 import com.jaegokeeper.board.service.BoardService;
 import lombok.RequiredArgsConstructor;
@@ -35,10 +36,17 @@ public class BoardController {
     }
 
 
-
-
     // 수정 페이지
     // PUT /boards/{boardId}
+    @PutMapping("/{boardId}")
+    public ResponseEntity<Void> updateBoard(
+            @PathVariable Integer storeId,
+            @PathVariable Integer boardId,
+            @Valid @RequestBody BoardUpdateRequestDTO dto
+    ) {
+        boardService.updateBoard(storeId, boardId, dto);
+        return ResponseEntity.noContent().build();
+    }
 
     // 삭제 페이지
     // DELETE /boards/{boardId}

@@ -13,6 +13,7 @@
         FROM alba a
         WHERE a.store_id = #{storeId}
           AND a.alba_status IN ('STAFF', 'PART')
+          AND a.is_active = b'1'
         ORDER BY a.alba_name ASC
     </select>
 
