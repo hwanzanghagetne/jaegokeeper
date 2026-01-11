@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 public class ScheduleWorkInOutDto {
     private Integer albaId;
 
+    private String workStatus;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime workIn;
 

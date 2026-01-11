@@ -44,29 +44,41 @@ public class AlbaService {
     }
 
     // 알바생 수정 페이지
+    @Transactional
     public void updateAlba(AlbaDetailDto albaDetailDto) {
         albaMapper.updateAlba(albaDetailDto);
     }
 
     // 알바생 삭제 페이지
     @Transactional
-    public void deleteAlba(int albaId) {
-        workMapper.deleteWork(albaId);
-        albaMapper.deleteAlba(albaId);
+    public boolean deleteAlba(int albaId) {
+        int deleteResult = albaMapper.deleteAlba(albaId);
+        return deleteResult > 0;
+    }
+
+    // 알바생 스토어 별로 조회하는 페이지
+    public AlbaDetailDto getAlbaByStore(int storeId) {
+        AlbaDetailDto store = albaMapper.getAlbaByStore(storeId);
+
+        if (store == null) {
+            throw new IllegalArgumentException("해당 알바생이 존재하지 않습니다.");
+        }
+        return store;
     }
 
     // 알바생 상세 페이지
-    public AlbaDetailDto getByIdCheck(int albaId) {
-        AlbaDetailDto alba = albaMapper.selectAlba(albaId);
+    public AlbaDetailDto getAlbaById(int albaId) {
+        AlbaDetailDto alba = albaMapper.getAlbaById(albaId);
 
         if (alba == null) {
             throw new IllegalArgumentException("해당 알바생이 존재하지 않습니다.");
         }
         return alba;
+
     }
 
     // 알바생 관리 페이지
-    public List<AlbaListDto> getAllAlbaList(int storeId) {
+    public List<AlbaListDto> getAllAlbaList(Integer storeId) {
         return albaMapper.selectAllAlba(storeId);
     }
 }

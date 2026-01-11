@@ -13,8 +13,14 @@ import java.util.List;
 @Mapper
 public interface ScheduleMapper {
 
-    // schedule 저장
+    // 스케줄에 저장
     int insertSchedule(ScheduleRegisterDto scheduleRegisterDto);
+
+    // 스케줄 수정
+    void updateSchedule(ScheduleRegisterDto scheduleRegisterDto);
+
+    // 스케줄 삭제
+//    void deleteSchedule(ScheduleRegisterDto scheduleRegisterDto);
 
     // 프론트에서 전달받은 날짜를 요일로 변환
     List<ScheduleRegisterDto> selectSchedulesByDate(@Param("scheduleTime") String scheduleTime);
@@ -27,7 +33,8 @@ public interface ScheduleMapper {
 
     // 알바생 출/퇴근 시간 조회
     // List로 변경
-    List<ScheduleWorkInOutDto> selectWorkTime(@Param("albaId") Integer albaId, @Param("date") LocalDate date);
+    List<ScheduleWorkInOutDto> selectWorkTime(@Param("albaId") Integer albaId,
+                                              @Param("date") LocalDate date);
 
     // 출근 기록
     void insertWorkIn(ScheduleWorkInOutDto dto);

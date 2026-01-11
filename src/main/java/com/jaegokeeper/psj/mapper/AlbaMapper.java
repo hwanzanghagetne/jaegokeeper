@@ -25,7 +25,7 @@ public interface AlbaMapper {
     int existsByAlbaPhone(String albaPhone);
 
     // 알바생 관리 페이지
-    List<AlbaListDto> selectAllAlba(@Param("storeId") int storeId);
+    List<AlbaListDto> selectAllAlba(@Param("storeId") Integer storeId);
 
     // 알바생 등록 페이지
 //    List<AlbaRegisterDto> selectRegisterAlba(@Param("albaId") int albaId);
@@ -37,6 +37,9 @@ public interface AlbaMapper {
     int deleteAlba(@Param("albaId") int albaId);
 
     // 알바생 상세 페이지
-    AlbaDetailDto selectAlba(@Param("albaId") int albaId);
+    AlbaDetailDto getAlbaById(@Param("albaId") int albaId);
+
+    // 알바생 스토어 별로 조회하는 페이지
+    AlbaDetailDto getAlbaByStore(@Param("storeId") int storeId);
 
 }

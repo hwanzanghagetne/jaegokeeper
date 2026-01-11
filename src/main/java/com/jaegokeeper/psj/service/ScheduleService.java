@@ -35,6 +35,19 @@ public class ScheduleService {
         return scheduleId;
     }
 
+    // 스케줄 수정 페이지
+    @Transactional
+    public void updateSchedule(ScheduleRegisterDto scheduleRegisterDto) {
+        scheduleMapper.updateSchedule(scheduleRegisterDto);
+    }
+
+    // 스케줄 삭제 페이지
+//    @Transactional
+//    public boolean deleteSchedule(int scheduleId) {
+//        int deleteResult = scheduleMapper.deleteSchedule(scheduleId);
+//        return deleteResult > 0;
+//    }
+
     // 프론트에서 전달받은 날짜를 요일로 변환
     public List<ScheduleRegisterDto> getScheduleByDate(String date) {
         // 날짜를 요일로 변환
