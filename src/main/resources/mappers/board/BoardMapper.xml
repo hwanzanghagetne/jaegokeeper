@@ -6,12 +6,13 @@
 <mapper namespace="com.jaegokeeper.psj.mapper.BoardMapper">
 
     <!--  게시판 목록 조회 페이지(타입별)  -->
-    <select id="getBoardByType" resultType="com.jaegokeeper.board.dto.BoardDto">
+    <select id="getBoardByType" resultType="com.jaegokeeper.board.dto.BoardListDto">
         SELECT board_id AS boardId,
         board_type AS boardType,
         title AS title,
         content AS content,
         writer AS writer,
+        pin_yn AS pinYn,
         created_at AS createdAt,
         updated_at AS updatedAt
         FROM board
@@ -21,7 +22,7 @@
     </select>
 
     <!--  상세 페이지  -->
-    <select id="detailBoard" parameterType="int" resultType="com.jaegokeeper.board.dto.BoardDto">
+    <select id="detailBoard" parameterType="int" resultType="com.jaegokeeper.board.dto.BoardListDto">
         SELECT board_id AS boardId,
         board_type AS boardType,
         title AS title,
@@ -35,14 +36,34 @@
     </select>
 
     <!--  등록 페이지  -->
-    <insert id="insertBoard" parameterType="com.jaegokeeper.board.dto.BoardDto"
+    <insert id="insertBoard" parameterType="com.jaegokeeper.board.dto.BoardInsertDTO"
             useGeneratedKeys="true" keyProperty="boardId">
-        INSERT INTO board (board_type, title, content, writer, created_at, updated_at)
-        VALUES (#{boardType}, #{title}, #{content}, #{writer}, NOW(), NOW())
+        INSERT INTO board (
+                           store_id,
+                           board_type,
+                           title,
+                           content,
+                           writer,
+                           created_at,
+                           updated_at,
+                           is_active,
+                           is_pinned,
+                           image_id)
+        VALUES (
+                #{storeId},
+                #{boardType},
+                #{title},
+                #{content},
+                #{writer},
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP,
+                b'1',
+                b'0',
+                #{imageId})
     </insert>
 
     <!--  수정 페이지  -->
-    <update id="updateBoard" parameterType="com.jaegokeeper.board.dto.BoardDto">
+    <update id="updateBoard" parameterType="com.jaegokeeper.board.dto.BoardListDto">
         UPDATE board
         SET title = #{title},
         content = #{content},

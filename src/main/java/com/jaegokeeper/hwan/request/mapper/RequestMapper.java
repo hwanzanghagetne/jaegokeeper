@@ -28,7 +28,6 @@ public interface RequestMapper {
                                          @Param("offset") int offset,
                                          @Param("size") int size);
 
-    List<AlbaOptionDTO> findAlbaOptionsForRequest(@Param("storeId") Integer storeId);
 
     //삭제
     int softDeleteRequest(@Param("storeId") Integer storeId,

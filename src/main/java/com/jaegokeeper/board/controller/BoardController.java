@@ -1,32 +1,47 @@
 package com.jaegokeeper.board.controller;
 
+import com.jaegokeeper.board.dto.BoardCreateRequestDTO;
+import com.jaegokeeper.board.enums.BoardType;
 import com.jaegokeeper.board.service.BoardService;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/board")
+@RequestMapping("/stores/{storeId}/boards")
+@RequiredArgsConstructor
 public class BoardController {
 
     private final BoardService boardService;
-    public BoardController(BoardService boardService) {
-        this.boardService = boardService;
-    }
 
     // 게시판 목록 조회 페이지(타입별)
     // GET /boards?type=NOTICE (또는 FREE, ANONYMOUS)
 
     // 상세 페이지
-    // GET /board/{boardId}
+    // GET /boards/{boardId}
 
     // 등록 페이지
-    // POST /board/write
+    // POST /boards?type=NOTICE (또는 FREE, ANONYMOUS)
+    @PostMapping
+    public ResponseEntity<Void> createBoard(
+            @PathVariable Integer storeId,
+            @RequestParam BoardType type,
+            @Valid @RequestBody BoardCreateRequestDTO dto
+    ) {
+        boardService.createBoard(storeId, type, dto);
+        return ResponseEntity.noContent().build();
+    }
+
+
+
 
     // 수정 페이지
-    // PUT /board/{boardId}
+    // PUT /boards/{boardId}
 
     // 삭제 페이지
-    // DELETE /board/{boardId}
+    // DELETE /boards/{boardId}
 
 
 }

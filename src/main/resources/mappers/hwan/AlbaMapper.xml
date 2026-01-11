@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jaegokeeper.hwan.alba.mapper.AlbaMapper">
+
+    <!--요청용 알바 리스트-->
+    <select id="findAlbaOptionsForRequest" resultType="com.jaegokeeper.hwan.alba.dto.AlbaOptionDTO">
+        SELECT
+            a.alba_id AS albaId,
+            a.alba_name AS albaName
+        FROM alba a
+        WHERE a.store_id = #{storeId}
+          AND a.alba_status IN ('STAFF', 'PART')
+        ORDER BY a.alba_name ASC
+    </select>
+
+    <select id="countByStoreIdAndAlbaId" resultType="int">
+        SELECT COUNT(*)
+        FROM alba a
+        WHERE a.alba_id = #{albaId}
+        AND a.store_id = #{storeId}
+        AND a.is_active = b'1'
+    </select>
+
+    <select id="findAlbaNameByAlbaId" resultType="string">
+        SELECT a.alba_name
+        FROM alba a
+        WHERE a.alba_id = #{albaId}
+        AND is_active = b'1'
+    </select>
+</mapper>

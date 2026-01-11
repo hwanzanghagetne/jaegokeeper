@@ -1,6 +1,6 @@
 package com.jaegokeeper.board.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.jaegokeeper.board.enums.BoardType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,10 +12,10 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BoardDto {
+public class BoardListDto {
     private Integer boardId;
 
-    private String boardType;
+    private BoardType boardType;
 
     private String title;
 
@@ -23,9 +23,9 @@ public class BoardDto {
 
     private String writer;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Boolean isPinned;
+
     private LocalDateTime createdAt;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
 }
