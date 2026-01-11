@@ -8,6 +8,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.List;
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -16,19 +18,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException e) {
 
-        if (e.getBindingResult().getFieldErrors().isEmpty()) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new ErrorResponse("VALIDATION_ERROR", "요청 값이 올바르지 않습니다.", null));
-        }
-
-        FieldError fe = e.getBindingResult().getFieldErrors().get(0);
-        String field = fe.getField();
-        String msg = fe.getDefaultMessage();
+        List<FieldErrorResponse> errors = e.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(fe -> new FieldErrorResponse(
+                        fe.getField(),
+                        fe.getDefaultMessage()
+                ))
+                .toList();
 
         return ResponseEntity
                 .badRequest()
-                .body(new ErrorResponse("VALIDATION_ERROR", msg, field));
+                .body(new ErrorResponse("VALIDATION_ERROR", "요청값이 올바르지 않습니다.", errors));
     }
 
     // 잘못된 요청 400
@@ -49,7 +50,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnhandledException(Exception e) {
 
-        //todo 로그 남기기
         log.error("Unhandled exception", e);
 
         return ResponseEntity
