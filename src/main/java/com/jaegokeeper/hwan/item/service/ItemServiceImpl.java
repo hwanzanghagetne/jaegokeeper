@@ -77,7 +77,7 @@ public class ItemServiceImpl implements ItemService {
 
         int totalElements = itemMapper.countItemList(storeId,filter,keyword,excludeZero);
         List<ItemListDTO> content = itemMapper.findItemList(storeId, filter,keyword,excludeZero, offset, pageSize);
-        int totalPages = (int) Math.ceil(((double) totalElements / pageSize));
+        int totalPages = (totalElements + pageSize - 1) / pageSize;
 
         return new PageResponseDTO<>(content, pageNum, pageSize, totalElements, totalPages);
     }

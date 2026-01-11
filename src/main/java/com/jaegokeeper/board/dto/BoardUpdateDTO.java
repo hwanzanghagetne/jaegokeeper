@@ -7,7 +7,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class BoardUpdateDTO {
 
-    private final Integer storeId;
     private final String title;
     private final String content;
     private final String writer;

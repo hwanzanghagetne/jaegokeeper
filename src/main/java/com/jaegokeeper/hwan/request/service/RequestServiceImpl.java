@@ -32,7 +32,7 @@ public class RequestServiceImpl implements RequestService {
         for (RequestCreateRequestDTO reqDto : dto.getRequests()) {
 
             Integer itemId = reqDto.getItemId();
-            Integer count = itemMapper.countByStoreIdAndItemId(storeId, itemId);
+            int count = itemMapper.countByStoreIdAndItemId(storeId, itemId);
             if (count != 1) {
                 throw new NotFoundException("해당 매장의 아이템이 아닙니다. itemId=" + itemId);
             }
@@ -61,14 +61,14 @@ public class RequestServiceImpl implements RequestService {
 
         int pageNum = dto.getPageValue();
         int pageSize = dto.getSizeValue();
-        RequestType requestType = dto.getRequestType();
+        RequestType requestType = dto.getType();
         RequestStatus requestStatus = dto.getRequestStatus();
 
         int offset = (pageNum - 1) * pageSize;
 
         int totalElements = requestMapper.countRequestList(storeId, requestType, requestStatus);
         List<RequestListDTO> content = requestMapper.findRequestList(storeId, requestType, requestStatus, offset, pageSize);
-        int totalPages = (int) Math.ceil(((double) totalElements / pageSize));
+        int totalPages = (totalElements + pageSize - 1) / pageSize;
 
         return new PageResponseDTO<>(content, pageNum, pageSize, totalElements, totalPages);
     }

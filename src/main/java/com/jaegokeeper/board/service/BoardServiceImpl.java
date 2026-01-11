@@ -5,8 +5,12 @@ import com.jaegokeeper.board.enums.BoardType;
 import com.jaegokeeper.board.mapper.BoardMapper;
 import com.jaegokeeper.hwan.alba.mapper.AlbaMapper;
 import com.jaegokeeper.hwan.exception.NotFoundException;
+import com.jaegokeeper.hwan.item.dto.PageResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -14,6 +18,23 @@ public class BoardServiceImpl implements BoardService{
 
     private final BoardMapper boardMapper;
     private final AlbaMapper albaMapper;
+
+    @Override
+    public PageResponseDTO<BoardListDTO> getBoardList(Integer storeId, BoardPageRequestDTO dto) {
+        int page = dto.getPageValue();
+        int size = dto.getSizeValue();
+
+        int totalElements = boardMapper.countBoardList(storeId, dto.getType());
+        int totalPages = (totalElements + size - 1) / size;
+
+        int offset = (page - 1) * size;
+
+        List<BoardListDTO> content = boardMapper.findBoardList(storeId,dto.getType(),size,offset);
+
+        return new PageResponseDTO<>(content, page, size, totalElements, totalPages);
+
+
+    }
 
     @Override
     public BoardDetailResponseDTO getBoardDetail(Integer storeId, Integer boardId) {
@@ -25,8 +46,9 @@ public class BoardServiceImpl implements BoardService{
     }
 
     // 생성
+    @Transactional
     @Override
-    public int createBoard(Integer storeId, BoardType boardType, BoardCreateRequestDTO dto) {
+    public void createBoard(Integer storeId, BoardType boardType, BoardCreateRequestDTO dto) {
 
         String writer;
         Integer writerId = dto.getWriterId();
@@ -46,12 +68,11 @@ public class BoardServiceImpl implements BoardService{
         if (insertedBoard != 1) {
             throw new IllegalStateException("board 생성 실패");
         }
-        return insertedBoard;
-
     }
 
     // 수정
     @Override
+    @Transactional
     public void updateBoard(Integer storeId, Integer boardId, BoardUpdateRequestDTO dto) {
         int exists = boardMapper.countActiveByStoreIdAndBoardId(storeId, boardId);
         if (exists != 1) {
@@ -71,10 +92,10 @@ public class BoardServiceImpl implements BoardService{
         }
 
         BoardUpdateDTO updateBoard = new BoardUpdateDTO(
-                storeId, dto.getTitle(), dto.getContent(), writer, dto.getImageId()
+                dto.getTitle(), dto.getContent(), writer, dto.getImageId()
         );
 
-        int updatedBoard = boardMapper.updateBoard(updateBoard);
+        int updatedBoard = boardMapper.updateBoard(storeId,boardId,updateBoard);
         if (updatedBoard != 1) {
             throw new IllegalStateException("게시글 수정 실패");
         }
@@ -82,13 +103,14 @@ public class BoardServiceImpl implements BoardService{
 
     // 삭제
     @Override
+    @Transactional
     public void softDeleteItem(Integer storeId, Integer boardId) {
         int exists = boardMapper.countActiveByStoreIdAndBoardId(storeId, boardId);
         if (exists != 1) {
             throw new NotFoundException("해당 게시글이 없습니다.");
         }
 
-        int deletedBoard = boardMapper.deleteBoard(storeId, boardId);
+        int deletedBoard = boardMapper.softDeleteItem(storeId, boardId);
         if (deletedBoard != 1) {
             throw new IllegalStateException("삭제 실패");
         }
