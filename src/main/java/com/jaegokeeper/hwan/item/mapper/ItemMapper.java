@@ -21,11 +21,13 @@ public interface ItemMapper {
 
     int countItemList(@Param("storeId") Integer storeId,
                        @Param("filter") ItemFilter filter,
-                       @Param("keyword")String keyword);
+                       @Param("keyword")String keyword,
+                      @Param("excludeZero")boolean excludeZero);
 
     List<ItemListDTO> findItemList(@Param("storeId") Integer storeId,
                                    @Param("filter") ItemFilter filter,
                                    @Param("keyword") String keyword,
+                                   @Param("excludeZero")boolean excludeZero,
                                    @Param("offset") Integer offset,
                                    @Param("size") Integer size);
 
@@ -37,5 +39,9 @@ public interface ItemMapper {
     int updateItem(@Param("storeId") Integer storeId,
                    @Param("itemId") Integer itemId,
                    @Param("itemName") String itemName,
+                   @Param("isPinned") Boolean isPinned,
                    @Param("imageId") Integer imageId);
+
+    int countByStoreIdAndItemId(@Param("storeId") Integer storeId,
+                                @Param("itemId") Integer itemId);
 }

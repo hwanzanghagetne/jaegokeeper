@@ -8,5 +8,6 @@ import lombok.Getter;
 public class  ItemCreateResponseDTO {
 
     private Integer itemId;
+    private Integer stockId;
 
 }

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jaegokeeper.hwan.buffer.mapper.BufferMapper">
+
+    <insert id="insertBuffer">
+        INSERT INTO buffer(
+                           item_id,
+                           buffer_amount,
+                           created_at,
+                           updated_at)
+        VALUES (
+                #{itemId},
+                #{bufferAmount},
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP)
+    </insert>
+
+    <update id="updateBufferAmount">
+        UPDATE buffer b
+        SET b.buffer_amount = #{bufferAmount},
+            b.updated_at = CURRENT_TIMESTAMP
+        WHERE b.item_id = #{itemId}
+    </update>
+
+    <select id="findBufferAmountByItemId" resultType="int">
+        SELECT buffer_amount
+        FROM buffer
+        WHERE item_id = #{itemId}
+    </select>
+</mapper>

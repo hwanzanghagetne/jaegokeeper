@@ -12,75 +12,78 @@
 
         INSERT INTO stock (
             item_id,
-            store_id,
-            quantity,
-            favorite_yn
+            stock_amount,
+            created_at,
+            updated_at
         )
         VALUES (
                    #{itemId},
-                   #{storeId},
-                   #{quantity},
-                   0
+                   #{stockAmount},
+                    CURRENT_TIMESTAMP,
+                    CURRENT_TIMESTAMP
                )
     </insert>
 
-    <select id="findQuantityByStockId" resultType="Integer">
-        SELECT quantity
+    <select id="findStockAmountByStockId" resultType="Integer">
+        SELECT stock_amount
         FROM stock s
         JOIN item i
         ON i.item_id = s.item_id
+        AND i.is_active = b'1'
         WHERE stock_id = #{stockId}
-        AND i.del_yn = b'0'
+    </select>
+
+    <select id="findStockAmountByItemId" resultType="Integer">
+        SELECT stock_amount
+        FROM stock s
+        JOIN item i
+          ON i.item_id = s.item_id
+        AND i.is_active = b'1'
+        WHERE s.item_id = #{itemId}
     </select>
 
 
 <!--    재고 직접 조정용-->
-    <update id="updateQuantity">
+    <update id="updateStockAmount">
             UPDATE stock s
             JOIN item i
             ON i.item_id = s.item_id
-            SET quantity = #{quantity},
-                favorite_yn = #{favoriteYn}
-            WHERE stock_id = #{stockId}
-            AND i.del_yn = b'0'
+            AND i.is_active = b'1'
+            SET s.stock_amount = #{amount},
+                s.updated_at = CURRENT_TIMESTAMP
+            WHERE s.item_id = #{itemId}
     </update>
 
     <update id="increaseQuantity">
         UPDATE stock s
         JOIN item i
         ON i.item_id = s.item_id
-        SET quantity = quantity + #{amount}
-        WHERE stock_id = #{stockId}
-        AND i.del_yn = b'0'
+        AND i.is_active = b'1'
+        SET s.stock_amount = s.stock_amount + #{amount},
+            s.updated_at = CURRENT_TIMESTAMP
+        WHERE s.stock_id = #{stockId}
+          AND i.store_id = #{storeId}
     </update>
 
     <update id="decreaseQuantity">
         UPDATE stock s
         JOIN item i
         ON i.item_id = s.item_id
-        SET quantity = quantity - #{amount}
-        WHERE stock_id = #{stockId}
-        AND quantity >= #{amount}
-        AND i.del_yn = b'0'
+        AND i.is_active = b'1'
+        SET s.stock_amount = s.stock_amount - #{amount},
+            s.updated_at = CURRENT_TIMESTAMP
+        WHERE s.stock_id = #{stockId}
+          AND i.store_id = #{storeId}
+          AND s.stock_amount >= #{amount}
+
     </update>
     
-    <select id="findStockIdByStoreAndItem" resultType="Integer">
+    <select id="findStockIdByItem" resultType="Integer">
         SELECT stock_id
         FROM stock s
         JOIN item i
         ON i.item_id = s.item_id
-        WHERE s.store_id = #{storeId}
-        AND s.item_id = #{itemId}
-        AND i.del_yn = b'0'
-    </select>
-
-    <select id="countByStockIdAndStoreId" resultType="int">
-        SELECT count(*)
-        FROM stock s
-        JOIN item i
-        ON i.item_id = s.item_id
-        WHERE stock_id = #{stockId}
-        AND store_id = #{storeId}
-        AND i.del_yn = b'0'
+        WHERE s.item_id = #{itemId}
+        AND i.is_active = b'1'
     </select>
 </mapper>

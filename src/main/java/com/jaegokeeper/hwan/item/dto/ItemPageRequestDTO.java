@@ -14,9 +14,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class ItemPageRequestDTO {
-    @NotNull(message = "storeId 필수입니다.")
-    @Min(1)
-    private Integer storeId;
 
     @Min(value = 1,message = "page는 1 이상입니다.")
     private Integer page;
@@ -27,7 +24,7 @@ public class ItemPageRequestDTO {
 
     private ItemFilter filter;
     private String keyword;
-
+    private Boolean excludeZero;
     //기본값 1
     public int getPageValue() {
         return page == null ? 1 : page;
@@ -37,6 +34,9 @@ public class ItemPageRequestDTO {
         return size == null ? 10 : size;
     }
 
+    public boolean isExcludeZero() {
+        return Boolean.TRUE.equals(excludeZero);
+    }
     public String getKeywordValue() {
         if (keyword == null) {
             return null;

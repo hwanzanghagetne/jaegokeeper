@@ -1,10 +1,10 @@
 package com.jaegokeeper.hwan.request.enums;
 
 public enum RequestStatus {
-    대기,     // 요청 등록됨
-    확인중,   // 검토 중
-    승인,     // 승인됨
-    반려,     // 거절됨
-    완료,     // 처리 완료
-    취소      // 요청 취소
+    WAIT,      // 대기
+    WORKING,   // 확인중
+    CONFIRM,   // 승인
+    REVERT,    // 거절
+    DONE,      // 완료
+    CANCEL     // 취소
 }
