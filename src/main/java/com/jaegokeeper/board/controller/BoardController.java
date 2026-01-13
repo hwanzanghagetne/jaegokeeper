@@ -34,7 +34,6 @@ public class BoardController {
             @PathVariable Integer storeId,
             @PathVariable Integer boardId
     ) {
-
         return ResponseEntity.ok(boardService.getBoardDetail(storeId, boardId));
     }
     // 등록 페이지
@@ -46,7 +45,7 @@ public class BoardController {
             @Valid @RequestBody BoardCreateRequestDTO dto
     ) {
         boardService.createBoard(storeId, type, dto);
-        return ResponseEntity.status(201).build();
+        return ResponseEntity.ok().build();
     }
 
 

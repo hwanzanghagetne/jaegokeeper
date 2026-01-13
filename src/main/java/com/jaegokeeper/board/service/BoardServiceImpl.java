@@ -32,8 +32,6 @@ public class BoardServiceImpl implements BoardService{
         List<BoardListDTO> content = boardMapper.findBoardList(storeId,dto.getType(),size,offset);
 
         return new PageResponseDTO<>(content, page, size, totalElements, totalPages);
-
-
     }
 
     @Override
