@@ -1,7 +1,7 @@
 package com.jaegokeeper.hwan.request.service;
 
 import com.jaegokeeper.hwan.alba.dto.AlbaOptionDTO;
-import com.jaegokeeper.hwan.alba.mapper.AlbaMapper;
+import com.jaegokeeper.hwan.alba.mapper.AlbaMapper2;
 import com.jaegokeeper.hwan.exception.NotFoundException;
 import com.jaegokeeper.hwan.item.dto.PageResponseDTO;
 import com.jaegokeeper.hwan.item.mapper.ItemMapper;
@@ -23,7 +23,7 @@ public class RequestServiceImpl implements RequestService {
 
     private final RequestMapper requestMapper;
     private final ItemMapper itemMapper;
-    private final AlbaMapper albaMapper;
+    private final AlbaMapper2 albaMapper2;
     @Transactional
     @Override
     public int createRequest(Integer storeId, RequestCreateBatchRequestDTO dto) {
@@ -76,7 +76,7 @@ public class RequestServiceImpl implements RequestService {
     // 임시 요청용 알바 리스트
     @Override
     public List<AlbaOptionDTO> findAlbaOptionsForRequest(Integer storeId) {
-        return albaMapper.findAlbaOptionsForRequest(storeId);
+        return albaMapper2.findAlbaOptionsForRequest(storeId);
     }
 
 

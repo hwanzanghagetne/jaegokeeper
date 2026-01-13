@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
-public interface AlbaMapper {
+public interface AlbaMapper2 {
 
     // request용 storeId로 알바생리스트
     List<AlbaOptionDTO> findAlbaOptionsForRequest(@Param("storeId") Integer storeId);

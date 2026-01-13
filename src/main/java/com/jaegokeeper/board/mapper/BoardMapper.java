@@ -10,7 +10,6 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-@Mapper
 public interface BoardMapper {
 
     // 게시판 목록 조회 페이지(타입별)
