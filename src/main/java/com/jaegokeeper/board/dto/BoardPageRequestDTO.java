@@ -1,7 +1,6 @@
 package com.jaegokeeper.board.dto;
 
 import com.jaegokeeper.board.enums.BoardType;
-import com.jaegokeeper.hwan.item.enums.ItemFilter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
