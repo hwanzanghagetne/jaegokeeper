@@ -32,7 +32,7 @@
     </update>
 
     <select id="isVerified" resultType="int">
-        SELECT CASE WHEN verified_at IS NULL
+        SELECT CASE WHEN verified_at IS NOT NULL
             THEN 1
             ELSE 0 END
         FROM email_auth

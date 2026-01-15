@@ -4,5 +4,5 @@ public interface MailService {
 
     void sendSignupCode(String to, String code);
 
-    void sedWelcome(String to, String name);
+    void sendWelcome(String to, String name);
 }

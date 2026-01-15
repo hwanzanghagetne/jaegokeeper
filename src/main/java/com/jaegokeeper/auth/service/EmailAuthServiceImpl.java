@@ -2,6 +2,7 @@ package com.jaegokeeper.auth.service;
 
 import com.jaegokeeper.auth.mapper.EmailAuthMapper;
 import com.jaegokeeper.common.mail.MailService;
+import com.jaegokeeper.hwan.exception.ForbiddenException;
 import com.jaegokeeper.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -46,7 +47,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
     public void assertVerified(String email) {
         int verified = emailAuthMapper.isVerified(email);
         if (verified != 1) {
-            throw new IllegalStateException("이메일 인증이 필요합니다.");
+            throw new ForbiddenException("이메일 인증이 필요합니다.");
         }
     }
 

@@ -23,13 +23,13 @@ public class EmailAuthController {
 
     /*코드 전송 */
     @PostMapping("/send")
-    public ResponseEntity<?> send(@Valid @RequestBody EmailAuthSendRequest dto) {
+    public ResponseEntity<Void> send(@Valid @RequestBody EmailAuthSendRequest dto) {
         emailAuthService.sendCode(dto.getEmail());
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<?> verify(@Valid @RequestBody EmailAuthVerifyRequest dto) {
+    public ResponseEntity<Void> verify(@Valid @RequestBody EmailAuthVerifyRequest dto) {
         emailAuthService.verifyCode(dto.getEmail(), dto.getCode());
 
         return ResponseEntity.noContent().build();
