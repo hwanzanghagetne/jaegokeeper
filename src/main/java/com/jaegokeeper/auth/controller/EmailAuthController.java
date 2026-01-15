@@ -21,17 +21,16 @@ public class EmailAuthController {
 
     private final EmailAuthService emailAuthService;
 
+    /*코드 전송 */
     @PostMapping("/send")
     public ResponseEntity<?> send(@Valid @RequestBody EmailAuthSendRequest dto) {
-        emailAuthService.sendAuthCode(dto.getEmail());
-
-
+        emailAuthService.sendCode(dto.getEmail());
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/verify")
     public ResponseEntity<?> verify(@Valid @RequestBody EmailAuthVerifyRequest dto) {
-        emailAuthService.verifyAuthCode(dto.getEmail(), dto.getCode());
+        emailAuthService.verifyCode(dto.getEmail(), dto.getCode());
 
         return ResponseEntity.noContent().build();
     }
