@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.jaegokeeper.hwan.mapper.BoardMapper">
+<mapper namespace="com.jaegokeeper.board.mapper.BoardMapper">
 
     <select id="countBoardList" resultType="int">
         SELECT COUNT(*)
