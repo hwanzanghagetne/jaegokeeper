@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jaegokeeper.auth.mapper.EmailAuthMapper">
+
+    <!--발송 시 업서트-->
+    <insert id="upsertAuthCode">
+        INSERT INTO email_auth (email,
+                                code,
+                                expires_at,
+                                verified_at)
+        VALUES (#{email},
+                #{code},
+                DATE_ADD(CURRENT_TIMESTAMP,INTERVAL 5 MINUTE),
+                null)
+        ON DUPLICATE KEY UPDATE
+                code = VALUES(code),
+                expires_at = DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 5 MINUTE),
+                verified_at = null
+    </insert>
+
+    <!--검증-->
+    <update id="verifyCode">
+        UPDATE email_auth
+        SET verified_at = CURRENT_TIMESTAMP
+        WHERE email = #{email}
+        AND code = #{code}
+        AND expires_at > current_timestamp
+        AND verified_at IS NULL
+    </update>
+
+    <select id="isVerified" resultType="int">
+        SELECT CASE WHEN verified_at IS NULL
+            THEN 1
+            ELSE 0 END
+        FROM email_auth
+        WHERE email = #{email}
+    </select>
+</mapper>
+
