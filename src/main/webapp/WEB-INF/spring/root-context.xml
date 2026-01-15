@@ -80,12 +80,25 @@
     <!-- Enable @Transactional -->
     <tx:annotation-driven transaction-manager="transactionManager"/>
 
-
     <!-- board 패키지 Mapper 스캔 -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
         <property name="basePackage" value="com.jaegokeeper.board.mapper"/>
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
     </bean>
+
+    <!-- auth mapper 스캔 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.jaegokeeper.auth.mapper"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <property name="annotationClass" value="org.apache.ibatis.annotations.Mapper"/>
+    </bean>
+    <!-- user mapper 스캔 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.jaegokeeper.user.mapper"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <property name="annotationClass" value="org.apache.ibatis.annotations.Mapper"/>
+    </bean>
+
 
     <!-- mail properties -->
     <context:property-placeholder location="classpath:mail.properties" />
