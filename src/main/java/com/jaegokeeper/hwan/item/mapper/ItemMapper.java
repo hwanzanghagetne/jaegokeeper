@@ -22,18 +22,18 @@ public interface ItemMapper {
     int countItemList(@Param("storeId") Integer storeId,
                        @Param("filter") ItemFilter filter,
                        @Param("keyword")String keyword,
-                      @Param("excludeZero")boolean excludeZero);
+                      @Param("excludeZero")Boolean excludeZero);
 
     List<ItemListDTO> findItemList(@Param("storeId") Integer storeId,
                                    @Param("filter") ItemFilter filter,
                                    @Param("keyword") String keyword,
-                                   @Param("excludeZero")boolean excludeZero,
+                                   @Param("excludeZero")Boolean excludeZero,
                                    @Param("offset") Integer offset,
                                    @Param("size") Integer size);
 
     //아이템 상세
-    ItemDetailDTO findItemDetail(@Param("storeId") Integer storeId,
-                                 @Param("itemId") Integer itemId);
+    ItemDetailDTO getItemDetail(@Param("storeId") Integer storeId,
+                                @Param("itemId") Integer itemId);
 
     //아이템 수정
     int updateItem(@Param("storeId") Integer storeId,

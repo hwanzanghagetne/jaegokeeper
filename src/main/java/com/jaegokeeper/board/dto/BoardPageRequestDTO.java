@@ -1,7 +1,6 @@
-package com.jaegokeeper.hwan.request.dto;
+package com.jaegokeeper.board.dto;
 
-import com.jaegokeeper.hwan.request.enums.RequestStatus;
-import com.jaegokeeper.hwan.request.enums.RequestType;
+import com.jaegokeeper.board.enums.BoardType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,16 +11,16 @@ import javax.validation.constraints.Min;
 @Getter
 @Setter
 @NoArgsConstructor
-public class RequestPageRequestDTO {
-    @Min(value = 1,message = "page 1 이상입니다.")
+public class BoardPageRequestDTO {
+
+    @Min(value = 1,message = "page는 1 이상입니다.")
     private Integer page;
 
     @Min(value = 1,message = "size 1 이상입니다.")
     @Max(value = 50,message = "size 50 이하입니다.")
     private Integer size;
 
-    private RequestType type;
-    private RequestStatus requestStatus;
+    private BoardType type;
 
     //기본값 1
     public int getPageValue() {
@@ -31,4 +30,5 @@ public class RequestPageRequestDTO {
     public int getSizeValue() {
         return size == null ? 10 : size;
     }
-}
+
+    }

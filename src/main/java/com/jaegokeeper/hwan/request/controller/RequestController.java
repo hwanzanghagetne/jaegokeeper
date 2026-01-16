@@ -29,13 +29,12 @@ public class RequestController {
 
     //요청 생성
     @PostMapping
-    public ResponseEntity<?> createRequests(
+    public ResponseEntity<Void> createRequests(
             @PathVariable Integer storeId,
             @Valid @RequestBody RequestCreateBatchRequestDTO dto
     ) {
-
         int createdCount = requestService.createRequest(storeId, dto);
-        return ResponseEntity.status(201).body(createdCount);
+        return ResponseEntity.ok().build();
     }
 
     //요청 등록시 알바 목록
@@ -45,7 +44,7 @@ public class RequestController {
         return ResponseEntity.ok(requestService.findAlbaOptionsForRequest(storeId));
     }
 
-    //삭제
+    // 삭제
     @DeleteMapping("/{requestId}")
     public ResponseEntity<Void> deleteRequest(
             @PathVariable Integer storeId,
@@ -55,7 +54,8 @@ public class RequestController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{requestId}")
+    // 수정
+    @PostMapping("/{requestId}")
     public ResponseEntity<Void> updateRequest(
             @PathVariable Integer storeId,
             @PathVariable Integer requestId,
@@ -65,7 +65,8 @@ public class RequestController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{requestId}/status")
+    // 상태 수정
+    @PostMapping("/{requestId}/status")
     public ResponseEntity<Void> updateRequestStatus(
             @PathVariable Integer storeId,
             @PathVariable Integer requestId,

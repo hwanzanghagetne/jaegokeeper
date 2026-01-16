@@ -77,7 +77,7 @@ public class ItemServiceImpl implements ItemService {
 
         int totalElements = itemMapper.countItemList(storeId,filter,keyword,excludeZero);
         List<ItemListDTO> content = itemMapper.findItemList(storeId, filter,keyword,excludeZero, offset, pageSize);
-        int totalPages = (int) Math.ceil(((double) totalElements / pageSize));
+        int totalPages = (totalElements + pageSize - 1) / pageSize;
 
         return new PageResponseDTO<>(content, pageNum, pageSize, totalElements, totalPages);
     }
@@ -85,8 +85,7 @@ public class ItemServiceImpl implements ItemService {
     //아이템 상세 조회
     @Override
     public ItemDetailDTO getItemDetail(Integer storeId, Integer itemId) {
-
-        ItemDetailDTO dto = itemMapper.findItemDetail(storeId, itemId);
+        ItemDetailDTO dto = itemMapper.getItemDetail(storeId, itemId);
         if (dto == null) {
             throw new NotFoundException("존재하지 않는 아이템입니다.");
         }

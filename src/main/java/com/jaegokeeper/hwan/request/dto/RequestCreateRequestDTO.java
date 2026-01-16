@@ -18,7 +18,6 @@ public class RequestCreateRequestDTO {
     @Min(1)
     private Integer itemId;
 
-    //이거 맞나? storeId를 기준으로 근무자 리스트를 보내줘야한다.
     @NotNull(message = "albaId 필수입니다.")
     @Min(1)
     private Integer albaId;

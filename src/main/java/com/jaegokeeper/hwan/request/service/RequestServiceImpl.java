@@ -1,6 +1,7 @@
 package com.jaegokeeper.hwan.request.service;
 
 import com.jaegokeeper.hwan.alba.dto.AlbaOptionDTO;
+import com.jaegokeeper.hwan.alba.mapper.AlbaMapper2;
 import com.jaegokeeper.hwan.exception.NotFoundException;
 import com.jaegokeeper.hwan.item.dto.PageResponseDTO;
 import com.jaegokeeper.hwan.item.mapper.ItemMapper;
@@ -22,7 +23,7 @@ public class RequestServiceImpl implements RequestService {
 
     private final RequestMapper requestMapper;
     private final ItemMapper itemMapper;
-
+    private final AlbaMapper2 albaMapper2;
     @Transactional
     @Override
     public int createRequest(Integer storeId, RequestCreateBatchRequestDTO dto) {
@@ -31,7 +32,7 @@ public class RequestServiceImpl implements RequestService {
         for (RequestCreateRequestDTO reqDto : dto.getRequests()) {
 
             Integer itemId = reqDto.getItemId();
-            Integer count = itemMapper.countByStoreIdAndItemId(storeId, itemId);
+            int count = itemMapper.countByStoreIdAndItemId(storeId, itemId);
             if (count != 1) {
                 throw new NotFoundException("해당 매장의 아이템이 아닙니다. itemId=" + itemId);
             }
@@ -60,14 +61,14 @@ public class RequestServiceImpl implements RequestService {
 
         int pageNum = dto.getPageValue();
         int pageSize = dto.getSizeValue();
-        RequestType requestType = dto.getRequestType();
+        RequestType requestType = dto.getType();
         RequestStatus requestStatus = dto.getRequestStatus();
 
         int offset = (pageNum - 1) * pageSize;
 
         int totalElements = requestMapper.countRequestList(storeId, requestType, requestStatus);
         List<RequestListDTO> content = requestMapper.findRequestList(storeId, requestType, requestStatus, offset, pageSize);
-        int totalPages = (int) Math.ceil(((double) totalElements / pageSize));
+        int totalPages = (totalElements + pageSize - 1) / pageSize;
 
         return new PageResponseDTO<>(content, pageNum, pageSize, totalElements, totalPages);
     }
@@ -75,7 +76,7 @@ public class RequestServiceImpl implements RequestService {
     // 임시 요청용 알바 리스트
     @Override
     public List<AlbaOptionDTO> findAlbaOptionsForRequest(Integer storeId) {
-        return requestMapper.findAlbaOptionsForRequest(storeId);
+        return albaMapper2.findAlbaOptionsForRequest(storeId);
     }
 
 

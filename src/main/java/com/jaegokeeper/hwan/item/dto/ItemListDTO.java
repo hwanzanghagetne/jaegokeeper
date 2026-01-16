@@ -4,11 +4,14 @@ import com.jaegokeeper.hwan.request.enums.RequestStatus;
 import com.jaegokeeper.hwan.request.enums.RequestType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
-@AllArgsConstructor
+@Setter
+@NoArgsConstructor
 public class ItemListDTO {
     //item
     private Integer itemId;
@@ -26,7 +29,6 @@ public class ItemListDTO {
     private Integer latestRequestAmount;
     private RequestStatus latestRequestStatus;
     private LocalDateTime latestRequestCreatedAt;
-
 
 
 }
