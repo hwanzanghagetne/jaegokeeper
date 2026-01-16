@@ -102,4 +102,5 @@
             updated_at = NOW()
         WHERE alba_id = #{albaId}
     </update>
+
 </mapper>
