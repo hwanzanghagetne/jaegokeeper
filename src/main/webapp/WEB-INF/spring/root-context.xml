@@ -23,14 +23,14 @@
         <context:exclude-filter type="annotation" expression="org.springframework.web.bind.annotation.RestController"/>
     </context:component-scan>
 
-<!--    &lt;!&ndash; DataSource 설정 &ndash;&gt;
-    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
-        <property name="url" value="jdbc:mysql://jacho-jaegoserver.mysql.database.azure.com:3306/jaego?serverTimezone=Asia/Seoul"/>
-        <property name="username" value="jachomaster"/>
-        <property name="password" value="is2jaegosafe?"/>
-    </bean>-->
-
+    <!-- DataSource 설정 -->
+<!--    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">-->
+<!--        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>-->
+<!--        <property name="url" value="jdbc:mysql://jacho-jaegoserver.mysql.database.azure.com:3306/jaego?serverTimezone=Asia/Seoul"/>-->
+<!--        <property name="username" value="jachomaster"/>-->
+<!--        <property name="password" value="is2jaegosafe?"/>-->
+<!--    </bean>-->
+  
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
         <property name="url" value="jdbc:mysql://localhost:3306/jaego_local?serverTimezone=Asia/Seoul"/>
@@ -38,6 +38,14 @@
         <property name="password" value="ghks2ghks"/>
     </bean>
 
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.mariadb.jdbc.Driver"/>
+        <property name="url" value="jdbc:mariadb://127.0.0.1:3306/jacho"/>
+        <property name="username" value="ddando"/>
+        <property name="password" value="bopomofo"/>
+    </bean>
+
+  
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="dataSource" ref="dataSource"/>
         <property name="mapperLocations" value="classpath*:mappers/**/*.xml"/>

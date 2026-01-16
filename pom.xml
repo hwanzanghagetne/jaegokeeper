@@ -88,6 +88,13 @@
             <version>${mysql.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>3.3.3</version>
+        </dependency>
+
+
         <!-- Swagger (Springfox 2.x + Jackson) -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
