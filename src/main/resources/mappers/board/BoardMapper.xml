@@ -28,7 +28,6 @@
         WHERE b.store_id = #{storeId}
         AND b.is_active = b'1'
         <if test="boardType != null">
-
             AND b.board_type = #{boardType}
         </if>
         ORDER BY b.is_pinned DESC, b.created_at DESC

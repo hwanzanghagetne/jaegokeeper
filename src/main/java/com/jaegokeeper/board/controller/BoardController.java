@@ -48,7 +48,7 @@ public class BoardController {
     public ResponseEntity<Void> createBoard(
             @PathVariable Integer storeId,
             @RequestParam BoardType type,
-            @Valid @RequestBody BoardCreateRequestDTO dto
+            @Valid @ModelAttribute BoardCreateRequestDTO dto
     ) {
         boardService.createBoard(storeId, type, dto);
         return ResponseEntity.ok().build();

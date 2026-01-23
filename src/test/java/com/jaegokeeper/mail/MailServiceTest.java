@@ -21,6 +21,6 @@ public class MailServiceTest {
 
     @Test
     public void sendWelcomeMail() {
-        mailService.sendWelcome("ghty6323@gmail.com", "졸맨");
+        mailService.sendWelcome("ghty6323@gmail.com", "졸맨바보");
     }
 }

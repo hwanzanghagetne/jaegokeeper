@@ -3,6 +3,7 @@ package com.jaegokeeper.board.service;
 import com.jaegokeeper.board.dto.*;
 import com.jaegokeeper.board.enums.BoardType;
 import com.jaegokeeper.board.mapper.BoardMapper;
+import com.jaegokeeper.ddan.img.service.ImgService;
 import com.jaegokeeper.hwan.alba.mapper.AlbaMapper2;
 import com.jaegokeeper.hwan.exception.NotFoundException;
 import com.jaegokeeper.hwan.item.dto.PageResponseDTO;
@@ -10,12 +11,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService{
 
+    private final ImgService imgImplement;
     private final BoardMapper boardMapper;
     private final AlbaMapper2 albaMapper2;
 
@@ -59,9 +62,13 @@ public class BoardServiceImpl implements BoardService{
             }
             writer = albaMapper2.findAlbaNameByAlbaId(writerId);
         }
-
-
-        BoardInsertDTO board = new BoardInsertDTO(storeId, boardType, dto.getTitle(), dto.getContent(), writer, dto.getImageId());
+        int imageId = 0;
+        try {
+            imageId = imgImplement.uploadImg(dto);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        BoardInsertDTO board = new BoardInsertDTO(storeId, boardType, dto.getTitle(), dto.getContent(), writer, imageId);
         int insertedBoard = boardMapper.insertBoard(board);
         if (insertedBoard != 1) {
             throw new IllegalStateException("board 생성 실패");
@@ -108,7 +115,7 @@ public class BoardServiceImpl implements BoardService{
             throw new NotFoundException("해당 게시글이 없습니다.");
         }
 
-        int deletedBoard = boardMapper.softDeleteItem(storeId, boardId);
+        int deletedBoard = boardMapper.softDeleteBoard(storeId, boardId);
         if (deletedBoard != 1) {
             throw new IllegalStateException("삭제 실패");
         }
