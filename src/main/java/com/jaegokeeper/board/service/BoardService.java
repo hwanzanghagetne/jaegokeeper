@@ -19,5 +19,5 @@ public interface BoardService {
     void updateBoard(Integer storeId, Integer boardId, BoardUpdateRequestDTO dto);
 
     // 삭제 페이지
-    void softDeleteItem(Integer storeId, Integer boardId);
+    void softDeleteBoard(Integer storeId, Integer boardId);
 }
