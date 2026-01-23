@@ -32,14 +32,15 @@ public class AlbaService {
         if(albaMapper.existsByAlbaPhone(albaRegisterDto.getAlbaPhone()) > 0) {
             throw new IllegalArgumentException("존재하는 알바 전화번호 입니다.");
         }
+
         // alba 저장
         albaMapper.insertAlba(albaRegisterDto);
 
         // alba_id 생성되었는지 확인
-        if(albaRegisterDto.getAlbaId() == null) {
-            throw new IllegalStateException("Alba ID가 생성되지 않았습니다.");
-        }
-        workMapper.insertWork(albaRegisterDto);
+//        if(albaRegisterDto.getAlbaId() == null) {
+//            throw new IllegalStateException("Alba ID가 생성되지 않았습니다.");
+//        }
+//        workMapper.insertWork(albaRegisterDto);
 
     }
 

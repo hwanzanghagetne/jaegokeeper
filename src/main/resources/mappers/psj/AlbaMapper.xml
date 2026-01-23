@@ -72,8 +72,8 @@
     <!-- 알바 저장 -->
     <insert id="insertAlba" parameterType="com.jaegokeeper.psj.dto.AlbaDetailDto"
             useGeneratedKeys="true" keyProperty="albaId">
-        INSERT INTO alba (store_id, alba_name, alba_phone, alba_status, created_at)
-        VALUES (#{storeId}, #{albaName}, #{albaPhone}, #{albaStatus}, NOW())
+        INSERT INTO alba (store_id, alba_name, alba_phone, alba_status, created_at, image_id)
+        VALUES (#{storeId}, #{albaName}, #{albaPhone}, #{albaStatus}, NOW(), #{imageId})
     </insert>
     <select id="existsByStoreId" parameterType="int" resultType="boolean">
         SELECT EXISTS (

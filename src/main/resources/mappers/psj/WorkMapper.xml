@@ -20,10 +20,10 @@
     </select>
 
     <!-- 알바 저장 -->
-    <insert id="insertWork" parameterType="com.jaegokeeper.psj.dto.AlbaRegisterDto">
-        INSERT INTO work (alba_id, work_date, work_status)
-        VALUES (#{albaId}, #{workDate}, #{workStatus})
-    </insert>
+<!--    <insert id="insertWork" parameterType="com.jaegokeeper.psj.dto.AlbaRegisterDto">-->
+<!--        INSERT INTO work (alba_id)-->
+<!--        VALUES (#{albaId})-->
+<!--    </insert>-->
 
     <!-- 알바 삭제 -->
     <delete id="deleteWork">
