@@ -1,0 +1,16 @@
+package com.jaegokeeper.ddan.user.mapper;
+
+import com.jaegokeeper.psj.dto.UserDto;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+@Mapper
+public interface UserMapper2 {
+
+    int countByEmail(@Param("email") String email);
+
+    int insertUser(UserDto userDto);
+
+    UserDto findUserByMail(@Param("email") String email);
+
+}

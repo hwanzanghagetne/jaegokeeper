@@ -102,7 +102,7 @@
     </bean>
     <!-- user mapper 스캔 -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.jaegokeeper.user.mapper"/>
+        <property name="basePackage" value="com.jaegokeeper.ddan.user.mapper"/>
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
         <property name="annotationClass" value="org.apache.ibatis.annotations.Mapper"/>
     </bean>

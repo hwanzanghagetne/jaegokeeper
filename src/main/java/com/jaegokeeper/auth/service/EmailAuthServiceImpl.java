@@ -3,7 +3,7 @@ package com.jaegokeeper.auth.service;
 import com.jaegokeeper.auth.mapper.EmailAuthMapper;
 import com.jaegokeeper.common.mail.MailService;
 import com.jaegokeeper.hwan.exception.ForbiddenException;
-import com.jaegokeeper.user.mapper.UsrMapper;
+import com.jaegokeeper.ddan.user.mapper.UserMapper2;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,13 +16,13 @@ public class EmailAuthServiceImpl implements EmailAuthService {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final EmailAuthMapper emailAuthMapper;
-    private final UsrMapper usrMapper;
+    private final UserMapper2 userMapper2;
     private final MailService mailService;
 
     /*코드 전송*/
     @Override
     public void sendCode(String email) {
-        int exists = usrMapper.countByEmail(email);
+        int exists = userMapper2.countByEmail(email);
         if (exists > 0) {
             throw new IllegalArgumentException("이미 가입된 이메일 입니다.");
         }
