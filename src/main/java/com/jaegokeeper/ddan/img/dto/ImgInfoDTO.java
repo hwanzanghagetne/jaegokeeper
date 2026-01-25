@@ -1,5 +1,6 @@
 package com.jaegokeeper.ddan.img.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,8 @@ public class ImgInfoDTO {
     private int imageId;
     private String imagePath;
     private String originName;
+
+    @JsonIgnore
     private MultipartFile file;
 
 }
