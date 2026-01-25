@@ -102,7 +102,7 @@ public class BoardServiceImpl implements BoardService{
     // 삭제
     @Override
     @Transactional
-    public void softDeleteItem(Integer storeId, Integer boardId) {
+    public void softDeleteBoard(Integer storeId, Integer boardId) {
         int exists = boardMapper.countActiveByStoreIdAndBoardId(storeId, boardId);
         if (exists != 1) {
             throw new NotFoundException("해당 게시글이 없습니다.");
