@@ -11,7 +11,6 @@ public interface StockMapper {
     int insertStock(Stock stock);
 
     // 현재 재고수량 구하기
-    Integer findStockAmountByStockId(@Param("stockId") Integer stockId);
     Integer findStockAmountByItemId(@Param("itemId") Integer itemId);
 
     //재고수량를 업데이트
@@ -30,5 +29,7 @@ public interface StockMapper {
 
     //검증용
     Integer findStockIdByItem(@Param("itemId") Integer itemId);
+    Integer findItemIdByStockId(@Param("stockId") Integer stockId,
+                                @Param("storeId") Integer storeId);
 
 }

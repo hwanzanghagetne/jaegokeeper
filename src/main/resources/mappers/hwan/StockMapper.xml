@@ -86,4 +86,14 @@
         WHERE s.item_id = #{itemId}
         AND i.is_active = b'1'
     </select>
+
+    <select id="findItemIdByStockId" resultMap="Integer">
+        SELECT s.item_id
+        FROM stock s
+        JOIN item i
+        ON i.item_id =  s.item_id
+        WHERE s.stock_id = #{stock_id}
+        AND i.is_active = b'1'
+        AND i.store_id = #{storeId}
+    </select>
 </mapper>
