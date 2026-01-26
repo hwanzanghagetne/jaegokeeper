@@ -7,7 +7,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+
+import static com.jaegokeeper.hwan.exception.ErrorCode.*;
 
 @Slf4j
 @RestControllerAdvice
@@ -20,54 +23,59 @@ public class GlobalExceptionHandler {
         List<FieldErrorResponse> errors = e.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(fe -> new FieldErrorResponse(
-                        fe.getField(),
-                        fe.getDefaultMessage()
-                ))
+                .map(fe -> new FieldErrorResponse(fe.getField(), fe.getDefaultMessage()))
                 .toList();
 
+        ErrorResponse response = new ErrorResponse(BAD_REQUEST.getCode(),
+                BAD_REQUEST.getMessage(),
+                errors);
+
         return ResponseEntity
-                .badRequest()
-                .body(new ErrorResponse("VALIDATION_ERROR", "요청값이 올바르지 않습니다.", errors));
+                .status(BAD_REQUEST.getStatus())
+                .body(response);
     }
 
-    // 잘못된 요청 400
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
+    // 비즈니스 예외
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ErrorResponse> handleBusiness(BusinessException e, HttpServletRequest request) {
+        ErrorCode errorCode = e.getErrorCode();
+
+        log.error("[BUSINESS EXCEPTION] code={} method={} uri={} param={}",
+                errorCode.getCode(),
+                request.getMethod(),
+                request.getRequestURI(),
+                request.getParameterMap(),
+                e);
+
+        ErrorResponse response = new ErrorResponse(
+                errorCode.getCode(),
+                errorCode.getMessage(),
+                null
+        );
+
         return ResponseEntity
-                .badRequest()
-                .body(new ErrorResponse("INVALID_ARGUMENT", e.getMessage(), null));
+                .status(errorCode.getStatus())
+                .body(response);
     }
 
-    // 상태가 맞지 않음 403
-    @ExceptionHandler(ForbiddenException.class)
-    public ResponseEntity<ErrorResponse> handleForbidden(ForbiddenException e) {
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(new ErrorResponse("FORBIDDEN", e.getMessage(), null));
-    }
-
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException e) {
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("INTERNAL_SERVER_ERROR", e.getMessage(), null));
-    }
-
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException e) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse("NOT_FOUND", e.getMessage(), null));
-    }
-    // 그 외 500
+    // 그 외
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleUnhandledException(Exception e) {
+    public ResponseEntity<ErrorResponse> handleUnhandled(Exception e, HttpServletRequest request) {
 
-        log.error("Unhandled exception", e);
+        log.error("[UNHANDLED_EXCEPTION] method={} uri={} param={}",
+                request.getMethod(),
+                request.getRequestURI(),
+                request.getParameterMap(),
+                e);
+
+        ErrorResponse response = new ErrorResponse(
+                INTERNAL_ERROR.getCode(),
+                INTERNAL_ERROR.getMessage(),
+                null
+        );
 
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("INTERNAL_SERVER_ERROR", "서버 오류가 발생했습니다.", null));
+                .status(INTERNAL_ERROR.getStatus())
+                .body(response);
     }
 }

@@ -8,8 +8,8 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class ErrorResponse {
+
     private final String code;
     private final String message;
-
     private final List<FieldErrorResponse> errors;
 }

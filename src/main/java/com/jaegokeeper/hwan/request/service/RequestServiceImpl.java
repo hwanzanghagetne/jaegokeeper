@@ -2,7 +2,7 @@ package com.jaegokeeper.hwan.request.service;
 
 import com.jaegokeeper.hwan.alba.dto.AlbaOptionDTO;
 import com.jaegokeeper.hwan.alba.mapper.AlbaMapper2;
-import com.jaegokeeper.hwan.exception.NotFoundException;
+import com.jaegokeeper.hwan.exception.BusinessException;
 import com.jaegokeeper.hwan.item.dto.PageResponseDTO;
 import com.jaegokeeper.hwan.item.mapper.ItemMapper;
 import com.jaegokeeper.hwan.request.domain.Request;
@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static com.jaegokeeper.hwan.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +36,7 @@ public class RequestServiceImpl implements RequestService {
             Integer itemId = reqDto.getItemId();
             int count = itemMapper.countByStoreIdAndItemId(storeId, itemId);
             if (count != 1) {
-                throw new NotFoundException("해당 매장의 아이템이 아닙니다. itemId=" + itemId);
+                throw new BusinessException(ITEM_NOT_FOUND);
             }
 
             RequestType requestType = reqDto.getRequestType();
@@ -42,14 +44,14 @@ public class RequestServiceImpl implements RequestService {
             LocalDateTime requestDate = reqDto.getRequestDate();
 
             if (requestType == RequestType.ORDER && requestAmount < 1) {
-                    throw new IllegalArgumentException("입고요청은 수량이 1 이상 필수입니다.");
+                    throw new BusinessException(BAD_REQUEST);
             }
 
             Request request = Request.create(itemId, reqDto.getAlbaId(), requestType, requestAmount, requestDate);
 
             int inserted = requestMapper.insertRequest(request);
             if (inserted != 1) {
-                throw new IllegalStateException("요청 등록 실패");
+                throw new BusinessException(INTERNAL_ERROR);
             }
             createdCount++;
         }
@@ -86,7 +88,7 @@ public class RequestServiceImpl implements RequestService {
     public void softDeleteRequest(Integer storeId, Integer requestId) {
         int deleted = requestMapper.softDeleteRequest(storeId, requestId);
         if (deleted != 1) {
-            throw new IllegalStateException("삭제 실패");
+            throw new BusinessException(INTERNAL_ERROR);
         }
     }
 
@@ -96,7 +98,7 @@ public class RequestServiceImpl implements RequestService {
     public void updateRequest(Integer storeId, Integer requestId, RequestUpdateRequestDTO dto) {
         int updated = requestMapper.updateRequest(storeId, requestId, dto);
         if (updated != 1) {
-            throw new IllegalStateException("수정 실패");
+            throw new BusinessException(INTERNAL_ERROR);
         }
     }
 
@@ -106,7 +108,7 @@ public class RequestServiceImpl implements RequestService {
     public void updateRequestStatus(Integer storeId, Integer requestId, RequestStatusUpdateRequestDTO dto) {
         int updated = requestMapper.updateRequestStatus(storeId, requestId, dto);
         if (updated != 1) {
-            throw new IllegalStateException("상태 수정 실패");
+            throw new BusinessException(INTERNAL_ERROR);
         }
     }
 }
