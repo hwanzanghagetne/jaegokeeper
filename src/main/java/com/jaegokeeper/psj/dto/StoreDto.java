@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 public class StoreDto {
     private int storeId;
 
+    private int userId;
+
     private String storeName;
 
     private String storeAdd1;

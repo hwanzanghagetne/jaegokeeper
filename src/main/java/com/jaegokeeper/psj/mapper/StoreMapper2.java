@@ -8,6 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 public interface StoreMapper2 {
     boolean existsById(int StoreId);
 
+    // store 정보 등록
+    int insertStore(StoreDto storeDto);
+
     // store 정보 수정
     void updateStore(StoreDto storeDto);
 }

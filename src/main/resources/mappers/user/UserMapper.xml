@@ -11,21 +11,7 @@
         WHERE user_mail = #{email}
     </select>
 
-    <insert id="insertUser" parameterType="com.jaegokeeper.ddan.user.dto.UserDTO">
-        INSERT INTO user (
-            user_name,
-            user_pass,
-            user_mail,
-            user_phone,
-            login_type
-        ) VALUES (
-            #{userName},
-            #{userPass},
-            #{userMail},
-            #{userPhone},
-            #{loginType}
-        )
-    </insert>
+
 
     <select id="findUserByMail" parameterType="String" resultType="com.jaegokeeper.ddan.user.dto.UserDTO">
         SELECT
