@@ -92,7 +92,7 @@
         FROM stock s
         JOIN item i
         ON i.item_id =  s.item_id
-        WHERE s.stock_id = #{stock_id}
+        WHERE s.stock_id = #{stockId}
         AND i.is_active = b'1'
         AND i.store_id = #{storeId}
     </select>
