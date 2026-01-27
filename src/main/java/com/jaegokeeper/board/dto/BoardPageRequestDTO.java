@@ -1,6 +1,7 @@
 package com.jaegokeeper.board.dto;
 
 import com.jaegokeeper.board.enums.BoardType;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,10 +24,12 @@ public class BoardPageRequestDTO {
     private BoardType type;
 
     //기본값 1
+    @ApiModelProperty(hidden = true)
     public int getPageValue() {
         return page == null ? 1 : page;
     }
     //기본값 10
+    @ApiModelProperty(hidden = true)
     public int getSizeValue() {
         return size == null ? 10 : size;
     }

@@ -2,6 +2,7 @@ package com.jaegokeeper.hwan.request.dto;
 
 import com.jaegokeeper.hwan.request.enums.RequestStatus;
 import com.jaegokeeper.hwan.request.enums.RequestType;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,10 +25,12 @@ public class RequestPageRequestDTO {
     private RequestStatus requestStatus;
 
     //기본값 1
+    @ApiModelProperty(hidden = true)
     public int getPageValue() {
         return page == null ? 1 : page;
     }
     //기본값 10
+    @ApiModelProperty(hidden = true)
     public int getSizeValue() {
         return size == null ? 10 : size;
     }

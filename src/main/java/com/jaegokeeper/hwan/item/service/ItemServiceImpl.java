@@ -1,7 +1,7 @@
 package com.jaegokeeper.hwan.item.service;
 
 import com.jaegokeeper.hwan.buffer.mapper.BufferMapper;
-import com.jaegokeeper.hwan.exception.NotFoundException;
+import com.jaegokeeper.hwan.exception.BusinessException;
 import com.jaegokeeper.hwan.item.domain.Item;
 import com.jaegokeeper.hwan.item.dto.*;
 import com.jaegokeeper.hwan.item.mapper.ItemMapper;
@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static com.jaegokeeper.hwan.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -35,21 +37,22 @@ public class ItemServiceImpl implements ItemService {
     public ItemCreateResponseDTO createItem(Integer storeId, ItemCreateRequestDTO dto) {
         int count = storeMapper.countById(storeId);
         if (count == 0) {
-            throw new NotFoundException("존재하지 않는 매장입니다.");
+            throw new BusinessException(STORE_NOT_FOUND);
         }
 
         Item item = Item.of(storeId, dto.getItemName(), dto.getImageId());
 
         int insertedItem = itemMapper.insertItem(item);
-        if (insertedItem != 1) {throw new IllegalStateException("아이템 등록 실패");}
+        if (insertedItem != 1) {
+            throw new BusinessException(INTERNAL_ERROR);}
 
         Stock stock = Stock.of(item.getItemId(), dto.getStockAmount());
 
         int insertedStock = stockMapper.insertStock(stock);
-        if (insertedStock != 1) {throw new IllegalStateException("stock 생성 실패");}
+        if (insertedStock != 1) {throw new BusinessException(INTERNAL_ERROR);}
 
         int bufferInserted = bufferMapper.insertBuffer(item.getItemId(), 0);
-        if (bufferInserted != 1) {throw new IllegalStateException("safe 생성 실패");}
+        if (bufferInserted != 1) {throw new BusinessException(INTERNAL_ERROR);}
 
         return new ItemCreateResponseDTO(item.getItemId(), stock.getStockId());
     }
@@ -58,7 +61,7 @@ public class ItemServiceImpl implements ItemService {
     public void softDeleteItem(Integer storeId, Integer itemId) {
         int updated = itemMapper.softDeleteItem(storeId, itemId);
         if (updated != 1) {
-            throw new IllegalStateException("삭제 실패");
+            throw new BusinessException(INTERNAL_ERROR);
         }
     }
 
@@ -85,9 +88,9 @@ public class ItemServiceImpl implements ItemService {
     //아이템 상세 조회
     @Override
     public ItemDetailDTO getItemDetail(Integer storeId, Integer itemId) {
-        ItemDetailDTO dto = itemMapper.getItemDetail(storeId, itemId);
+        ItemDetailDTO dto = itemMapper.findItemDetail(storeId, itemId);
         if (dto == null) {
-            throw new NotFoundException("존재하지 않는 아이템입니다.");
+            throw new BusinessException(ITEM_NOT_FOUND);
         }
         return dto;
     }
@@ -97,12 +100,12 @@ public class ItemServiceImpl implements ItemService {
     public void modifyItem( Integer storeId, Integer itemId,ItemModifyRequestDTO dto) {
         Integer stockId = stockMapper.findStockIdByItem(itemId);
         if (stockId == null) {
-            throw new NotFoundException("재고 없음");
+            throw new BusinessException(STOCK_NOT_FOUND);
         }
 
         // item 수정
         int itemUpdated = itemMapper.updateItem(storeId, itemId, dto.getItemName(),dto.getIsPinned(),dto.getImageId());
-        if (itemUpdated != 1) {throw new IllegalStateException("아이템 수정 실패");}
+        if (itemUpdated != 1) {throw new BusinessException(INTERNAL_ERROR);}
 
         // 재고 수정
         StockAdjustRequestDTO stockAdjustRequestDTO = new StockAdjustRequestDTO(dto.getTargetAmount(), dto.getBufferAmount());
