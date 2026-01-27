@@ -1,7 +1,7 @@
 package com.jaegokeeper.hwan.stock.service;
 
 import com.jaegokeeper.hwan.buffer.mapper.BufferMapper;
-import com.jaegokeeper.hwan.exception.NotFoundException;
+import com.jaegokeeper.hwan.exception.BusinessException;
 import com.jaegokeeper.hwan.stock.dto.StockAdjustRequestDTO;
 import com.jaegokeeper.hwan.stock.dto.StockInOutRequestDTO;
 import com.jaegokeeper.hwan.stock.mapper.LogMapper;
@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.jaegokeeper.hwan.exception.ErrorCode.*;
 import static com.jaegokeeper.hwan.stock.enums.LogType.*;
 
 @Service
@@ -24,13 +25,19 @@ public class StockServiceImpl implements StockService {
     @Override
     public void inStock(Integer storeId, Integer stockId, StockInOutRequestDTO dto) {
 
+        Integer itemId = stockMapper.findItemIdByStockId(stockId,storeId);
+        if (itemId == null) {
+            throw new BusinessException(STOCK_NOT_FOUND);
+        }
+
         int updated = stockMapper.increaseQuantity(storeId,stockId, dto.getAmount());
         if (updated != 1) {
-            throw new IllegalStateException("재고 수정 실패");
+            throw new BusinessException(INTERNAL_ERROR);
         }
-        int inserted = logMapper.insertLog(stockId, IN, dto.getAmount());
+
+        int inserted = logMapper.insertLog(itemId, IN, dto.getAmount());
         if (inserted != 1) {
-            throw new IllegalStateException("재고 히스토리 저장 실패");
+            throw new BusinessException(INTERNAL_ERROR);
         }
     }
 
@@ -38,13 +45,19 @@ public class StockServiceImpl implements StockService {
     @Override
     public void outStock(Integer storeId, Integer stockId, StockInOutRequestDTO dto) {
 
+        Integer itemId = stockMapper.findItemIdByStockId(stockId,storeId);
+        if (itemId == null) {
+            throw new BusinessException(STOCK_NOT_FOUND);
+        }
+
         int updated = stockMapper.decreaseQuantity(storeId,stockId, dto.getAmount());
         if (updated != 1) {
-            throw new IllegalStateException("재고 수정 실패");
+            throw new BusinessException(INTERNAL_ERROR);
         }
-        int inserted = logMapper.insertLog(stockId, OUT, dto.getAmount());
+
+        int inserted = logMapper.insertLog(itemId, OUT, dto.getAmount());
         if (inserted != 1) {
-            throw new IllegalStateException("재고 히스토리 저장 실패");
+            throw new BusinessException(INTERNAL_ERROR);
         }
     }
 
@@ -54,20 +67,25 @@ public class StockServiceImpl implements StockService {
     public void adjustStock(Integer itemId, StockAdjustRequestDTO dto) {
 
         Integer existAmount = stockMapper.findStockAmountByItemId(itemId);
-        if (existAmount == null) {throw new NotFoundException("존재하지 않는 재고입니다: " + itemId);}
+        if (existAmount == null) {
+            throw new BusinessException(STOCK_NOT_FOUND);
+        }
 
         int updatedStock = stockMapper.updateStockAmount(itemId, dto.getTargetAmount());
-        if (updatedStock != 1) {throw new IllegalStateException("재고 수정 실패");}
+        if (updatedStock != 1) {
+            throw new BusinessException(INTERNAL_ERROR);
+        }
 
         int updatedSafe = bufferMapper.updateBufferAmount(itemId, dto.getBufferAmount());
-        if (updatedSafe != 1) {throw new IllegalStateException("안전재고 수정 실패");}
-
+        if (updatedSafe != 1) {
+            throw new BusinessException(INTERNAL_ERROR);
+        }
 
         boolean isChanged = !dto.getTargetAmount().equals(existAmount);
         if (isChanged) {
             int inserted = logMapper.insertLog(itemId, ADJUST, dto.getTargetAmount());
             if (inserted != 1) {
-                throw new IllegalStateException("재고 로그 저장 실패");
+                throw new BusinessException(INTERNAL_ERROR);
             }
         }
     }

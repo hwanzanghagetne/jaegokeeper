@@ -1,14 +1,14 @@
 package com.jaegokeeper.hwan.item.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jaegokeeper.hwan.item.enums.ItemFilter;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import java.util.List;
 
 @Getter
 @Setter
@@ -25,18 +25,26 @@ public class ItemPageRequestDTO {
     private ItemFilter filter;
     private String keyword;
     private Boolean excludeZero;
+
+
     //기본값 1
+    @ApiModelProperty(hidden = true)
     public int getPageValue() {
         return page == null ? 1 : page;
     }
+
     //기본값 10
+    @ApiModelProperty(hidden = true)
     public int getSizeValue() {
         return size == null ? 10 : size;
     }
 
+    @ApiModelProperty(hidden = true)
     public boolean isExcludeZero() {
         return Boolean.TRUE.equals(excludeZero);
     }
+
+    @ApiModelProperty(hidden = true)
     public String getKeywordValue() {
         if (keyword == null) {
             return null;

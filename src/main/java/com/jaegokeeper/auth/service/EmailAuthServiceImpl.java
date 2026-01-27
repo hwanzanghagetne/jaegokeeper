@@ -2,12 +2,14 @@ package com.jaegokeeper.auth.service;
 
 import com.jaegokeeper.auth.mapper.EmailAuthMapper;
 import com.jaegokeeper.common.mail.MailService;
-import com.jaegokeeper.hwan.exception.ForbiddenException;
+import com.jaegokeeper.hwan.exception.BusinessException;
 import com.jaegokeeper.user.mapper.UsrMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+
+import static com.jaegokeeper.hwan.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +26,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
     public void sendCode(String email) {
         int exists = usrMapper.countByEmail(email);
         if (exists > 0) {
-            throw new IllegalArgumentException("이미 가입된 이메일 입니다.");
+            throw new BusinessException(EMAIL_ALREADY_REGISTERED);
         }
 
         String code = generate6DigitCode();
@@ -38,7 +40,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
     public void verifyCode(String email, String code) {
         int updated = emailAuthMapper.verifyCode(email, code);
         if (updated != 1) {
-            throw new IllegalArgumentException("인증번호가 올바르지 않거나 만료되었습니다.");
+            throw new BusinessException(EMAIL_CODE_INVALID);
         }
     }
 
@@ -47,7 +49,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
     public void assertVerified(String email) {
         int verified = emailAuthMapper.isVerified(email);
         if (verified != 1) {
-            throw new ForbiddenException("이메일 인증이 필요합니다.");
+            throw new BusinessException(EMAIL_NOT_VERIFIED);
         }
     }
 
