@@ -87,7 +87,7 @@
         AND i.is_active = b'1'
     </select>
 
-    <select id="findItemIdByStockId" resultMap="Integer">
+    <select id="findItemIdByStockId" resultType="Integer">
         SELECT s.item_id
         FROM stock s
         JOIN item i
