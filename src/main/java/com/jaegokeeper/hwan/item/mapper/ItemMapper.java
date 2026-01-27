@@ -32,7 +32,7 @@ public interface ItemMapper {
                                    @Param("size") Integer size);
 
     //아이템 상세
-    ItemDetailDTO getItemDetail(@Param("storeId") Integer storeId,
+    ItemDetailDTO findItemDetail(@Param("storeId") Integer storeId,
                                 @Param("itemId") Integer itemId);
 
     //아이템 수정
