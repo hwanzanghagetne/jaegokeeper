@@ -42,6 +42,7 @@ public class AlbaController {
     public ResponseEntity<AlbaRegisterDto> saveAlbaRegister(@Valid @ModelAttribute AlbaRegisterDto albaRegisterDto, @ApiIgnore HttpSession session) throws Exception {
 //        Integer storeId = (Integer) session.getAttribute("storeId");
 //        albaRegisterDto.setStoreId(storeId);
+
         int imageId = imgService.uploadImg(albaRegisterDto);
         albaRegisterDto.setImageId(imageId);
 

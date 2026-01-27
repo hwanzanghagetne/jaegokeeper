@@ -33,4 +33,13 @@ public class AlbaRegisterDto extends ImgInfoDTO {
 
     @Size(max = 50, message = "알바 근로상태는 최대 50자까지 입력 가능합니다.")
     private String albaStatus;
+
+//    @NotBlank(message = "근무일은 필수입니다.")
+//    @Size(max = 50, message = "근무일은 최대 50자까지 입력 가능합니다.")
+//    private String workDate;
+//
+//    @NotBlank(message = "알바 근태는 필수입니다.")
+//    @Size(max = 50, message = "알바근태는 최대 50자까지 입력 가능합니다.")
+//    private String workStatus;
+
 }

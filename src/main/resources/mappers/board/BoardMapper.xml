@@ -91,7 +91,7 @@
     </update>
 
     <!--  삭제 페이지  -->
-    <update id="softDeleteItem">
+    <update id="softDeleteBoard">
         UPDATE board b
         SET b.is_active = b'0',
             b.updated_at = CURRENT_TIMESTAMP
