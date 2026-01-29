@@ -20,7 +20,7 @@ import static com.jaegokeeper.hwan.exception.ErrorCode.*;
 @RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService{
 
-    private final ImgService imgImplement;
+    private final ImgService imgService;
     private final BoardMapper boardMapper;
     private final AlbaMapper2 albaMapper2;
 
@@ -68,7 +68,7 @@ public class BoardServiceImpl implements BoardService{
         Integer imageId = null;
         try {
             if (dto.getFile() != null && !dto.getFile().isEmpty()) {
-                imageId = imgImplement.uploadImg(dto);
+                imageId = imgService.uploadImg(dto);
             }
         } catch (IOException e) {
             throw new BusinessException(IMAGE_UPLOAD_FAILED, e);
