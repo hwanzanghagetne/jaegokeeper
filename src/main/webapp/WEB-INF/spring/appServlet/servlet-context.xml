@@ -24,6 +24,16 @@
         </message-converters>
     </annotation-driven>
 
+    <cors>
+        <mapping path="/**"
+                 allowed-origins="http://localhost:3000"
+                 allowed-methods="GET,POST,PUT,DELETE,OPTIONS"
+                 allowed-headers="*"
+                 allow-credentials="true"
+                 max-age="3600"/>
+    </cors>
+
+
     <!-- 정적 리소스 처리 -->
     <resources mapping="/resources/**" location="/resources/" />
 
