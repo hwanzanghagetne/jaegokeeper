@@ -2,11 +2,13 @@ package com.jaegokeeper.hwan.request.service;
 
 import com.jaegokeeper.hwan.alba.dto.AlbaOptionDTO;
 import com.jaegokeeper.hwan.alba.mapper.AlbaMapper2;
-import com.jaegokeeper.hwan.exception.BusinessException;
-import com.jaegokeeper.hwan.item.dto.PageResponseDTO;
+import com.jaegokeeper.exception.BusinessException;
+import com.jaegokeeper.hwan.item.dto.response.ItemPageResponse;
 import com.jaegokeeper.hwan.item.mapper.ItemMapper;
 import com.jaegokeeper.hwan.request.domain.Request;
-import com.jaegokeeper.hwan.request.dto.*;
+import com.jaegokeeper.hwan.request.dto.request.*;
+import com.jaegokeeper.hwan.request.dto.response.RequestDetailResponse;
+import com.jaegokeeper.hwan.request.dto.response.RequestListResponse;
 import com.jaegokeeper.hwan.request.enums.RequestStatus;
 import com.jaegokeeper.hwan.request.enums.RequestType;
 import com.jaegokeeper.hwan.request.mapper.RequestMapper;
@@ -17,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static com.jaegokeeper.hwan.exception.ErrorCode.*;
+import static com.jaegokeeper.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -26,12 +28,14 @@ public class RequestServiceImpl implements RequestService {
     private final RequestMapper requestMapper;
     private final ItemMapper itemMapper;
     private final AlbaMapper2 albaMapper2;
+
+    // 생성
     @Transactional
     @Override
-    public int createRequest(Integer storeId, RequestCreateBatchRequestDTO dto) {
+    public int createRequest(Integer storeId, RequestCreateBatchRequest dto) {
         int createdCount = 0;
 
-        for (RequestCreateRequestDTO reqDto : dto.getRequests()) {
+        for (RequestCreateRequest reqDto : dto.getRequests()) {
 
             Integer itemId = reqDto.getItemId();
             int count = itemMapper.countByStoreIdAndItemId(storeId, itemId);
@@ -58,8 +62,19 @@ public class RequestServiceImpl implements RequestService {
         return createdCount;
     }
 
+    // 상세 조회
     @Override
-    public PageResponseDTO<RequestListDTO> getRequestList(Integer storeId, RequestPageRequestDTO dto) {
+    public RequestDetailResponse getRequestDetail(Integer storeId, Integer requestId) {
+        RequestDetailResponse dto = requestMapper.findRequestDetail(storeId, requestId);
+        if (dto == null) {
+            throw new BusinessException(REQUEST_NOT_FOUND);
+        }
+        return dto;
+    }
+
+    // 리스트 조회
+    @Override
+    public ItemPageResponse<RequestListResponse> getRequestList(Integer storeId, RequestPageRequest dto) {
 
         int pageNum = dto.getPageValue();
         int pageSize = dto.getSizeValue();
@@ -69,18 +84,17 @@ public class RequestServiceImpl implements RequestService {
         int offset = (pageNum - 1) * pageSize;
 
         int totalElements = requestMapper.countRequestList(storeId, requestType, requestStatus);
-        List<RequestListDTO> content = requestMapper.findRequestList(storeId, requestType, requestStatus, offset, pageSize);
+        List<RequestListResponse> content = requestMapper.findRequestList(storeId, requestType, requestStatus, offset, pageSize);
         int totalPages = (totalElements + pageSize - 1) / pageSize;
 
-        return new PageResponseDTO<>(content, pageNum, pageSize, totalElements, totalPages);
+        return new ItemPageResponse<>(content, pageNum, pageSize, totalElements, totalPages);
     }
 
-    // 임시 요청용 알바 리스트
-    @Override
-    public List<AlbaOptionDTO> findAlbaOptionsForRequest(Integer storeId) {
-        return albaMapper2.findAlbaOptionsForRequest(storeId);
-    }
-
+//    // 임시 요청용 알바 리스트
+//    @Override
+//    public List<AlbaOptionDTO> findAlbaOptionsForRequest(Integer storeId) {
+//        return albaMapper2.findAlbaOptionsForRequest(storeId);
+//    }
 
     //삭제
     @Transactional
@@ -95,7 +109,7 @@ public class RequestServiceImpl implements RequestService {
     // 수정
     @Transactional
     @Override
-    public void updateRequest(Integer storeId, Integer requestId, RequestUpdateRequestDTO dto) {
+    public void updateRequest(Integer storeId, Integer requestId, RequestUpdateRequest dto) {
         int updated = requestMapper.updateRequest(storeId, requestId, dto);
         if (updated != 1) {
             throw new BusinessException(INTERNAL_ERROR);
@@ -105,7 +119,7 @@ public class RequestServiceImpl implements RequestService {
     // 상태 수정
     @Transactional
     @Override
-    public void updateRequestStatus(Integer storeId, Integer requestId, RequestStatusUpdateRequestDTO dto) {
+    public void updateRequestStatus(Integer storeId, Integer requestId, RequestStatusUpdateRequest dto) {
         int updated = requestMapper.updateRequestStatus(storeId, requestId, dto);
         if (updated != 1) {
             throw new BusinessException(INTERNAL_ERROR);
