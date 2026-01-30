@@ -1,8 +1,9 @@
 package com.jaegokeeper.hwan.stock.service;
 
 import com.jaegokeeper.hwan.buffer.mapper.BufferMapper;
-import com.jaegokeeper.hwan.exception.BusinessException;
+import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.hwan.stock.dto.StockAdjustRequestDTO;
+import com.jaegokeeper.hwan.stock.dto.StockDetailResponse;
 import com.jaegokeeper.hwan.stock.dto.StockInOutRequestDTO;
 import com.jaegokeeper.hwan.stock.mapper.LogMapper;
 import com.jaegokeeper.hwan.stock.mapper.StockMapper;
@@ -10,7 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.jaegokeeper.hwan.exception.ErrorCode.*;
+import static com.jaegokeeper.exception.ErrorCode.INTERNAL_ERROR;
+import static com.jaegokeeper.exception.ErrorCode.STOCK_NOT_FOUND;
 import static com.jaegokeeper.hwan.stock.enums.LogType.*;
 
 @Service
@@ -23,7 +25,7 @@ public class StockServiceImpl implements StockService {
 
     @Transactional
     @Override
-    public void inStock(Integer storeId, Integer stockId, StockInOutRequestDTO dto) {
+    public int inStock(Integer storeId, Integer stockId, StockInOutRequestDTO dto) {
 
         Integer itemId = stockMapper.findItemIdByStockId(stockId,storeId);
         if (itemId == null) {
@@ -39,11 +41,16 @@ public class StockServiceImpl implements StockService {
         if (inserted != 1) {
             throw new BusinessException(INTERNAL_ERROR);
         }
+        Integer stockAmount = stockMapper.findStockAmount(storeId, stockId);
+        if (stockAmount == null) {
+            throw new BusinessException(INTERNAL_ERROR);
+        }
+        return stockAmount;
     }
 
     @Transactional
     @Override
-    public void outStock(Integer storeId, Integer stockId, StockInOutRequestDTO dto) {
+    public int outStock(Integer storeId, Integer stockId, StockInOutRequestDTO dto) {
 
         Integer itemId = stockMapper.findItemIdByStockId(stockId,storeId);
         if (itemId == null) {
@@ -59,6 +66,11 @@ public class StockServiceImpl implements StockService {
         if (inserted != 1) {
             throw new BusinessException(INTERNAL_ERROR);
         }
+        Integer stockAmount = stockMapper.findStockAmount(storeId, stockId);
+        if (stockAmount == null) {
+            throw new BusinessException(INTERNAL_ERROR);
+        }
+        return stockAmount;
     }
 
     @Transactional
@@ -88,5 +100,14 @@ public class StockServiceImpl implements StockService {
                 throw new BusinessException(INTERNAL_ERROR);
             }
         }
+    }
+
+    @Override
+    public StockDetailResponse getStockDetail(Integer storeId, Integer stockId) {
+        StockDetailResponse dto = stockMapper.findStockDetail(storeId, stockId);
+        if (dto == null) {
+            throw new BusinessException(STOCK_NOT_FOUND);
+        }
+        return dto;
     }
 }

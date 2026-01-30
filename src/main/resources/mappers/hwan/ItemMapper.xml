@@ -90,9 +90,10 @@
     </select>
 
     <select id="findItemList"
-            resultType="com.jaegokeeper.hwan.item.dto.ItemListDTO">
+            resultType="com.jaegokeeper.hwan.item.dto.response.ItemListResponse">
         SELECT
             i.item_id   AS itemId,
+            s.stock_id AS stockId,
             i.item_name AS itemName,
             i.image_id  AS imageId,
             i.is_pinned AS isPinned,
@@ -161,7 +162,7 @@
         LIMIT #{size} OFFSET #{offset}
     </select>
 
-    <select id="findItemDetail" resultType="com.jaegokeeper.hwan.item.dto.ItemDetailDTO">
+    <select id="findItemDetail" resultType="com.jaegokeeper.hwan.item.dto.response.ItemDetailResponse">
         SELECT
             i.item_id   AS itemId,
             i.item_name AS itemName,
