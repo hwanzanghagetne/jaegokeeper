@@ -99,6 +99,9 @@ public class SocialAuthController {
                         ? ticket.getRedirectUrl()
                         : "/"
         );
+        res.put("userId", target.getUserId());
+        res.put("storeId", target.getStoreId());
+        res.put("userName", target.getUserName());
 
         return res;
     }
