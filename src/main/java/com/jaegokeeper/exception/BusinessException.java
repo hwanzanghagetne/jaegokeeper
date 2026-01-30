@@ -1,4 +1,4 @@
-package com.jaegokeeper.hwan.exception;
+package com.jaegokeeper.exception;
 
 public class BusinessException extends RuntimeException {
 
