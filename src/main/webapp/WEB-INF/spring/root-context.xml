@@ -36,8 +36,8 @@
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.mariadb.jdbc.Driver"/>
 <!--        <property name="url" value="jdbc:mariadb://jaegokeeper.ddns.net:3142/jacho"/>-->
-<!--        <property name="url" value="jdbc:mariadb://192.168.0.6:3306/jacho"/>-->
-        <property name="url" value="jdbc:mariadb://127.0.0.1:3306/jacho"/>
+        <property name="url" value="jdbc:mariadb://192.168.0.6:3306/jacho"/>
+<!--        <property name="url" value="jdbc:mariadb://127.0.0.1:3306/jacho"/>-->
         <property name="username" value="ddando"/>
         <property name="password" value="bopomofo"/>
     </bean>
@@ -56,25 +56,12 @@
 <!--        <property name="typeAliasesPackage" value="com.jaegokeeper.psj.entity"/>-->
     </bean>
 
-    <!-- hwan 패키지 Mapper 스캔 -->
+    <!-- 패키지 Mapper 스캔 -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.jaegokeeper.hwan"/>
+        <property name="basePackage" value="com.jaegokeeper"/>
         <property name="annotationClass" value="org.apache.ibatis.annotations.Mapper"/>
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
     </bean>
-
-    <!-- psj 패키지 Mapper 스캔 -->
-    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.jaegokeeper.psj.mapper"/>
-        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
-    </bean>
-
-    <!-- ddan 패키지 img Mapper 스캔 -->
-    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.jaegokeeper.ddan.img.mapper"/>
-        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
-    </bean>
-
 
     <!-- Transaction Manager -->
     <bean id="transactionManager"
@@ -84,37 +71,6 @@
 
     <!-- Enable @Transactional -->
     <tx:annotation-driven transaction-manager="transactionManager"/>
-
-    <!-- board 패키지 Mapper 스캔 -->
-    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.jaegokeeper.board.mapper"/>
-        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
-    </bean>
-
-    <!-- auth mapper 스캔 -->
-    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.jaegokeeper.auth.mapper"/>
-        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
-        <property name="annotationClass" value="org.apache.ibatis.annotations.Mapper"/>
-    </bean>
-    <!-- user mapper 스캔 -->
-    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.jaegokeeper.ddan.user.mapper"/>
-        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
-        <property name="annotationClass" value="org.apache.ibatis.annotations.Mapper"/>
-    </bean>
-
-    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.jaegokeeper.user.mapper"/>
-        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
-        <property name="annotationClass" value="org.apache.ibatis.annotations.Mapper"/>
-    </bean>
-    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.jaegokeeper.email.mapper"/>
-        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
-        <property name="annotationClass" value="org.apache.ibatis.annotations.Mapper"/>
-    </bean>
-
 
     <!-- mail properties -->
     <context:property-placeholder location="classpath:mail.properties" />

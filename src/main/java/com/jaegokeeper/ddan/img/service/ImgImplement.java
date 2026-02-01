@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
-@Service("imgService")
+@Service
 public class ImgImplement implements ImgService{
 
     private static final String BASE_DIR = "/data/upload/img";
