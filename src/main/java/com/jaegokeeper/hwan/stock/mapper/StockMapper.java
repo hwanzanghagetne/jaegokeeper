@@ -1,6 +1,7 @@
 package com.jaegokeeper.hwan.stock.mapper;
 
 import com.jaegokeeper.hwan.stock.domain.Stock;
+import com.jaegokeeper.hwan.stock.dto.StockDetailResponse;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -11,8 +12,12 @@ public interface StockMapper {
     int insertStock(Stock stock);
 
     // 현재 재고수량 구하기
-    Integer findStockAmountByStockId(@Param("stockId") Integer stockId);
     Integer findStockAmountByItemId(@Param("itemId") Integer itemId);
+
+    Integer findStockAmount(
+            @Param("storeId") Integer storeId,
+            @Param("stockId") Integer stockId
+    );
 
     //재고수량를 업데이트
     int updateStockAmount(@Param("itemId") Integer itemId,
@@ -28,7 +33,13 @@ public interface StockMapper {
                          @Param("stockId") Integer stockId,
                          @Param("amount") Integer amount);
 
+
+
+    StockDetailResponse findStockDetail(@Param("storeId") Integer storeId,
+                                        @Param("stockId") Integer stockId);
     //검증용
     Integer findStockIdByItem(@Param("itemId") Integer itemId);
+    Integer findItemIdByStockId(@Param("stockId") Integer stockId,
+                                @Param("storeId") Integer storeId);
 
 }

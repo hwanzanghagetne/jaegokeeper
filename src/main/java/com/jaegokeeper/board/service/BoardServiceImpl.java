@@ -1,26 +1,38 @@
 package com.jaegokeeper.board.service;
 
-import com.jaegokeeper.board.dto.*;
+import com.jaegokeeper.board.dto.request.BoardCreateRequest;
+import com.jaegokeeper.board.dto.request.BoardPageRequest;
+import com.jaegokeeper.board.dto.request.BoardUpdateRequest;
+import com.jaegokeeper.board.dto.response.BoardDetailResponse;
+import com.jaegokeeper.board.domain.Board;
+import com.jaegokeeper.board.dto.response.BoardListResponse;
+import com.jaegokeeper.board.dto.response.BoardUpdateResponse;
 import com.jaegokeeper.board.enums.BoardType;
 import com.jaegokeeper.board.mapper.BoardMapper;
+import com.jaegokeeper.ddan.img.service.ImgService;
 import com.jaegokeeper.hwan.alba.mapper.AlbaMapper2;
-import com.jaegokeeper.hwan.exception.NotFoundException;
-import com.jaegokeeper.hwan.item.dto.PageResponseDTO;
+import com.jaegokeeper.exception.BusinessException;
+import com.jaegokeeper.hwan.item.dto.response.ItemPageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
+
+import static com.jaegokeeper.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService{
 
+    private final ImgService imgService;
     private final BoardMapper boardMapper;
     private final AlbaMapper2 albaMapper2;
 
+    // 리스트 조회
     @Override
-    public PageResponseDTO<BoardListDTO> getBoardList(Integer storeId, BoardPageRequestDTO dto) {
+    public ItemPageResponse<BoardListResponse> getBoardList(Integer storeId, BoardPageRequest dto) {
         int page = dto.getPageValue();
         int size = dto.getSizeValue();
 
@@ -29,16 +41,17 @@ public class BoardServiceImpl implements BoardService{
 
         int offset = (page - 1) * size;
 
-        List<BoardListDTO> content = boardMapper.findBoardList(storeId,dto.getType(),size,offset);
+        List<BoardListResponse> content = boardMapper.findBoardList(storeId,dto.getType(),size,offset);
 
-        return new PageResponseDTO<>(content, page, size, totalElements, totalPages);
+        return new ItemPageResponse<>(content, page, size, totalElements, totalPages);
     }
 
+    // 상세 조회
     @Override
-    public BoardDetailResponseDTO getBoardDetail(Integer storeId, Integer boardId) {
-        BoardDetailResponseDTO dto = boardMapper.getBoardDetail(storeId, boardId);
+    public BoardDetailResponse getBoardDetail(Integer storeId, Integer boardId) {
+        BoardDetailResponse dto = boardMapper.getBoardDetail(storeId, boardId);
         if (dto == null) {
-            throw new NotFoundException("존재하지 않는 게시글입니다.");
+            throw new BusinessException(BOARD_NOT_FOUND);
         }
         return dto;
     }
@@ -46,7 +59,7 @@ public class BoardServiceImpl implements BoardService{
     // 생성
     @Transactional
     @Override
-    public void createBoard(Integer storeId, BoardType boardType, BoardCreateRequestDTO dto) {
+    public Integer createBoard(Integer storeId, BoardType boardType, BoardCreateRequest dto) {
 
         String writer;
         Integer writerId = dto.getWriterId();
@@ -55,26 +68,35 @@ public class BoardServiceImpl implements BoardService{
         } else {
             int count = albaMapper2.countByStoreIdAndAlbaId(storeId, writerId);
             if (count != 1) {
-                throw new NotFoundException("해당 매장 알바생이 아닙니다.");
+                throw new BusinessException(ALBA_NOT_IN_STORE);
             }
             writer = albaMapper2.findAlbaNameByAlbaId(writerId);
         }
 
+        Integer imageId = null;
+        try {
+            if (dto.getFile() != null && !dto.getFile().isEmpty()) {
+                imageId = imgService.uploadImg(dto);
+            }
+        } catch (IOException e) {
+            throw new BusinessException(IMAGE_UPLOAD_FAILED, e);
+        }
 
-        BoardInsertDTO board = new BoardInsertDTO(storeId, boardType, dto.getTitle(), dto.getContent(), writer, dto.getImageId());
+        Board board = Board.create(storeId, boardType, dto.getTitle(), dto.getContent(), writer, imageId);
         int insertedBoard = boardMapper.insertBoard(board);
         if (insertedBoard != 1) {
-            throw new IllegalStateException("board 생성 실패");
+            throw new BusinessException(INTERNAL_ERROR);
         }
+        return board.getBoardId();
     }
 
     // 수정
     @Override
     @Transactional
-    public void updateBoard(Integer storeId, Integer boardId, BoardUpdateRequestDTO dto) {
+    public void updateBoard(Integer storeId, Integer boardId, BoardUpdateRequest dto) {
         int exists = boardMapper.countActiveByStoreIdAndBoardId(storeId, boardId);
         if (exists != 1) {
-            throw new NotFoundException("해당 게시글이 없습니다.");
+            throw new BusinessException(BOARD_NOT_FOUND);
         }
 
         String writer;
@@ -84,18 +106,18 @@ public class BoardServiceImpl implements BoardService{
         } else {
             int count = albaMapper2.countByStoreIdAndAlbaId(storeId, writerId);
             if (count != 1) {
-                throw new NotFoundException("해당 매장 직원이 아닙니다.");
+                throw new BusinessException(ALBA_NOT_IN_STORE);
             }
             writer = albaMapper2.findAlbaNameByAlbaId(writerId);
         }
 
-        BoardUpdateDTO updateBoard = new BoardUpdateDTO(
+        BoardUpdateResponse updateBoard = new BoardUpdateResponse(
                 dto.getTitle(), dto.getContent(), writer, dto.getImageId()
         );
 
         int updatedBoard = boardMapper.updateBoard(storeId,boardId,updateBoard);
         if (updatedBoard != 1) {
-            throw new IllegalStateException("게시글 수정 실패");
+            throw new BusinessException(INTERNAL_ERROR);
         }
     }
 
@@ -105,12 +127,12 @@ public class BoardServiceImpl implements BoardService{
     public void softDeleteBoard(Integer storeId, Integer boardId) {
         int exists = boardMapper.countActiveByStoreIdAndBoardId(storeId, boardId);
         if (exists != 1) {
-            throw new NotFoundException("해당 게시글이 없습니다.");
+            throw new BusinessException(BOARD_NOT_FOUND);
         }
 
-        int deletedBoard = boardMapper.softDeleteItem(storeId, boardId);
+        int deletedBoard = boardMapper.softDeleteBoard(storeId, boardId);
         if (deletedBoard != 1) {
-            throw new IllegalStateException("삭제 실패");
+            throw new BusinessException(INTERNAL_ERROR);
         }
     }
 

@@ -8,9 +8,8 @@ import java.util.List;
 
 @Mapper
 public interface AlbaMapper2 {
-
-    // request용 storeId로 알바생리스트
-    List<AlbaOptionDTO> findAlbaOptionsForRequest(@Param("storeId") Integer storeId);
+//    // request용 storeId로 알바생리스트
+//    List<AlbaOptionDTO> findAlbaOptionsForRequest(@Param("storeId") Integer storeId);
 
     int countByStoreIdAndAlbaId(@Param("storeId") Integer storeId,
                                 @Param("albaId") Integer albaId);

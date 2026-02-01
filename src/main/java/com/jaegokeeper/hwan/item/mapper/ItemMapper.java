@@ -1,8 +1,8 @@
 package com.jaegokeeper.hwan.item.mapper;
 
 import com.jaegokeeper.hwan.item.domain.Item;
-import com.jaegokeeper.hwan.item.dto.ItemDetailDTO;
-import com.jaegokeeper.hwan.item.dto.ItemListDTO;
+import com.jaegokeeper.hwan.item.dto.response.ItemDetailResponse;
+import com.jaegokeeper.hwan.item.dto.response.ItemListResponse;
 import com.jaegokeeper.hwan.item.enums.ItemFilter;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -24,16 +24,16 @@ public interface ItemMapper {
                        @Param("keyword")String keyword,
                       @Param("excludeZero")Boolean excludeZero);
 
-    List<ItemListDTO> findItemList(@Param("storeId") Integer storeId,
-                                   @Param("filter") ItemFilter filter,
-                                   @Param("keyword") String keyword,
-                                   @Param("excludeZero")Boolean excludeZero,
-                                   @Param("offset") Integer offset,
-                                   @Param("size") Integer size);
+    List<ItemListResponse> findItemList(@Param("storeId") Integer storeId,
+                                        @Param("filter") ItemFilter filter,
+                                        @Param("keyword") String keyword,
+                                        @Param("excludeZero")Boolean excludeZero,
+                                        @Param("offset") Integer offset,
+                                        @Param("size") Integer size);
 
     //아이템 상세
-    ItemDetailDTO getItemDetail(@Param("storeId") Integer storeId,
-                                @Param("itemId") Integer itemId);
+    ItemDetailResponse findItemDetail(@Param("storeId") Integer storeId,
+                                      @Param("itemId") Integer itemId);
 
     //아이템 수정
     int updateItem(@Param("storeId") Integer storeId,

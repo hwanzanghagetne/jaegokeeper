@@ -8,6 +8,7 @@ import com.jaegokeeper.psj.service.AlbaService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -38,10 +39,7 @@ public class AlbaController {
     // storeId & albaName & albaPhone & albaStatus를 POST
     @ApiOperation(value = "알바생 등록 페이지", notes = "storeId & albaName & albaPhone & albaStatus")
     @PostMapping("/register")
-
-    public ResponseEntity<AlbaRegisterDto> saveAlbaRegister(
-            @Valid @ModelAttribute AlbaRegisterDto albaRegisterDto, HttpSession session
-    ) throws Exception {
+    public ResponseEntity<AlbaRegisterDto> saveAlbaRegister(@Valid @ModelAttribute AlbaRegisterDto albaRegisterDto, @ApiIgnore HttpSession session) throws Exception {
 //        Integer storeId = (Integer) session.getAttribute("storeId");
 //        albaRegisterDto.setStoreId(storeId);
 

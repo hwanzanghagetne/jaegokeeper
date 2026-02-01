@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.jaegokeeper.auth.mapper.EmailAuthMapper">
+<mapper namespace="com.jaegokeeper.email.mapper.EmailAuthMapper">
 
     <!--발송 시 업서트-->
     <insert id="upsertAuthCode">
