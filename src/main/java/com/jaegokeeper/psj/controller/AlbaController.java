@@ -43,8 +43,11 @@ public class AlbaController {
 //        Integer storeId = (Integer) session.getAttribute("storeId");
 //        albaRegisterDto.setStoreId(storeId);
 
-        int imageId = imgService.uploadImg(albaRegisterDto);
-        albaRegisterDto.setImageId(imageId);
+        Integer imageId = null;
+        if (albaRegisterDto.getFile() != null || !albaRegisterDto.getFile().isEmpty()) {
+            imageId = imgService.uploadImg(albaRegisterDto);
+            albaRegisterDto.setImageId(imageId);
+        }
 
         albaService.saveAlbaRegister(albaRegisterDto);
         return ResponseEntity.ok(albaRegisterDto);
