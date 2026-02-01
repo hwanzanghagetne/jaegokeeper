@@ -26,10 +26,7 @@ public class BoardController {
     private final BoardService boardService;
 
     // 생성
-    @ApiOperation(value = "게시글 등록",  notes = """
-    type(게시판 타입)을 받아 게시글을 등록합니다.
-    multipart/form-data 요청입니다.
-    """)
+    @ApiOperation(value = "게시글 등록",  notes = "type(게시판 타입)을 받아 게시글을 등록합니다.")
     @PostMapping
     public ResponseEntity<BoardCreateResponse> createBoard(
             @PathVariable Integer storeId,
