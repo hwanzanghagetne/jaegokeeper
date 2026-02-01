@@ -11,18 +11,4 @@
         WHERE user_mail = #{email}
     </select>
 
-
-
-    <select id="findUserByMail" parameterType="String" resultType="com.jaegokeeper.ddan.user.dto.UserDTO">
-        SELECT
-            user_name as userName,
-            user_pass as userPass,
-            user_mail as userMail,
-            user_phone as userPhone,
-            login_type as loginType
-        FROM user
-        WHERE user_mail = #{email}
-        LIMIT 1
-    </select>
-
 </mapper>

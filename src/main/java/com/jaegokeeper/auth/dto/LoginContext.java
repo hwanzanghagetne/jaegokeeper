@@ -1,4 +1,4 @@
-package com.jaegokeeper.ddan.user.dto;
+package com.jaegokeeper.auth.dto;
 
 import lombok.Getter;
 

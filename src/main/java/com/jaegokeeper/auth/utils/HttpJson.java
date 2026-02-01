@@ -1,4 +1,4 @@
-package com.jaegokeeper.ddan.user.utils;
+package com.jaegokeeper.auth.utils;
 
 import java.io.*;
 import java.net.*;

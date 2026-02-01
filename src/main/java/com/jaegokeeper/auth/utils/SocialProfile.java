@@ -1,4 +1,4 @@
-package com.jaegokeeper.ddan.user.utils;
+package com.jaegokeeper.auth.utils;
 
 public class SocialProfile {
     private final String providerUid; // 고유 ID

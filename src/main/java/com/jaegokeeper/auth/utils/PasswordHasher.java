@@ -1,4 +1,4 @@
-package com.jaegokeeper.auth.security;
+package com.jaegokeeper.auth.utils;
 
 import org.mindrot.jbcrypt.BCrypt;
 

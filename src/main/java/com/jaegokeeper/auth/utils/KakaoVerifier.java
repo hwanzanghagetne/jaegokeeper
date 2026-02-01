@@ -1,4 +1,4 @@
-package com.jaegokeeper.ddan.user.utils;
+package com.jaegokeeper.auth.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

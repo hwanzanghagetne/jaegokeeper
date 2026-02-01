@@ -3,9 +3,9 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.jaegokeeper.ddan.user.mapper.UserAuthMapper">
+<mapper namespace="com.jaegokeeper.auth.mapper.UserAuthMapper">
 
-    <select id="findByProviderUid" parameterType="com.jaegokeeper.ddan.user.dto.UidDTO" resultType="com.jaegokeeper.ddan.user.dto.LoginTarget">
+    <select id="findByProviderUid" parameterType="com.jaegokeeper.auth.dto.UidDTO" resultType="com.jaegokeeper.auth.dto.LoginTarget">
         SELECT
             u.user_id AS userId,
             u.user_name AS userName,
@@ -19,24 +19,10 @@
         LIMIT 1
     </select>
 
-    <select id="">
-        SELECT
-            u.user_id      AS userId,
-            u.user_name    AS userName,
-            u.store_id     AS storeId,
-            d.pass_hash    AS passHash
-        FROM user u
-         JOIN uid d
-              ON d.user_id = u.user_id
-                  AND d.provider = 'LOCAL'
-        WHERE u.user_mail = #{email}
-    </select>
-
-    <select id="findByUserIdForSession" parameterType="java.lang.Integer" resultType="com.jaegokeeper.ddan.user.dto.LoginTarget">
+    <select id="findByUserIdForSession" parameterType="java.lang.Integer" resultType="com.jaegokeeper.auth.dto.LoginTarget">
         SELECT
             u.user_id AS userId,
-            u.user_name AS name,
-            u.is_active AS isActive,
+            u.user_name AS userName,
             s.store_id AS storeId,
             (
               SELECT a.provider
@@ -47,27 +33,29 @@
             ) AS provider
         FROM user u
             LEFT JOIN store s ON s.user_id = u.user_id
-        WHERE u.user_id = #{userId}
+        WHERE u.user_id = #{userId} AND u.is_active = 1
         LIMIT 1
     </select>
 
     <insert id="insertUser"
-            parameterType="com.jaegokeeper.ddan.user.dto.UserDTO"
+            parameterType="com.jaegokeeper.auth.dto.UserDTO"
             useGeneratedKeys="true"
             keyProperty="userId">
         INSERT INTO user (
             user_name,
+            pass_hash,
             user_mail,
             user_phone
         ) VALUES (
             #{userName},
+            #{passHash},
             #{userMail},
             #{userPhone}
         )
     </insert>
 
     <insert id="insertAuth"
-            parameterType="com.jaegokeeper.ddan.user.dto.UidDTO"
+            parameterType="com.jaegokeeper.auth.dto.UidDTO"
             useGeneratedKeys="true"
             keyProperty="authId">
         INSERT INTO uid (user_id, provider, provider_uid, pass_hash)
@@ -75,12 +63,12 @@
     </insert>
 
 
-    <insert id="insertTicket" parameterType="com.jaegokeeper.ddan.user.dto.TicketDTO">
+    <insert id="insertTicket" parameterType="com.jaegokeeper.auth.dto.TicketDTO">
         INSERT INTO ticket (ticket_key, user_id, redirect_url, expires_at, used_yn)
         VALUES (#{ticketKey}, #{userId}, #{redirectUrl}, #{expiresAt}, 'N')
     </insert>
 
-    <select id="findValidTicket" parameterType="java.lang.String" resultType="com.jaegokeeper.ddan.user.dto.TicketDTO">
+    <select id="findValidTicket" parameterType="java.lang.String" resultType="com.jaegokeeper.auth.dto.TicketDTO">
         SELECT ticket_key AS ticketKey,
                user_id AS userId,
                redirect_url AS redirectUrl,
@@ -99,5 +87,31 @@
         WHERE ticket_key = #{ticketKey}
           AND used_yn = 'N'
     </update>
+
+    <select id="findUserByEmail" resultType="com.jaegokeeper.auth.dto.UserDTO">
+        SELECT
+            user_id as userId,
+            pass_hash as passHash,
+            user_name as userName,
+            user_mail as userMail,
+            user_phone as userPhone,
+            is_active as isActive
+        FROM user
+        WHERE user_mail = #{email}
+        LIMIT 1
+    </select>
+
+    <select id="findUserById" parameterType="java.lang.Integer" resultType="com.jaegokeeper.auth.dto.UserDTO">
+        SELECT
+            user_id as userId,
+            pass_hash as passHash,
+            user_name as userName,
+            user_mail as userMail,
+            user_phone as userPhone,
+            is_active as isActive
+        FROM user
+        WHERE user_id = #{userId}
+        LIMIT 1
+    </select>
 
 </mapper>

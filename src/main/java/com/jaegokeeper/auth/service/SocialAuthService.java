@@ -1,12 +1,12 @@
-package com.jaegokeeper.ddan.user.service;
+package com.jaegokeeper.auth.service;
 
-import com.jaegokeeper.ddan.user.dto.LoginTarget;
-import com.jaegokeeper.ddan.user.dto.TicketDTO;
-import com.jaegokeeper.ddan.user.dto.UidDTO;
-import com.jaegokeeper.ddan.user.dto.UserDTO;
-import com.jaegokeeper.ddan.user.mapper.UserAuthMapper;
-import com.jaegokeeper.ddan.user.utils.SocialProfile;
-import com.jaegokeeper.ddan.user.utils.SocialVerifier;
+import com.jaegokeeper.auth.dto.LoginTarget;
+import com.jaegokeeper.auth.dto.TicketDTO;
+import com.jaegokeeper.auth.dto.UidDTO;
+import com.jaegokeeper.auth.dto.UserDTO;
+import com.jaegokeeper.auth.mapper.UserAuthMapper;
+import com.jaegokeeper.auth.utils.SocialProfile;
+import com.jaegokeeper.auth.utils.SocialVerifier;
 import com.jaegokeeper.psj.dto.StoreDto;
 import com.jaegokeeper.psj.mapper.StoreMapper2;
 import org.springframework.stereotype.Service;
@@ -83,7 +83,7 @@ public class SocialAuthService {
         ticket.setTicketKey(key);
         ticket.setUserId(userId);
         ticket.setRedirectUrl(redirectUrl);
-        ticket.setExpiresAt(Date.from(Instant.now().plusSeconds(120)));
+        ticket.setExpiresAt(Date.from(Instant.now().plusSeconds(300)));
         userAuthMapper.insertTicket(ticket);
 
         return key;

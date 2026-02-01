@@ -1,16 +1,15 @@
-package com.jaegokeeper.ddan.user.controller;
+package com.jaegokeeper.auth.controller;
 
-import com.jaegokeeper.ddan.user.dto.LoginContext;
-import com.jaegokeeper.ddan.user.dto.LoginTarget;
-import com.jaegokeeper.ddan.user.dto.TicketDTO;
-import com.jaegokeeper.ddan.user.mapper.UserAuthMapper;
-import com.jaegokeeper.ddan.user.service.SocialAuthService;
+import com.jaegokeeper.auth.dto.LoginContext;
+import com.jaegokeeper.auth.dto.LoginTarget;
+import com.jaegokeeper.auth.dto.TicketDTO;
+import com.jaegokeeper.auth.mapper.UserAuthMapper;
+import com.jaegokeeper.auth.service.SocialAuthService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;

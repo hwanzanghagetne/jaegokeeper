@@ -9,8 +9,4 @@ public interface UsrMapper {
 
     int countByEmail(@Param("email") String email);
 
-    int insertUser(UserDto userDto);
-
-    UserDto findUserByMail(@Param("email") String email);
-
 }

@@ -1,15 +1,14 @@
-package com.jaegokeeper.ddan.user.dto;
+package com.jaegokeeper.auth.dto;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+@Getter @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UserDTO {
 
-    private int userId;
+    private Integer userId;
 
     private String userName;
 //    private String userPass;
@@ -19,6 +18,8 @@ public class UserDTO {
     private Boolean isActive;
 
     private String userRole;
-    private String userPassChk;
+    private String passHash;
+    private String passChk;
+    private Boolean emailVerified;
 
 }

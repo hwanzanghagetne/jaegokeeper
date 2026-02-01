@@ -61,4 +61,25 @@
           class="org.springframework.web.multipart.support.StandardServletMultipartResolver">
     </beans:bean>
 
+    <interceptors>
+        <interceptor>
+            <!-- 보호할 범위 -->
+            <mapping path="/api/**"/>
+
+            <!-- 예외: 로그인/회원가입/로그아웃/내정보 등 -->
+            <exclude-mapping path="/api/auth/register"/>
+            <exclude-mapping path="/api/auth/login"/>
+            <exclude-mapping path="/api/auth/logout"/>
+            <exclude-mapping path="/api/auth/me"/>
+
+            <!-- swagger/springfox -->
+            <exclude-mapping path="/v2/api-docs"/>
+            <exclude-mapping path="/swagger-resources/**"/>
+            <exclude-mapping path="/swagger-ui.html"/>
+            <exclude-mapping path="/webjars/**"/>
+
+            <beans:bean class="com.jaegokeeper.auth.utils.SessionInterceptor"/>
+        </interceptor>
+    </interceptors>
+
 </beans:beans>
