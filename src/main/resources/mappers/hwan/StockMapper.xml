@@ -25,7 +25,7 @@
     </insert>
 
     <select id="findStockAmountByStockId" resultType="Integer">
-        SELECT stock_amount
+        SELECT s.stock_amount
         FROM stock s
         JOIN item i
         ON i.item_id = s.item_id
@@ -77,7 +77,17 @@
           AND s.stock_amount >= #{amount}
 
     </update>
-    
+
+    <select id="findStockAmount" resultType="int">
+        SELECT s.stock_amount
+        FROM stock s
+        JOIN item i
+        ON i.item_id = s.item_id
+        AND i.is_active = b'1'
+        WHERE s.stock_id = #{stockId}
+        AND i.store_id = #{storeId}
+    </select>
+
     <select id="findStockIdByItem" resultType="Integer">
         SELECT stock_id
         FROM stock s
@@ -95,5 +105,24 @@
         WHERE s.stock_id = #{stockId}
         AND i.is_active = b'1'
         AND i.store_id = #{storeId}
+    </select>
+
+    <select id="findStockDetail" resultType="com.jaegokeeper.hwan.stock.dto.StockDetailResponse">
+        SELECT
+        s.stock_id AS stockId,
+        s.item_id AS itemId,
+        i.item_name AS itemName,
+        s.stock_amount AS stockAmount,
+        s.created_at AS createdAt,
+        s.updated_at AS updatedAt
+
+        FROM stock s
+        JOIN item i
+        ON s.item_id = i.item_id
+
+        WHERE
+        s.stock_id = #{stockId}
+        AND i.store_id = #{storeId}
+        AND i.is_active = b'1'
     </select>
 </mapper>

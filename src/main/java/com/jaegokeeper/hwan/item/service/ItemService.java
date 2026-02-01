@@ -1,23 +1,28 @@
 package com.jaegokeeper.hwan.item.service;
 
-import com.jaegokeeper.hwan.item.dto.*;
+import com.jaegokeeper.hwan.item.dto.request.ItemCreateRequest;
+import com.jaegokeeper.hwan.item.dto.request.ItemPageRequest;
+import com.jaegokeeper.hwan.item.dto.request.ItemUpdateRequest;
+import com.jaegokeeper.hwan.item.dto.response.ItemDetailResponse;
+import com.jaegokeeper.hwan.item.dto.response.ItemListResponse;
+import com.jaegokeeper.hwan.item.dto.response.ItemPageResponse;
 
 public interface ItemService {
 
     //아이템 생성
-    ItemCreateResponseDTO createItem(Integer storeId, ItemCreateRequestDTO itemCreateRequestDTO);
+    Integer createItem(Integer storeId, ItemCreateRequest itemCreateRequest);
 
     //아이템 삭제
     void softDeleteItem(Integer storeId, Integer itemId);
 
     //아이템 전체조회
-    PageResponseDTO<ItemListDTO> getItemList(Integer storeId,ItemPageRequestDTO dto);
+    ItemPageResponse<ItemListResponse> getItemList(Integer storeId, ItemPageRequest dto);
 
     //아이템 상세
-    ItemDetailDTO getItemDetail(Integer storeId, Integer itemId);
+    ItemDetailResponse getItemDetail(Integer storeId, Integer itemId);
 
     //아이템 수정 (상세페이지용)
-    void modifyItem(Integer storeId, Integer itemId, ItemModifyRequestDTO dto);
+    void updateItem(Integer storeId, Integer itemId, ItemUpdateRequest dto);
 
 
 

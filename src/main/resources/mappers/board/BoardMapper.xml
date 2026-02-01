@@ -16,7 +16,7 @@
         </if>
     </select>
 
-    <select id="findBoardList" resultType="com.jaegokeeper.board.dto.BoardListDTO">
+    <select id="findBoardList" resultType="com.jaegokeeper.board.dto.response.BoardListResponse">
         SELECT
             b.board_id AS boardId,
             b.title AS title,
@@ -35,7 +35,7 @@
     </select>
 
     <!--  상세 페이지  -->
-    <select id="getBoardDetail" resultType="com.jaegokeeper.board.dto.BoardDetailResponseDTO">
+    <select id="getBoardDetail" resultType="com.jaegokeeper.board.dto.response.BoardDetailResponse">
         SELECT
             board_id AS boardId,
             title AS title,
@@ -50,7 +50,7 @@
     </select>
 
     <!--  등록 페이지  -->
-    <insert id="insertBoard" parameterType="com.jaegokeeper.board.dto.BoardInsertDTO"
+    <insert id="insertBoard" parameterType="com.jaegokeeper.board.domain.Board"
             useGeneratedKeys="true" keyProperty="boardId">
         INSERT INTO board (
                            store_id,

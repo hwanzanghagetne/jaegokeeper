@@ -34,7 +34,7 @@
                )
     </insert>
 
-    <select id="findRequestList" resultType="com.jaegokeeper.hwan.request.dto.RequestListDTO">
+    <select id="findRequestList" resultType="com.jaegokeeper.hwan.request.dto.response.RequestListResponse">
         SELECT
             r.request_id AS requestId,
             r.request_type AS requestType,
@@ -89,6 +89,26 @@
 
 
 
+    <select id="findRequestDetail" resultType="com.jaegokeeper.hwan.request.dto.response.RequestDetailResponse">
+        SELECT
+        r.request_type   AS requestType,
+        i.item_name      AS itemName,
+        r.request_amount AS requestAmount,
+        r.request_date   AS requestDate,
+        a.alba_name      AS albaName
+
+        FROM request r
+        JOIN item i
+        ON r.item_id = i.item_id
+        JOIN alba a
+        ON r.alba_id = a.alba_id
+
+        <where>
+            i.store_id = #{storeId}
+            AND r.request_id = #{requestId}
+            AND r.is_active = b'1'
+        </where>
+    </select>
 
     <!--삭제-->
     <update id="softDeleteRequest">

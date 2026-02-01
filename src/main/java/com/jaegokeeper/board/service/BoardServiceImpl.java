@@ -1,12 +1,18 @@
 package com.jaegokeeper.board.service;
 
-import com.jaegokeeper.board.dto.*;
+import com.jaegokeeper.board.dto.request.BoardCreateRequest;
+import com.jaegokeeper.board.dto.request.BoardPageRequest;
+import com.jaegokeeper.board.dto.request.BoardUpdateRequest;
+import com.jaegokeeper.board.dto.response.BoardDetailResponse;
+import com.jaegokeeper.board.domain.Board;
+import com.jaegokeeper.board.dto.response.BoardListResponse;
+import com.jaegokeeper.board.dto.response.BoardUpdateResponse;
 import com.jaegokeeper.board.enums.BoardType;
 import com.jaegokeeper.board.mapper.BoardMapper;
 import com.jaegokeeper.ddan.img.service.ImgService;
 import com.jaegokeeper.hwan.alba.mapper.AlbaMapper2;
-import com.jaegokeeper.hwan.exception.BusinessException;
-import com.jaegokeeper.hwan.item.dto.PageResponseDTO;
+import com.jaegokeeper.exception.BusinessException;
+import com.jaegokeeper.hwan.item.dto.response.ItemPageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,18 +20,19 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.util.List;
 
-import static com.jaegokeeper.hwan.exception.ErrorCode.*;
+import static com.jaegokeeper.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService{
 
-    private final ImgService imgImplement;
+    private final ImgService imgService;
     private final BoardMapper boardMapper;
     private final AlbaMapper2 albaMapper2;
 
+    // 리스트 조회
     @Override
-    public PageResponseDTO<BoardListDTO> getBoardList(Integer storeId, BoardPageRequestDTO dto) {
+    public ItemPageResponse<BoardListResponse> getBoardList(Integer storeId, BoardPageRequest dto) {
         int page = dto.getPageValue();
         int size = dto.getSizeValue();
 
@@ -34,14 +41,15 @@ public class BoardServiceImpl implements BoardService{
 
         int offset = (page - 1) * size;
 
-        List<BoardListDTO> content = boardMapper.findBoardList(storeId,dto.getType(),size,offset);
+        List<BoardListResponse> content = boardMapper.findBoardList(storeId,dto.getType(),size,offset);
 
-        return new PageResponseDTO<>(content, page, size, totalElements, totalPages);
+        return new ItemPageResponse<>(content, page, size, totalElements, totalPages);
     }
 
+    // 상세 조회
     @Override
-    public BoardDetailResponseDTO getBoardDetail(Integer storeId, Integer boardId) {
-        BoardDetailResponseDTO dto = boardMapper.getBoardDetail(storeId, boardId);
+    public BoardDetailResponse getBoardDetail(Integer storeId, Integer boardId) {
+        BoardDetailResponse dto = boardMapper.getBoardDetail(storeId, boardId);
         if (dto == null) {
             throw new BusinessException(BOARD_NOT_FOUND);
         }
@@ -51,7 +59,7 @@ public class BoardServiceImpl implements BoardService{
     // 생성
     @Transactional
     @Override
-    public void createBoard(Integer storeId, BoardType boardType, BoardCreateRequestDTO dto) {
+    public Integer createBoard(Integer storeId, BoardType boardType, BoardCreateRequest dto) {
 
         String writer;
         Integer writerId = dto.getWriterId();
@@ -68,23 +76,24 @@ public class BoardServiceImpl implements BoardService{
         Integer imageId = null;
         try {
             if (dto.getFile() != null && !dto.getFile().isEmpty()) {
-                imageId = imgImplement.uploadImg(dto);
+                imageId = imgService.uploadImg(dto);
             }
         } catch (IOException e) {
             throw new BusinessException(IMAGE_UPLOAD_FAILED, e);
         }
 
-        BoardInsertDTO board = new BoardInsertDTO(storeId, boardType, dto.getTitle(), dto.getContent(), writer, imageId);
+        Board board = Board.create(storeId, boardType, dto.getTitle(), dto.getContent(), writer, imageId);
         int insertedBoard = boardMapper.insertBoard(board);
         if (insertedBoard != 1) {
             throw new BusinessException(INTERNAL_ERROR);
         }
+        return board.getBoardId();
     }
 
     // 수정
     @Override
     @Transactional
-    public void updateBoard(Integer storeId, Integer boardId, BoardUpdateRequestDTO dto) {
+    public void updateBoard(Integer storeId, Integer boardId, BoardUpdateRequest dto) {
         int exists = boardMapper.countActiveByStoreIdAndBoardId(storeId, boardId);
         if (exists != 1) {
             throw new BusinessException(BOARD_NOT_FOUND);
@@ -102,7 +111,7 @@ public class BoardServiceImpl implements BoardService{
             writer = albaMapper2.findAlbaNameByAlbaId(writerId);
         }
 
-        BoardUpdateDTO updateBoard = new BoardUpdateDTO(
+        BoardUpdateResponse updateBoard = new BoardUpdateResponse(
                 dto.getTitle(), dto.getContent(), writer, dto.getImageId()
         );
 
