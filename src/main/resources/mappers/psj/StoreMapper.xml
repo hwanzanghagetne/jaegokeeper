@@ -12,6 +12,26 @@
         WHERE store_id = #{storeId}
     </select>
 
+    <!--  store 정보 등록  -->
+    <insert id="insertStore"
+            parameterType="com.jaegokeeper.psj.dto.StoreDto"
+            useGeneratedKeys="true"
+            keyProperty="storeId">
+        INSERT INTO store (
+            user_id,
+            store_name,
+            store_add1,
+            store_add2,
+            store_tel
+        ) VALUES (
+            #{userId},
+            #{storeName},
+            #{storeAdd1},
+            #{storeAdd2},
+            #{storeTel}
+        )
+    </insert>
+
     <!--  store 정보 수정  -->
     <update id="updateStore" parameterType="com.jaegokeeper.psj.dto.StoreDto">
         UPDATE store

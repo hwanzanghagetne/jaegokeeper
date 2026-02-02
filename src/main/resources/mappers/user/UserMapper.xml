@@ -10,4 +10,5 @@
         FROM user
         WHERE user_mail = #{email}
     </select>
+
 </mapper>
