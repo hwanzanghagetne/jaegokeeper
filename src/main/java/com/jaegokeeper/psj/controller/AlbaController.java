@@ -43,8 +43,11 @@ public class AlbaController {
 //        Integer storeId = (Integer) session.getAttribute("storeId");
 //        albaRegisterDto.setStoreId(storeId);
 
-        int imageId = imgService.uploadImg(albaRegisterDto);
-        albaRegisterDto.setImageId(imageId);
+        Integer imageId = null;
+        if (albaRegisterDto.getFile() != null || !albaRegisterDto.getFile().isEmpty()) {
+            imageId = imgService.uploadImg(albaRegisterDto);
+            albaRegisterDto.setImageId(imageId);
+        }
 
         albaService.saveAlbaRegister(albaRegisterDto);
         return ResponseEntity.ok(albaRegisterDto);
@@ -59,8 +62,8 @@ public class AlbaController {
     }
 
     // 알바생 수정 페이지
-    @ApiOperation(value = "알바생 수정 페이지", notes = "/detail/{albaId}")
-    @PutMapping("/detail/{albaId}")
+    @ApiOperation(value = "알바생 수정 페이지", notes = "/edit/{albaId}")
+    @PutMapping("/edit/{albaId}")
     public ResponseEntity<AlbaDetailDto> updateById(@PathVariable int albaId, @RequestBody AlbaDetailDto albaDetailDto) {
         albaDetailDto.setAlbaId(albaId);
         albaService.updateAlba(albaDetailDto);
@@ -68,8 +71,8 @@ public class AlbaController {
     }
 
     // 알바생 삭제 페이지
-    @ApiOperation(value = "알바생 삭제 페이지", notes = "/detail/{albaId}")
-    @DeleteMapping("/detail/{albaId}")
+    @ApiOperation(value = "알바생 삭제 페이지", notes = "/delete/{albaId}")
+    @DeleteMapping("/delete/{albaId}")
     public ResponseEntity<Void> deleteById(@PathVariable("albaId") int albaId) {
         albaService.deleteAlba(albaId);
         return ResponseEntity.noContent().build();
