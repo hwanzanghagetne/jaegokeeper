@@ -1,8 +1,10 @@
 package com.jaegokeeper.auth.dto;
 
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 public class LoginContext {
     private final int userId;
     private final int storeId;

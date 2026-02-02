@@ -13,6 +13,5 @@ public class TicketDTO {
     private int userId;
     private String redirectUrl;
     private Date expiresAt;
-    private String usedYn;
 
 }

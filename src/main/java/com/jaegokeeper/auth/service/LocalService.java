@@ -4,23 +4,20 @@ import com.jaegokeeper.auth.dto.*;
 import com.jaegokeeper.auth.mapper.UserAuthMapper;
 import com.jaegokeeper.auth.utils.PasswordHasher;
 import com.jaegokeeper.common.api.ApiException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpSession;
 import java.util.*;
 
 @Service
-public class LocalAuthService {
+@RequiredArgsConstructor
+public class LocalService {
 
     private final UserAuthMapper userAuthMapper;
 
-    public LocalAuthService(UserAuthMapper userAuthMapper) {
-        this.userAuthMapper = userAuthMapper;
-    }
-
     @Transactional
-    public AuthResponse register(RegisterRequest req) {
+    public AuthResponse register(RegisterRequest req) throws Exception {
         String email = req.getEmail().trim().toLowerCase();
 
         if (userAuthMapper.findUserByEmail(email) != null) {
@@ -54,7 +51,8 @@ public class LocalAuthService {
                 .build();
     }
 
-    public AuthResponse login(LoginRequest req, HttpSession session) {
+    @Transactional
+    public String loginAndIssueTicket(LoginRequest req, String redirectUrl) throws Exception {
         String email = req.getEmail().trim().toLowerCase();
 
         UserDTO user = userAuthMapper.findUserByEmail(email);
@@ -62,7 +60,7 @@ public class LocalAuthService {
             throw ApiException.unauthorized("INVALID_CREDENTIALS", "이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        if (!Objects.requireNonNull(user).getIsActive()) {
+        if (!Boolean.TRUE.equals(user.getIsActive())) {
             throw ApiException.unauthorized("USER_NOT_ACTIVE", "사용할 수 없는 계정 상태입니다.");
         }
 
@@ -70,19 +68,25 @@ public class LocalAuthService {
             throw ApiException.unauthorized("INVALID_CREDENTIALS", "이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        // 세션 로그인
-        session.setAttribute("LOGIN_USER_ID", user.getUserId());
-        session.setAttribute("LOGIN_EMAIL", user.getUserMail());
-        session.setAttribute("LOGIN_NAME", user.getUserName());
+        if (redirectUrl == null) {
+            redirectUrl = "/";
+        }
 
-        return AuthResponse.builder()
-                .userId(user.getUserId())
-                .email(user.getUserMail())
-                .name(user.getUserName())
-                .build();
+        // ticket 발급
+        String ticketKey = UUID.randomUUID().toString();
+
+        TicketDTO ticket = new TicketDTO();
+            ticket.setTicketKey(ticketKey);
+            ticket.setUserId(user.getUserId());
+            ticket.setRedirectUrl(redirectUrl);
+            ticket.setExpiresAt(new Date(System.currentTimeMillis() + 5 * 60 * 1000)); // 5분 예시
+
+        int inserted = userAuthMapper.insertTicket(ticket);
+        if (inserted != 1) {
+            throw ApiException.badRequest("TICKET_ISSUE_FAILED", "티켓 발급에 실패했습니다.");
+        }
+
+        return ticketKey;
     }
 
-    public void logout(HttpSession session) {
-        if (session != null) session.invalidate();
-    }
 }

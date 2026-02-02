@@ -64,28 +64,27 @@
 
 
     <insert id="insertTicket" parameterType="com.jaegokeeper.auth.dto.TicketDTO">
-        INSERT INTO ticket (ticket_key, user_id, redirect_url, expires_at, used_yn)
-        VALUES (#{ticketKey}, #{userId}, #{redirectUrl}, #{expiresAt}, 'N')
+        INSERT INTO ticket (ticket_key, user_id, redirect_url, expires_at)
+        VALUES (#{ticketKey}, #{userId}, #{redirectUrl}, #{expiresAt})
     </insert>
 
     <select id="findValidTicket" parameterType="java.lang.String" resultType="com.jaegokeeper.auth.dto.TicketDTO">
         SELECT ticket_key AS ticketKey,
                user_id AS userId,
                redirect_url AS redirectUrl,
-               expires_at AS expiresAt,
-               used_yn AS usedYn
+               expires_at AS expiresAt
         FROM ticket
         WHERE ticket_key = #{ticketKey}
-          AND used_yn = 'N'
           AND expires_at > NOW()
+          AND used_at IS NULL
         LIMIT 1
     </select>
 
     <update id="markUsed" parameterType="java.lang.String">
         UPDATE ticket
-        SET used_yn = 'Y'
+        SET used_at = NOW()
         WHERE ticket_key = #{ticketKey}
-          AND used_yn = 'N'
+          AND used_at IS NULL
     </update>
 
     <select id="findUserByEmail" resultType="com.jaegokeeper.auth.dto.UserDTO">

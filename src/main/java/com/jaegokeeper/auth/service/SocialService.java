@@ -7,6 +7,7 @@ import com.jaegokeeper.auth.dto.UserDTO;
 import com.jaegokeeper.auth.mapper.UserAuthMapper;
 import com.jaegokeeper.auth.utils.SocialProfile;
 import com.jaegokeeper.auth.utils.SocialVerifier;
+import com.jaegokeeper.common.api.ApiException;
 import com.jaegokeeper.psj.dto.StoreDto;
 import com.jaegokeeper.psj.mapper.StoreMapper2;
 import org.springframework.stereotype.Service;
@@ -16,14 +17,14 @@ import java.time.Instant;
 import java.util.*;
 
 @Service
-public class SocialAuthService {
+public class SocialService {
 
     private final StoreMapper2 storeMapper;
     private final UserAuthMapper userAuthMapper;
 
     private final Map<String, SocialVerifier> verifiersByProvider;
 
-    public SocialAuthService(
+    public SocialService(
             StoreMapper2 storeMapper,
             UserAuthMapper userAuthMapper,
             List<SocialVerifier> verifiers
@@ -78,15 +79,20 @@ public class SocialAuthService {
         }
 
         // ticket 생성 (예: 2분 TTL)
-        String key = UUID.randomUUID().toString();
-        TicketDTO ticket = new TicketDTO();
-        ticket.setTicketKey(key);
-        ticket.setUserId(userId);
-        ticket.setRedirectUrl(redirectUrl);
-        ticket.setExpiresAt(Date.from(Instant.now().plusSeconds(300)));
-        userAuthMapper.insertTicket(ticket);
+        String ticketKey = UUID.randomUUID().toString();
 
-        return key;
+        TicketDTO ticket = new TicketDTO();
+            ticket.setTicketKey(ticketKey);
+            ticket.setUserId(userId);
+            ticket.setRedirectUrl(redirectUrl);
+            ticket.setExpiresAt(Date.from(Instant.now().plusSeconds(300)));
+
+        int inserted = userAuthMapper.insertTicket(ticket);
+        if (inserted != 1) {
+            throw ApiException.badRequest("TICKET_ISSUE_FAILED", "티켓 발급에 실패했습니다.");
+        }
+
+        return ticketKey;
     }
 
     private String defaultName(String displayName, String provider) {

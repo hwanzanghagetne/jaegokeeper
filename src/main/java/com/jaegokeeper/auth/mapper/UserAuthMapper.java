@@ -26,6 +26,6 @@ public interface UserAuthMapper {
     int markUsed(String ticketKey);
 
     UserDTO findUserByEmail(@Param("email") String email);
-    UserDTO findUserById(int userId);
+//    UserDTO findUserById(int userId);
 
 }
