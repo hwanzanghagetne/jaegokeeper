@@ -44,4 +44,7 @@ public interface ItemMapper {
 
     int countByStoreIdAndItemId(@Param("storeId") Integer storeId,
                                 @Param("itemId") Integer itemId);
+
+    int togglePin(@Param("storeId") Integer storeId,
+                  @Param("itemId") Integer itemId);
 }

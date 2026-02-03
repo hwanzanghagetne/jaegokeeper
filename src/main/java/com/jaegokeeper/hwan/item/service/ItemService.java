@@ -24,6 +24,7 @@ public interface ItemService {
     //아이템 수정 (상세페이지용)
     void updateItem(Integer storeId, Integer itemId, ItemUpdateRequest dto);
 
+    void toggleItemPin(Integer storeId, Integer itemId);
 
 
 }

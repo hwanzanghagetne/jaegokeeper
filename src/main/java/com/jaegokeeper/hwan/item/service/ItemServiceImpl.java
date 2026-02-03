@@ -124,4 +124,12 @@ public class ItemServiceImpl implements ItemService {
         stockService.adjustStock(itemId,stockAdjustRequestDTO);
     }
 
+    @Transactional
+    @Override
+    public void toggleItemPin(Integer storeId, Integer itemId) {
+        int updated = itemMapper.togglePin(storeId, itemId);
+        if (updated == 0) {
+            throw new BusinessException(ITEM_NOT_FOUND);
+        }
+    }
 }
