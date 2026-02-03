@@ -219,7 +219,7 @@
             WHEN is_pinned = b'1' THEN b'0'
             ELSE b'1'
         END,
-        update_at = CURRENT_TIMESTAMP
+        updated_at = CURRENT_TIMESTAMP
         WHERE store_id = #{storeId}
         AND item_id = #{itemId}
         AND is_active = b'1'
