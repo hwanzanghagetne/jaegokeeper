@@ -193,12 +193,21 @@
           AND i.is_active   = b'1'
     </select>
 
+    <!--수정-->
     <update id="updateItem">
         UPDATE item
-        SET item_name = #{itemName},
-            is_pinned = #{isPinned},
-            image_id = #{imageId},
+        <set>
+            <if test="itemName != null">
+                item_name = #{itemName},
+            </if>
+            <if test="isPinned != null">
+                is_pinned = #{isPinned},
+            </if>
+            <if test="imageId != null">
+                image_id = #{imageId},
+            </if>
             updated_at = CURRENT_TIMESTAMP
+        </set>
         WHERE store_id = #{storeId}
             AND item_id = #{itemId}
             AND is_active = b'1'
@@ -212,6 +221,7 @@
         AND is_active = b'1'
     </select>
 
+    <!--핀 토글-->
     <update id="togglePin">
         UPDATE item
         SET is_pinned =

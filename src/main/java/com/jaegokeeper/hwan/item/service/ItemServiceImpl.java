@@ -73,6 +73,7 @@ public class ItemServiceImpl implements ItemService {
         return item.getItemId();
     }
 
+    // 삭제
     @Override
     public void softDeleteItem(Integer storeId, Integer itemId) {
         int updated = itemMapper.softDeleteItem(storeId, itemId);
@@ -111,6 +112,7 @@ public class ItemServiceImpl implements ItemService {
         return dto;
     }
 
+    // 수정
     @Transactional
     @Override
     public void updateItem(Integer storeId, Integer itemId, ItemUpdateRequest dto) {
@@ -120,8 +122,10 @@ public class ItemServiceImpl implements ItemService {
         if (itemUpdated != 1) {throw new BusinessException(INTERNAL_ERROR);}
 
         // 재고 수정
-        StockAdjustRequestDTO stockAdjustRequestDTO = new StockAdjustRequestDTO(dto.getTargetAmount(), dto.getBufferAmount());
-        stockService.adjustStock(itemId,stockAdjustRequestDTO);
+        if (dto.getTargetAmount() != null || dto.getBufferAmount() != null) {
+            StockAdjustRequestDTO stockAdjustRequestDTO = new StockAdjustRequestDTO(dto.getTargetAmount(), dto.getBufferAmount());
+            stockService.adjustStock(itemId,stockAdjustRequestDTO);
+        }
     }
 
     @Transactional

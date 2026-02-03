@@ -79,11 +79,21 @@
     <!--  수정 페이지  -->
     <update id="updateBoard" >
         UPDATE board b
-        SET b.title = #{dto.title},
-            b.content = #{dto.content},
-            b.writer = #{dto.writer},
-            b.image_id = #{dto.imageId},
+        <set>
+            <if test="dto.title != null">
+                b.title = #{dto.title},
+            </if>
+            <if test="dto.content != null">
+                b.content = #{dto.content},
+            </if>
+            <if test="dto.writer != null">
+                b.writer = #{dto.writer},
+            </if>
+            <if test="dto.imageId != null">
+                b.imageId = #{dto.imageId},
+            </if>
             b.updated_at = CURRENT_TIMESTAMP
+        </set>
         WHERE b.board_id = #{boardId}
         AND b.store_id = #{storeId}
         AND b.is_active = b'1'

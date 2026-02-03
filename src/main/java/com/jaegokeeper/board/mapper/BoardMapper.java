@@ -3,7 +3,7 @@ package com.jaegokeeper.board.mapper;
 import com.jaegokeeper.board.dto.response.BoardDetailResponse;
 import com.jaegokeeper.board.domain.Board;
 import com.jaegokeeper.board.dto.response.BoardListResponse;
-import com.jaegokeeper.board.dto.response.BoardUpdateResponse;
+import com.jaegokeeper.board.dto.BoardUpdateParam;
 import com.jaegokeeper.board.enums.BoardType;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -33,7 +33,7 @@ public interface BoardMapper {
     // 수정 페이지
     int updateBoard(@Param("storeId") Integer storeId,
                     @Param("boardId") Integer boardId,
-                    @Param("dto") BoardUpdateResponse dto);
+                    @Param("dto") BoardUpdateParam dto);
 
     // 삭제 페이지
 

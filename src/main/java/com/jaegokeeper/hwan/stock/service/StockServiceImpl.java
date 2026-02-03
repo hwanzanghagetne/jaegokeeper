@@ -78,25 +78,36 @@ public class StockServiceImpl implements StockService {
     //dto 만들어서 넘기기
     public void adjustStock(Integer itemId, StockAdjustRequestDTO dto) {
 
-        Integer existAmount = stockMapper.findStockAmountByItemId(itemId);
-        if (existAmount == null) {
-            throw new BusinessException(STOCK_NOT_FOUND);
+        Integer newTargetAmount = dto.getTargetAmount();
+        Integer newBufferAmount = dto.getBufferAmount();
+
+        // 둘 다 없으면 종료
+        if (newBufferAmount == null && newTargetAmount == null) {
+            return;
         }
 
-        int updatedStock = stockMapper.updateStockAmount(itemId, dto.getTargetAmount());
-        if (updatedStock != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
+        // 재고
+        if (newTargetAmount != null) {
+            Integer existAmount = stockMapper.findStockAmountByItemId(itemId);
+            if (existAmount == null) {
+                throw new BusinessException(STOCK_NOT_FOUND);
+            }
+            int updatedStock = stockMapper.updateStockAmount(itemId, newTargetAmount);
+            if (updatedStock != 1) {
+                throw new BusinessException(INTERNAL_ERROR);
+            }
+            if (!newTargetAmount.equals(existAmount)) {
+                int inserted = logMapper.insertLog(itemId, ADJUST, newTargetAmount);
+                if (inserted != 1) {
+                    throw new BusinessException(INTERNAL_ERROR);
+                }
+            }
         }
 
-        int updatedSafe = bufferMapper.updateBufferAmount(itemId, dto.getBufferAmount());
-        if (updatedSafe != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
-        }
-
-        boolean isChanged = !dto.getTargetAmount().equals(existAmount);
-        if (isChanged) {
-            int inserted = logMapper.insertLog(itemId, ADJUST, dto.getTargetAmount());
-            if (inserted != 1) {
+        // 안전 재고
+        if (newBufferAmount != null) {
+            int updatedSafe = bufferMapper.updateBufferAmount(itemId, newBufferAmount);
+            if (updatedSafe != 1) {
                 throw new BusinessException(INTERNAL_ERROR);
             }
         }

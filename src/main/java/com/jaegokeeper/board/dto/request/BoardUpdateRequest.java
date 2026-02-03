@@ -1,5 +1,6 @@
 package com.jaegokeeper.board.dto.request;
 
+import com.jaegokeeper.board.enums.BoardWriterType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -9,11 +10,12 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 public class BoardUpdateRequest {
 
-    @NotBlank(message = "title 필수입니다.")
     private String title;
 
-    @NotBlank(message = "content 필수입니다.")
     private String content;
+
+    private BoardWriterType writerType;
+
 
     private Integer writerId;
 
