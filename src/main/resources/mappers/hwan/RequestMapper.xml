@@ -127,15 +127,25 @@
         UPDATE request r
         JOIN item i
         ON r.item_id = i.item_id
-        AND r.is_active = b'1'
-        AND r.request_status = 'WAIT'
-            SET r.request_type = #{dto.requestType},
-                r.request_amount = #{dto.requestAmount},
+        <set>
+            <if test="dto.requestType != null">
+                r.request_type = #{dto.requestType},
+            </if>
+            <if test="dto.requestAmount != null">
+                r.request_amount ={dto.requestAmount},
+            </if>
+            <if test="dto.albaId != null">
                 r.alba_id = #{dto.albaId},
+            </if>
+            <if test="dto.requestDate != null">
                 r.request_date = #{dto.requestDate},
-                r.updated_at = CURRENT_TIMESTAMP
+            </if>
+            r.updated_at = CURRENT_TIMESTAMP
+        </set>
         WHERE r.request_id = #{requestId}
           AND i.store_id = #{storeId}
+          AND r.is_active = b'1'
+          AND r.request_status = 'WAIT'
     </update>
 
     <!--상태 수정-->
