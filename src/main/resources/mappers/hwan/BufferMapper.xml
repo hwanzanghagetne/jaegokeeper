@@ -20,6 +20,10 @@
 
     <update id="updateBufferAmount">
         UPDATE buffer b
+        JOIN item i
+        ON i.item_id = b.item_id
+        AND i.store_id = #{storeId}
+        AND i.is_active = b'1'
         SET b.buffer_amount = #{bufferAmount},
             b.updated_at = CURRENT_TIMESTAMP
         WHERE b.item_id = #{itemId}
