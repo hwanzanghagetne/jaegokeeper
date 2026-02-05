@@ -7,6 +7,7 @@ import com.jaegokeeper.board.dto.response.BoardDetailResponse;
 import com.jaegokeeper.board.domain.Board;
 import com.jaegokeeper.board.dto.response.BoardListResponse;
 import com.jaegokeeper.board.dto.BoardUpdateParam;
+import com.jaegokeeper.board.enums.BoardSearchType;
 import com.jaegokeeper.board.enums.BoardType;
 import com.jaegokeeper.board.enums.BoardWriterType;
 import com.jaegokeeper.board.mapper.BoardMapper;
@@ -34,15 +35,19 @@ public class BoardServiceImpl implements BoardService{
     // 리스트 조회
     @Override
     public ItemPageResponse<BoardListResponse> getBoardList(Integer storeId, BoardPageRequest dto) {
+
         int page = dto.getPageValue();
         int size = dto.getSizeValue();
-
-        int totalElements = boardMapper.countBoardList(storeId, dto.getType());
-        int totalPages = (totalElements + size - 1) / size;
-
         int offset = (page - 1) * size;
 
-        List<BoardListResponse> content = boardMapper.findBoardList(storeId,dto.getType(),size,offset);
+        String keyword = dto.getKeywordValue();
+        BoardSearchType searchType = dto.getSearchTypeValue();
+        BoardType boardType = dto.getType();
+
+        int totalElements = boardMapper.countBoardList(storeId, boardType,keyword,searchType);
+        List<BoardListResponse> content = boardMapper.findBoardList(storeId, boardType, keyword, searchType, size, offset);
+
+        int totalPages = (totalElements + size - 1) / size;
 
         return new ItemPageResponse<>(content, page, size, totalElements, totalPages);
     }

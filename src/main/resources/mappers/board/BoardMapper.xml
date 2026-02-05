@@ -8,12 +8,35 @@
     <select id="countBoardList" resultType="int">
         SELECT COUNT(*)
         FROM board b
-        WHERE b.store_id = #{storeId}
-        AND b.is_active = b'1'
 
-        <if test="boardType != null">
-        AND b.board_type = #{boardType}
-        </if>
+        <where>
+            b.store_id = #{storeId}
+            AND b.is_active = b'1'
+
+            <if test="boardType != null">
+                AND b.board_type = #{boardType}
+            </if>
+            <if test="keyword != null and keyword !=''">
+                <choose>
+                    <when test="searchType != null and searchType.name() == 'TITLE'">
+                        AND b.title LIKE CONCAT('%', #{keyword}, '%')
+                    </when>
+                    <when test="searchType != null and searchType.name() == 'CONTENT'">
+                        AND b.content LIKE CONCAT('%', #{keyword}, '%')
+                    </when>
+                    <when test="searchType != null and searchType.name() == 'WRITER'">
+                        AND b.writer LIKE CONCAT('%', #{keyword}, '%')
+                    </when>
+                    <otherwise>
+                        AND(
+                        b.title LIKE CONCAT('%', #{keyword}, '%')
+                        OR b.content LIKE CONCAT('%', #{keyword}, '%')
+                        OR b.writer LIKE CONCAT('%', #{keyword}, '%')
+                        )
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
     </select>
 
     <select id="findBoardList" resultType="com.jaegokeeper.board.dto.response.BoardListResponse">
@@ -24,12 +47,38 @@
             b.is_pinned AS isPinned,
             b.writer AS writer,
             b.updated_at AS updatedAt
+
         FROM board b
-        WHERE b.store_id = #{storeId}
-        AND b.is_active = b'1'
-        <if test="boardType != null">
-            AND b.board_type = #{boardType}
-        </if>
+
+        <where>
+            b.store_id = #{storeId}
+            AND b.is_active = b'1'
+
+            <if test="boardType != null">
+                AND b.board_type = #{boardType}
+            </if>
+            <if test="keyword != null and keyword !=''">
+                <choose>
+                    <when test="searchType != null and searchType.name() == 'TITLE'">
+                        AND b.title LIKE CONCAT('%', #{keyword}, '%')
+                    </when>
+                    <when test="searchType != null and searchType.name() == 'CONTENT'">
+                        AND b.content LIKE CONCAT('%', #{keyword}, '%')
+                    </when>
+                    <when test="searchType != null and searchType.name() == 'WRITER'">
+                        AND b.writer LIKE CONCAT('%', #{keyword}, '%')
+                    </when>
+                    <otherwise>
+                        AND(
+                        b.title LIKE CONCAT('%', #{keyword}, '%')
+                        OR b.content LIKE CONCAT('%', #{keyword}, '%')
+                        OR b.writer LIKE CONCAT('%', #{keyword}, '%')
+                        )
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+
         ORDER BY b.is_pinned DESC, b.created_at DESC
         LIMIT #{size} OFFSET #{offset}
     </select>
@@ -116,4 +165,6 @@
         AND store_id = #{storeId}
         AND is_active = b'1'
     </select>
+
+
 </mapper>
