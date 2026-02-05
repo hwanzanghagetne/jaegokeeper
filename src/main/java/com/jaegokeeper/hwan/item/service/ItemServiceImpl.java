@@ -12,7 +12,7 @@ import com.jaegokeeper.hwan.item.dto.response.ItemListResponse;
 import com.jaegokeeper.hwan.item.dto.response.ItemPageResponse;
 import com.jaegokeeper.hwan.item.mapper.ItemMapper;
 import com.jaegokeeper.hwan.item.mapper.StoreMapper;
-import com.jaegokeeper.hwan.stock.dto.StockAdjustRequestDTO;
+import com.jaegokeeper.hwan.stock.dto.StockAdjustRequest;
 import com.jaegokeeper.hwan.stock.mapper.StockMapper;
 import com.jaegokeeper.hwan.stock.service.StockService;
 import com.jaegokeeper.hwan.stock.domain.Stock;
@@ -90,7 +90,7 @@ public class ItemServiceImpl implements ItemService {
         int pageSize = dto.getSizeValue();
         String keyword = dto.getKeywordValue();
         ItemFilter filter = dto.getFilter();
-        boolean excludeZero = dto.isExcludeZero();
+        boolean excludeZero = dto.getExcludeZeroValue();
 
 
         int offset = (pageNum - 1) * pageSize;
@@ -123,8 +123,8 @@ public class ItemServiceImpl implements ItemService {
 
         // 재고 수정
         if (dto.getTargetAmount() != null || dto.getBufferAmount() != null) {
-            StockAdjustRequestDTO stockAdjustRequestDTO = new StockAdjustRequestDTO(dto.getTargetAmount(), dto.getBufferAmount());
-            stockService.adjustStock(itemId,stockAdjustRequestDTO);
+            StockAdjustRequest stockAdjustRequest = new StockAdjustRequest(dto.getTargetAmount(), dto.getBufferAmount());
+            stockService.adjustStock(itemId, storeId, stockAdjustRequest);
         }
     }
 

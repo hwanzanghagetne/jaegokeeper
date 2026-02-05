@@ -121,7 +121,7 @@
             i.store_id = #{storeId}
             AND i.is_active = b'1'
 
-            <if test="excludeZero != null and excludeZero">
+            <if test= "excludeZero">
                 AND s.stock_amount > 0
             </if>
 

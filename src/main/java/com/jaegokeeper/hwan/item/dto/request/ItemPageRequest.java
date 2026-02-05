@@ -24,11 +24,6 @@ public class ItemPageRequest {
     private ItemFilter filter;
     private String keyword;
 
-    @ApiModelProperty(
-            value = "재고 0인 아이템 제외 여부",
-            example = "true",
-            allowableValues = "true,false"
-    )
     private Boolean excludeZero;
 
 
@@ -45,7 +40,7 @@ public class ItemPageRequest {
     }
 
     @ApiModelProperty(hidden = true)
-    public boolean isExcludeZero() {
+    public boolean getExcludeZeroValue() {
         return Boolean.TRUE.equals(excludeZero);
     }
 
