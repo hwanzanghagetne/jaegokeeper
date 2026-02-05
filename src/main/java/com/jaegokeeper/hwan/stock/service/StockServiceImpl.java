@@ -2,9 +2,10 @@ package com.jaegokeeper.hwan.stock.service;
 
 import com.jaegokeeper.hwan.buffer.mapper.BufferMapper;
 import com.jaegokeeper.exception.BusinessException;
-import com.jaegokeeper.hwan.stock.dto.StockAdjustRequestDTO;
+import com.jaegokeeper.hwan.stock.dto.StockAdjustRequest;
+import com.jaegokeeper.hwan.stock.dto.StockAmountUpdateRequest;
 import com.jaegokeeper.hwan.stock.dto.StockDetailResponse;
-import com.jaegokeeper.hwan.stock.dto.StockInOutRequestDTO;
+import com.jaegokeeper.hwan.stock.dto.StockInOutRequest;
 import com.jaegokeeper.hwan.stock.mapper.LogMapper;
 import com.jaegokeeper.hwan.stock.mapper.StockMapper;
 import lombok.RequiredArgsConstructor;
@@ -23,16 +24,13 @@ public class StockServiceImpl implements StockService {
     private final LogMapper logMapper;
     private final BufferMapper bufferMapper;
 
+
+    /*입고*/
     @Transactional
     @Override
-    public int inStock(Integer storeId, Integer stockId, StockInOutRequestDTO dto) {
+    public void inStock(Integer storeId, Integer itemId, StockInOutRequest dto) {
 
-        Integer itemId = stockMapper.findItemIdByStockId(stockId,storeId);
-        if (itemId == null) {
-            throw new BusinessException(STOCK_NOT_FOUND);
-        }
-
-        int updated = stockMapper.increaseQuantity(storeId,stockId, dto.getAmount());
+        int updated = stockMapper.increaseQuantity(storeId,itemId, dto.getAmount());
         if (updated != 1) {
             throw new BusinessException(INTERNAL_ERROR);
         }
@@ -41,23 +39,14 @@ public class StockServiceImpl implements StockService {
         if (inserted != 1) {
             throw new BusinessException(INTERNAL_ERROR);
         }
-        Integer stockAmount = stockMapper.findStockAmount(storeId, stockId);
-        if (stockAmount == null) {
-            throw new BusinessException(INTERNAL_ERROR);
-        }
-        return stockAmount;
     }
 
+    /*출고*/
     @Transactional
     @Override
-    public int outStock(Integer storeId, Integer stockId, StockInOutRequestDTO dto) {
+    public void outStock(Integer storeId, Integer itemId, StockInOutRequest dto) {
 
-        Integer itemId = stockMapper.findItemIdByStockId(stockId,storeId);
-        if (itemId == null) {
-            throw new BusinessException(STOCK_NOT_FOUND);
-        }
-
-        int updated = stockMapper.decreaseQuantity(storeId,stockId, dto.getAmount());
+        int updated = stockMapper.decreaseQuantity(storeId, itemId, dto.getAmount());
         if (updated != 1) {
             throw new BusinessException(INTERNAL_ERROR);
         }
@@ -66,17 +55,39 @@ public class StockServiceImpl implements StockService {
         if (inserted != 1) {
             throw new BusinessException(INTERNAL_ERROR);
         }
-        Integer stockAmount = stockMapper.findStockAmount(storeId, stockId);
-        if (stockAmount == null) {
-            throw new BusinessException(INTERNAL_ERROR);
-        }
-        return stockAmount;
     }
 
+    /*재고만 딱 조정*/
+    @Override
+    public void updateStockAmount(Integer storeId, Integer itemId, StockAmountUpdateRequest dto) {
+
+        Integer existAmount = stockMapper.findStockAmountByItemId(storeId, itemId);
+        if (existAmount == null) {
+            throw new BusinessException(STOCK_NOT_FOUND);
+        }
+
+        if (dto.getStockAmount().equals(existAmount)) {
+            return;
+        }
+
+        int updated = stockMapper.updateStockAmount(storeId,itemId, dto.getStockAmount());
+        if (updated != 1) {
+            throw new BusinessException(INTERNAL_ERROR);
+        }
+
+        if (!dto.getStockAmount().equals(existAmount)) {
+            int inserted = logMapper.insertLog(itemId, ADJUST, dto.getStockAmount());
+            if (inserted != 1) {
+                throw new BusinessException(INTERNAL_ERROR);
+            }
+        }
+    }
+
+
+    /*재고, 버퍼 모두*/
     @Transactional
     @Override
-    //dto 만들어서 넘기기
-    public void adjustStock(Integer itemId, StockAdjustRequestDTO dto) {
+    public void adjustStock(Integer itemId,Integer storeId, StockAdjustRequest dto) {
 
         Integer newTargetAmount = dto.getTargetAmount();
         Integer newBufferAmount = dto.getBufferAmount();
@@ -88,11 +99,11 @@ public class StockServiceImpl implements StockService {
 
         // 재고
         if (newTargetAmount != null) {
-            Integer existAmount = stockMapper.findStockAmountByItemId(itemId);
+            Integer existAmount = stockMapper.findStockAmountByItemId(storeId, itemId);
             if (existAmount == null) {
                 throw new BusinessException(STOCK_NOT_FOUND);
             }
-            int updatedStock = stockMapper.updateStockAmount(itemId, newTargetAmount);
+            int updatedStock = stockMapper.updateStockAmount(storeId, itemId, newTargetAmount);
             if (updatedStock != 1) {
                 throw new BusinessException(INTERNAL_ERROR);
             }
@@ -106,16 +117,17 @@ public class StockServiceImpl implements StockService {
 
         // 안전 재고
         if (newBufferAmount != null) {
-            int updatedSafe = bufferMapper.updateBufferAmount(itemId, newBufferAmount);
+            int updatedSafe = bufferMapper.updateBufferAmount(storeId, itemId, newBufferAmount);
             if (updatedSafe != 1) {
                 throw new BusinessException(INTERNAL_ERROR);
             }
         }
     }
 
+    /*재고 상세*/
     @Override
-    public StockDetailResponse getStockDetail(Integer storeId, Integer stockId) {
-        StockDetailResponse dto = stockMapper.findStockDetail(storeId, stockId);
+    public StockDetailResponse getStockDetail(Integer storeId, Integer itemId) {
+        StockDetailResponse dto = stockMapper.findStockDetail(storeId, itemId);
         if (dto == null) {
             throw new BusinessException(STOCK_NOT_FOUND);
         }
