@@ -132,7 +132,7 @@
                 r.request_type = #{dto.requestType},
             </if>
             <if test="dto.requestAmount != null">
-                r.request_amount ={dto.requestAmount},
+                r.request_amount = #{dto.requestAmount},
             </if>
             <if test="dto.albaId != null">
                 r.alba_id = #{dto.albaId},
@@ -144,20 +144,33 @@
         </set>
         WHERE r.request_id = #{requestId}
           AND i.store_id = #{storeId}
-          AND r.is_active = b'1'
           AND r.request_status = 'WAIT'
     </update>
 
     <!--상태 수정-->
     <update id="updateRequestStatus">
         UPDATE request r
+
         JOIN item i
         ON r.item_id = i.item_id
         AND r.is_active = b'1'
-            SET r.request_status = #{dto.requestStatus},
+
+        SET r.request_status = #{requestStatus},
             r.updated_at = CURRENT_TIMESTAMP
+
         WHERE r.request_id = #{requestId}
           AND i.store_id = #{storeId}
     </update>
+
+    <!--요청 상태 구하기-->
+    <select id="findRequestStatus" resultType="com.jaegokeeper.hwan.request.enums.RequestStatus">
+        SELECT r.request_status
+        FROM request r
+        JOIN item i
+        ON r.item_id = i.item_id
+        WHERE r.request_id = #{requestId}
+        AND i.store_id = #{storeId}
+        AND r.is_active = b'1'
+    </select>
 
 </mapper>

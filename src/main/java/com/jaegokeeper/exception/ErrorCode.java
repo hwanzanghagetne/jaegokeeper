@@ -23,6 +23,9 @@ public enum ErrorCode {
 
     // ===== 409 CONFLICT =====
     STATE_CONFLICT(HttpStatus.CONFLICT, "STATE_CONFLICT", "현재 상태에서는 처리할 수 없습니다."),
+    REQUEST_STATUS_NOT_WAIT(HttpStatus.CONFLICT, "REQUEST_STATUS_NOT_WAIT", "대기 상태(WAIT)인 요청만 수정할 수 있습니다."),
+    STOCK_QUANTITY_NOT_ENOUGH(HttpStatus.CONFLICT, "STOCK_QUANTITY_NOT_ENOUGH", "출고 수량이 현재 재고보다 많습니다."),
+
 
     // ===== 500 INTERNAL_SERVER_ERROR =====
     IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "IMAGE_UPLOAD_FAILED", "이미지 업로드에 실패했습니다."),

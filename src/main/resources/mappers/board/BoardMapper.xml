@@ -139,7 +139,7 @@
                 b.writer = #{dto.writer},
             </if>
             <if test="dto.imageId != null">
-                b.imageId = #{dto.imageId},
+                b.image_id = #{dto.imageId},
             </if>
             b.updated_at = CURRENT_TIMESTAMP
         </set>

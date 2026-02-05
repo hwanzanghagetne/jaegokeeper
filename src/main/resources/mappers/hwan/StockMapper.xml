@@ -24,15 +24,6 @@
                )
     </insert>
 
-    <select id="findStockAmountByStockId" resultType="Integer">
-        SELECT s.stock_amount
-        FROM stock s
-        JOIN item i
-        ON i.item_id = s.item_id
-        AND i.is_active = b'1'
-        WHERE stock_id = #{stockId}
-    </select>
-
     <select id="findStockAmountByItemId" resultType="Integer">
         SELECT s.stock_amount
 
@@ -88,18 +79,6 @@
 
     </update>
 
-
-
-    <select id="findStockAmount" resultType="int">
-        SELECT s.stock_amount
-        FROM stock s
-        JOIN item i
-        ON i.item_id = s.item_id
-        AND i.is_active = b'1'
-        WHERE s.stock_id = #{stockId}
-        AND i.store_id = #{storeId}
-    </select>
-
     <select id="findStockIdByItem" resultType="Integer">
         SELECT stock_id
         FROM stock s
@@ -107,16 +86,6 @@
         ON i.item_id = s.item_id
         WHERE s.item_id = #{itemId}
         AND i.is_active = b'1'
-    </select>
-
-    <select id="findItemIdByStockId" resultType="Integer">
-        SELECT s.item_id
-        FROM stock s
-        JOIN item i
-        ON i.item_id =  s.item_id
-        WHERE s.stock_id = #{stockId}
-        AND i.is_active = b'1'
-        AND i.store_id = #{storeId}
     </select>
 
     <!--재고 상세 조회-->

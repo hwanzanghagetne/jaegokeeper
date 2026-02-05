@@ -12,8 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.jaegokeeper.exception.ErrorCode.INTERNAL_ERROR;
-import static com.jaegokeeper.exception.ErrorCode.STOCK_NOT_FOUND;
+import static com.jaegokeeper.exception.ErrorCode.*;
 import static com.jaegokeeper.hwan.stock.enums.LogType.*;
 
 @Service
@@ -45,6 +44,15 @@ public class StockServiceImpl implements StockService {
     @Transactional
     @Override
     public void outStock(Integer storeId, Integer itemId, StockInOutRequest dto) {
+
+        Integer existAmount = stockMapper.findStockAmountByItemId(storeId, itemId);
+        if (existAmount == null) {
+            throw new BusinessException(STOCK_NOT_FOUND);
+        }
+
+        if (existAmount < dto.getAmount()) {
+            throw new BusinessException(STOCK_QUANTITY_NOT_ENOUGH);
+        }
 
         int updated = stockMapper.decreaseQuantity(storeId, itemId, dto.getAmount());
         if (updated != 1) {
