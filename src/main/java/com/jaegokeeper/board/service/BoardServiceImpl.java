@@ -1,12 +1,12 @@
 package com.jaegokeeper.board.service;
 
+import com.jaegokeeper.board.dto.BoardUpdateParamImg;
 import com.jaegokeeper.board.dto.request.BoardCreateRequest;
 import com.jaegokeeper.board.dto.request.BoardPageRequest;
 import com.jaegokeeper.board.dto.request.BoardUpdateRequest;
 import com.jaegokeeper.board.dto.response.BoardDetailResponse;
 import com.jaegokeeper.board.domain.Board;
 import com.jaegokeeper.board.dto.response.BoardListResponse;
-import com.jaegokeeper.board.dto.BoardUpdateParam;
 import com.jaegokeeper.board.enums.BoardSearchType;
 import com.jaegokeeper.board.enums.BoardType;
 import com.jaegokeeper.board.enums.BoardWriterType;
@@ -18,6 +18,7 @@ import com.jaegokeeper.hwan.item.dto.response.ItemPageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -126,6 +127,88 @@ public class BoardServiceImpl implements BoardService{
         }
 
         String writer = null;
+        BoardWriterType writerType = dto.getWriterType();
+
+        if (writerType != null) {
+            if (writerType == BoardWriterType.ANONYMOUS) {
+                //익명인데 writerId
+                if (dto.getWriterId() != null) {
+                    throw new BusinessException(INVALID_WRITER_INFO);
+                }
+                writer = "익명";
+            } else { // ALBA
+                Integer writerId = dto.getWriterId();
+                if (writerId == null) {
+                    throw new BusinessException(INVALID_WRITER_INFO);
+                }
+
+                int count = albaMapper2.countByStoreIdAndAlbaId(storeId, writerId);
+                if (count != 1) {
+                    throw new BusinessException(ALBA_NOT_IN_STORE);
+                }
+                writer = albaMapper2.findAlbaNameByAlbaId(writerId);
+            }
+        }
+
+        Boolean removeImage = dto.getRemoveImage();
+        MultipartFile file = dto.getFile();
+
+        boolean hasFile = (file != null && !file.isEmpty());
+        boolean wantsRemove = Boolean.TRUE.equals(removeImage);
+
+        if (wantsRemove && hasFile) {
+            throw new BusinessException(IMAGE_UPDATE_CONFLICT);
+        }
+        Integer newImageId = null;
+
+        if (hasFile) {
+            try {
+                newImageId = imgService.uploadImg(dto);
+            } catch (IOException e) {
+                throw new BusinessException(IMAGE_UPLOAD_FAILED, e);
+            }
+        }
+
+        BoardUpdateParamImg updateBoard = new BoardUpdateParamImg(
+                dto.getTitle(),
+                dto.getContent(),
+                writer,
+                newImageId,
+                wantsRemove ? true : null
+        );
+
+        int updatedBoard = boardMapper.updateBoardImg(storeId,boardId,updateBoard);
+        if (updatedBoard != 1) {
+            throw new BusinessException(INTERNAL_ERROR);
+        }
+    }
+
+    // 삭제
+    @Override
+    @Transactional
+    public void softDeleteBoard(Integer storeId, Integer boardId) {
+        int exists = boardMapper.countActiveByStoreIdAndBoardId(storeId, boardId);
+        if (exists != 1) {
+            throw new BusinessException(BOARD_NOT_FOUND);
+        }
+
+        int deletedBoard = boardMapper.softDeleteBoard(storeId, boardId);
+        if (deletedBoard != 1) {
+            throw new BusinessException(INTERNAL_ERROR);
+        }
+    }
+
+/*    // 수정
+    @Override
+    @Transactional
+    public void updateBoard(Integer storeId, Integer boardId, BoardUpdateRequest dto) {
+
+        int exists = boardMapper.countActiveByStoreIdAndBoardId(storeId, boardId);
+        if (exists != 1) {
+            throw new BusinessException(BOARD_NOT_FOUND);
+        }
+
+        String writer = null;
 
         BoardWriterType writerType = dto.getWriterType();
         if (writerType != null) {
@@ -161,22 +244,6 @@ public class BoardServiceImpl implements BoardService{
         if (updatedBoard != 1) {
             throw new BusinessException(INTERNAL_ERROR);
         }
-    }
-
-    // 삭제
-    @Override
-    @Transactional
-    public void softDeleteBoard(Integer storeId, Integer boardId) {
-        int exists = boardMapper.countActiveByStoreIdAndBoardId(storeId, boardId);
-        if (exists != 1) {
-            throw new BusinessException(BOARD_NOT_FOUND);
-        }
-
-        int deletedBoard = boardMapper.softDeleteBoard(storeId, boardId);
-        if (deletedBoard != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
-        }
-    }
-
+    }*/
 
 }

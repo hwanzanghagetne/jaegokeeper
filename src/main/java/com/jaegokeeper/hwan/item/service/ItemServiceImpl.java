@@ -4,6 +4,7 @@ import com.jaegokeeper.ddan.img.service.ImgService;
 import com.jaegokeeper.hwan.buffer.mapper.BufferMapper;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.hwan.item.domain.Item;
+import com.jaegokeeper.hwan.item.dto.ItemUpdateParamImg;
 import com.jaegokeeper.hwan.item.dto.request.ItemCreateRequest;
 import com.jaegokeeper.hwan.item.dto.request.ItemPageRequest;
 import com.jaegokeeper.hwan.item.dto.request.ItemUpdateRequest;
@@ -20,6 +21,7 @@ import com.jaegokeeper.hwan.item.enums.ItemFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -117,8 +119,33 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public void updateItem(Integer storeId, Integer itemId, ItemUpdateRequest dto) {
 
+        Boolean removeImage = dto.getRemoveImage();
+        MultipartFile file = dto.getFile();
+
+        boolean hasFile = (file != null && !file.isEmpty());
+        boolean wantsRemove = Boolean.TRUE.equals(removeImage);
+
+        if (wantsRemove && hasFile) {
+            throw new BusinessException(IMAGE_UPDATE_CONFLICT);
+        }
+        Integer newImageId = null;
+
+        if (hasFile) {
+            try {
+                newImageId = imgService.uploadImg(dto);
+            } catch (IOException e) {
+                throw new BusinessException(IMAGE_UPLOAD_FAILED, e);
+            }
+        }
+        ItemUpdateParamImg updateItem = new ItemUpdateParamImg(
+                dto.getItemName(),
+                dto.getIsPinned(),
+                newImageId,
+                wantsRemove ? true : null
+        );
+
         // 아이템 수정
-        int itemUpdated = itemMapper.updateItem(storeId, itemId, dto.getItemName(),dto.getIsPinned(),dto.getImageId());
+        int itemUpdated = itemMapper.updateItem(storeId, itemId, updateItem);
         if (itemUpdated != 1) {throw new BusinessException(INTERNAL_ERROR);}
 
         // 재고 수정

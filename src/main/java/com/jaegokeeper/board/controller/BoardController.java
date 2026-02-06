@@ -12,6 +12,7 @@ import com.jaegokeeper.hwan.item.dto.response.ItemPageResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,11 +60,11 @@ public class BoardController {
 
     // 수정
     @ApiOperation(value = "게시글 수정", notes = "boardId의 게시글을 수정합니다.")
-    @PutMapping("/{boardId}")
+    @PutMapping(value = "/{boardId}")
     public ResponseEntity<Void> updateBoard(
             @PathVariable Integer storeId,
             @PathVariable Integer boardId,
-            @Valid @RequestBody BoardUpdateRequest dto
+            @Valid @ModelAttribute BoardUpdateRequest dto
     ) {
         boardService.updateBoard(storeId, boardId, dto);
         return ResponseEntity.noContent().build();
@@ -79,4 +80,17 @@ public class BoardController {
         boardService.softDeleteBoard(storeId, boardId);
         return ResponseEntity.noContent().build();
     }
+
+    /*    // 수정
+    @ApiOperation(value = "게시글 수정", notes = "boardId의 게시글을 수정합니다.")
+    @PutMapping("/{boardId}")
+    public ResponseEntity<Void> updateBoard(
+            @PathVariable Integer storeId,
+            @PathVariable Integer boardId,
+            @Valid @RequestBody BoardUpdateRequest dto
+    ) {
+        boardService.updateBoard(storeId, boardId, dto);
+        return ResponseEntity.noContent().build();
+    }*/
+
 }

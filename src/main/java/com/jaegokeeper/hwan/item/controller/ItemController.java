@@ -60,7 +60,7 @@ public class ItemController {
     public ResponseEntity<Void> modifyItem(
             @PathVariable Integer storeId,
             @PathVariable Integer itemId,
-            @Valid @RequestBody ItemUpdateRequest dto
+            @Valid @ModelAttribute ItemUpdateRequest dto
     ) {
         itemService.updateItem(storeId,itemId,dto);
         return ResponseEntity.noContent().build();

@@ -1,14 +1,17 @@
 package com.jaegokeeper.board.dto.request;
 
 import com.jaegokeeper.board.enums.BoardWriterType;
+import com.jaegokeeper.ddan.img.dto.ImgInfoDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
 
 @Getter
+@Setter
 @NoArgsConstructor
-public class BoardUpdateRequest {
+public class BoardUpdateRequest extends ImgInfoDTO {
 
     private String title;
 
@@ -16,9 +19,7 @@ public class BoardUpdateRequest {
 
     private BoardWriterType writerType;
 
-
     private Integer writerId;
 
-    private Integer imageId;
-
+    private Boolean removeImage;
 }

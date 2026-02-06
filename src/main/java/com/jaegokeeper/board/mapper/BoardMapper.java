@@ -1,5 +1,6 @@
 package com.jaegokeeper.board.mapper;
 
+import com.jaegokeeper.board.dto.BoardUpdateParamImg;
 import com.jaegokeeper.board.dto.response.BoardDetailResponse;
 import com.jaegokeeper.board.domain.Board;
 import com.jaegokeeper.board.dto.response.BoardListResponse;
@@ -39,6 +40,11 @@ public interface BoardMapper {
     int updateBoard(@Param("storeId") Integer storeId,
                     @Param("boardId") Integer boardId,
                     @Param("dto") BoardUpdateParam dto);
+
+    // 수정 페이지
+    int updateBoardImg(@Param("storeId") Integer storeId,
+                       @Param("boardId") Integer boardId,
+                       @Param("dto") BoardUpdateParamImg dto);
 
     // 삭제 페이지
 

@@ -197,16 +197,22 @@
     <update id="updateItem">
         UPDATE item
         <set>
-            <if test="itemName != null">
-                item_name = #{itemName},
+            <if test="dto.itemName != null">
+                item_name = #{dto.itemName},
             </if>
-            <if test="isPinned != null">
-                is_pinned = #{isPinned},
+            <if test="dto.isPinned != null">
+                is_pinned = #{dto.isPinned},
             </if>
-            <if test="imageId != null">
-                image_id = #{imageId},
+
+            <if test="dto.removeImage != null and dto.removeImage == true">
+                image_id = NULL,
+            </if>
+
+            <if test="(dto.removeImage == null or dto.removeImage == false) and dto.imageId != null">
+                image_id = #{dto.imageId},
             </if>
             updated_at = CURRENT_TIMESTAMP
+
         </set>
         WHERE store_id = #{storeId}
             AND item_id = #{itemId}

@@ -8,6 +8,8 @@ public enum ErrorCode {
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "요청 값이 올바르지 않습니다."),
     EMAIL_ALREADY_REGISTERED(HttpStatus.BAD_REQUEST, "EMAIL_ALREADY_REGISTERED", "이미 가입된 이메일입니다."),
     EMAIL_CODE_INVALID(HttpStatus.BAD_REQUEST, "EMAIL_CODE_INVALID", "인증번호가 올바르지 않거나 만료되었습니다."),
+    INVALID_WRITER_INFO(HttpStatus.BAD_REQUEST, "INVALID_WRITER_INFO", "writerType, writerId가 올바르지 않습니다."),
+    IMAGE_UPDATE_CONFLICT(HttpStatus.BAD_REQUEST, "IMAGE_UPDATE_CONFLICT", "removeImage와 파일 업로드는 동시에 요청할 수 없습니다."),
 
     // ==== 403 FORBIDDEN ====
     EMAIL_NOT_VERIFIED(HttpStatus.FORBIDDEN, "EMAIL_NOT_VERIFIED", "이메일 인증이 필요합니다."),
