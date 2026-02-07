@@ -121,7 +121,7 @@
             i.store_id = #{storeId}
             AND i.is_active = b'1'
 
-            <if test="excludeZero != null and excludeZero">
+            <if test= "excludeZero">
                 AND s.stock_amount > 0
             </if>
 
@@ -193,12 +193,27 @@
           AND i.is_active   = b'1'
     </select>
 
+    <!--수정-->
     <update id="updateItem">
         UPDATE item
-        SET item_name = #{itemName},
-            is_pinned = #{isPinned},
-            image_id = #{imageId},
+        <set>
+            <if test="dto.itemName != null">
+                item_name = #{dto.itemName},
+            </if>
+            <if test="dto.isPinned != null">
+                is_pinned = #{dto.isPinned},
+            </if>
+
+            <if test="dto.removeImage != null and dto.removeImage == true">
+                image_id = NULL,
+            </if>
+
+            <if test="(dto.removeImage == null or dto.removeImage == false) and dto.imageId != null">
+                image_id = #{dto.imageId},
+            </if>
             updated_at = CURRENT_TIMESTAMP
+
+        </set>
         WHERE store_id = #{storeId}
             AND item_id = #{itemId}
             AND is_active = b'1'
@@ -212,5 +227,18 @@
         AND is_active = b'1'
     </select>
 
+    <!--핀 토글-->
+    <update id="togglePin">
+        UPDATE item
+        SET is_pinned =
+            CASE
+            WHEN is_pinned = b'1' THEN b'0'
+            ELSE b'1'
+        END,
+        updated_at = CURRENT_TIMESTAMP
+        WHERE store_id = #{storeId}
+        AND item_id = #{itemId}
+        AND is_active = b'1'
+    </update>
 
 </mapper>

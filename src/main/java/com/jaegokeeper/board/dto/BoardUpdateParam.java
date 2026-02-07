@@ -1,11 +1,11 @@
-package com.jaegokeeper.board.dto.response;
+package com.jaegokeeper.board.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class BoardUpdateResponse {
+public class BoardUpdateParam {
 
     private final String title;
     private final String content;

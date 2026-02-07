@@ -14,17 +14,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class RequestUpdateRequest {
 
-    @NotNull(message = "requestType은 필수입니다.")
     private RequestType requestType;
 
-    @NotNull(message = "requestAmount 필수입니다.")
     @Min(0)
     private Integer requestAmount;
 
-    @NotNull(message = "albaId는 필수입니다.")
     @Min(1)
     private Integer albaId;
 
-    @NotNull(message = "requestDate는 필수입니다.")
     private LocalDateTime requestDate;
 }

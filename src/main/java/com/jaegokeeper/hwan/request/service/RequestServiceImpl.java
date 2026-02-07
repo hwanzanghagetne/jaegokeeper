@@ -110,6 +110,15 @@ public class RequestServiceImpl implements RequestService {
     @Transactional
     @Override
     public void updateRequest(Integer storeId, Integer requestId, RequestUpdateRequest dto) {
+
+        RequestStatus status = requestMapper.findRequestStatus(storeId, requestId);
+        if (status == null) {
+            throw new BusinessException(REQUEST_NOT_FOUND);
+        }
+        if (status != RequestStatus.WAIT) {
+            throw new BusinessException(REQUEST_STATUS_NOT_WAIT);
+        }
+
         int updated = requestMapper.updateRequest(storeId, requestId, dto);
         if (updated != 1) {
             throw new BusinessException(INTERNAL_ERROR);
@@ -120,7 +129,7 @@ public class RequestServiceImpl implements RequestService {
     @Transactional
     @Override
     public void updateRequestStatus(Integer storeId, Integer requestId, RequestStatusUpdateRequest dto) {
-        int updated = requestMapper.updateRequestStatus(storeId, requestId, dto);
+        int updated = requestMapper.updateRequestStatus(storeId, requestId, dto.getRequestStatus());
         if (updated != 1) {
             throw new BusinessException(INTERNAL_ERROR);
         }

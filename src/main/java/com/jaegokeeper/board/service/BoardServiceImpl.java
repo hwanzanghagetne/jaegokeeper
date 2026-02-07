@@ -1,13 +1,15 @@
 package com.jaegokeeper.board.service;
 
+import com.jaegokeeper.board.dto.BoardUpdateParamImg;
 import com.jaegokeeper.board.dto.request.BoardCreateRequest;
 import com.jaegokeeper.board.dto.request.BoardPageRequest;
 import com.jaegokeeper.board.dto.request.BoardUpdateRequest;
 import com.jaegokeeper.board.dto.response.BoardDetailResponse;
 import com.jaegokeeper.board.domain.Board;
 import com.jaegokeeper.board.dto.response.BoardListResponse;
-import com.jaegokeeper.board.dto.response.BoardUpdateResponse;
+import com.jaegokeeper.board.enums.BoardSearchType;
 import com.jaegokeeper.board.enums.BoardType;
+import com.jaegokeeper.board.enums.BoardWriterType;
 import com.jaegokeeper.board.mapper.BoardMapper;
 import com.jaegokeeper.ddan.img.service.ImgService;
 import com.jaegokeeper.hwan.alba.mapper.AlbaMapper2;
@@ -16,6 +18,7 @@ import com.jaegokeeper.hwan.item.dto.response.ItemPageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -33,15 +36,19 @@ public class BoardServiceImpl implements BoardService{
     // 리스트 조회
     @Override
     public ItemPageResponse<BoardListResponse> getBoardList(Integer storeId, BoardPageRequest dto) {
+
         int page = dto.getPageValue();
         int size = dto.getSizeValue();
-
-        int totalElements = boardMapper.countBoardList(storeId, dto.getType());
-        int totalPages = (totalElements + size - 1) / size;
-
         int offset = (page - 1) * size;
 
-        List<BoardListResponse> content = boardMapper.findBoardList(storeId,dto.getType(),size,offset);
+        String keyword = dto.getKeywordValue();
+        BoardSearchType searchType = dto.getSearchTypeValue();
+        BoardType boardType = dto.getType();
+
+        int totalElements = boardMapper.countBoardList(storeId, boardType,keyword,searchType);
+        List<BoardListResponse> content = boardMapper.findBoardList(storeId, boardType, keyword, searchType, size, offset);
+
+        int totalPages = (totalElements + size - 1) / size;
 
         return new ItemPageResponse<>(content, page, size, totalElements, totalPages);
     }
@@ -61,11 +68,24 @@ public class BoardServiceImpl implements BoardService{
     @Override
     public Integer createBoard(Integer storeId, BoardType boardType, BoardCreateRequest dto) {
 
+        BoardWriterType writerType = dto.getWriterType();
+        if (writerType == null) {
+            throw new BusinessException(BAD_REQUEST);
+        }
+
         String writer;
-        Integer writerId = dto.getWriterId();
-        if (writerId == null) {
+
+        if (writerType == BoardWriterType.ANONYMOUS) {
+            //익명인데 writerId
+            if (dto.getWriterId() != null) {
+                throw new BusinessException(BAD_REQUEST);
+            }
             writer = "익명";
-        } else {
+        } else { // ALBA
+            Integer writerId = dto.getWriterId();
+            if (writerId == null) {
+                throw new BusinessException(BAD_REQUEST);
+            }
             int count = albaMapper2.countByStoreIdAndAlbaId(storeId, writerId);
             if (count != 1) {
                 throw new BusinessException(ALBA_NOT_IN_STORE);
@@ -82,7 +102,13 @@ public class BoardServiceImpl implements BoardService{
             throw new BusinessException(IMAGE_UPLOAD_FAILED, e);
         }
 
-        Board board = Board.create(storeId, boardType, dto.getTitle(), dto.getContent(), writer, imageId);
+        Board board = Board.create(
+                storeId,
+                boardType,
+                dto.getTitle(),
+                dto.getContent(),
+                writer,
+                imageId);
         int insertedBoard = boardMapper.insertBoard(board);
         if (insertedBoard != 1) {
             throw new BusinessException(INTERNAL_ERROR);
@@ -94,28 +120,64 @@ public class BoardServiceImpl implements BoardService{
     @Override
     @Transactional
     public void updateBoard(Integer storeId, Integer boardId, BoardUpdateRequest dto) {
+
         int exists = boardMapper.countActiveByStoreIdAndBoardId(storeId, boardId);
         if (exists != 1) {
             throw new BusinessException(BOARD_NOT_FOUND);
         }
 
-        String writer;
-        Integer writerId = dto.getWriterId();
-        if (writerId == null) {
-            writer = "익명";
-        } else {
-            int count = albaMapper2.countByStoreIdAndAlbaId(storeId, writerId);
-            if (count != 1) {
-                throw new BusinessException(ALBA_NOT_IN_STORE);
+        String writer = null;
+        BoardWriterType writerType = dto.getWriterType();
+
+        if (writerType != null) {
+            if (writerType == BoardWriterType.ANONYMOUS) {
+                //익명인데 writerId
+                if (dto.getWriterId() != null) {
+                    throw new BusinessException(INVALID_WRITER_INFO);
+                }
+                writer = "익명";
+            } else { // ALBA
+                Integer writerId = dto.getWriterId();
+                if (writerId == null) {
+                    throw new BusinessException(INVALID_WRITER_INFO);
+                }
+
+                int count = albaMapper2.countByStoreIdAndAlbaId(storeId, writerId);
+                if (count != 1) {
+                    throw new BusinessException(ALBA_NOT_IN_STORE);
+                }
+                writer = albaMapper2.findAlbaNameByAlbaId(writerId);
             }
-            writer = albaMapper2.findAlbaNameByAlbaId(writerId);
         }
 
-        BoardUpdateResponse updateBoard = new BoardUpdateResponse(
-                dto.getTitle(), dto.getContent(), writer, dto.getImageId()
+        Boolean removeImage = dto.getRemoveImage();
+        MultipartFile file = dto.getFile();
+
+        boolean hasFile = (file != null && !file.isEmpty());
+        boolean wantsRemove = Boolean.TRUE.equals(removeImage);
+
+        if (wantsRemove && hasFile) {
+            throw new BusinessException(IMAGE_UPDATE_CONFLICT);
+        }
+        Integer newImageId = null;
+
+        if (hasFile) {
+            try {
+                newImageId = imgService.uploadImg(dto);
+            } catch (IOException e) {
+                throw new BusinessException(IMAGE_UPLOAD_FAILED, e);
+            }
+        }
+
+        BoardUpdateParamImg updateBoard = new BoardUpdateParamImg(
+                dto.getTitle(),
+                dto.getContent(),
+                writer,
+                newImageId,
+                wantsRemove ? true : null
         );
 
-        int updatedBoard = boardMapper.updateBoard(storeId,boardId,updateBoard);
+        int updatedBoard = boardMapper.updateBoardImg(storeId,boardId,updateBoard);
         if (updatedBoard != 1) {
             throw new BusinessException(INTERNAL_ERROR);
         }
@@ -136,5 +198,52 @@ public class BoardServiceImpl implements BoardService{
         }
     }
 
+/*    // 수정
+    @Override
+    @Transactional
+    public void updateBoard(Integer storeId, Integer boardId, BoardUpdateRequest dto) {
+
+        int exists = boardMapper.countActiveByStoreIdAndBoardId(storeId, boardId);
+        if (exists != 1) {
+            throw new BusinessException(BOARD_NOT_FOUND);
+        }
+
+        String writer = null;
+
+        BoardWriterType writerType = dto.getWriterType();
+        if (writerType != null) {
+
+            if (writerType == BoardWriterType.ANONYMOUS) {
+                //익명인데 writerId
+                if (dto.getWriterId() != null) {
+                    throw new BusinessException(BAD_REQUEST);
+                }
+                writer = "익명";
+            } else { // ALBA
+                Integer writerId = dto.getWriterId();
+                if (writerId == null) {
+                    throw new BusinessException(BAD_REQUEST);
+                }
+
+                int count = albaMapper2.countByStoreIdAndAlbaId(storeId, writerId);
+                if (count != 1) {
+                    throw new BusinessException(ALBA_NOT_IN_STORE);
+                }
+                writer = albaMapper2.findAlbaNameByAlbaId(writerId);
+            }
+        }
+
+        BoardUpdateParam updateBoard = new BoardUpdateParam(
+                dto.getTitle(),
+                dto.getContent(),
+                writer,
+                dto.getImageId()
+        );
+
+        int updatedBoard = boardMapper.updateBoard(storeId,boardId,updateBoard);
+        if (updatedBoard != 1) {
+            throw new BusinessException(INTERNAL_ERROR);
+        }
+    }*/
 
 }

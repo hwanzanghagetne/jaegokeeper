@@ -23,6 +23,7 @@ public class ItemPageRequest {
 
     private ItemFilter filter;
     private String keyword;
+
     private Boolean excludeZero;
 
 
@@ -39,7 +40,7 @@ public class ItemPageRequest {
     }
 
     @ApiModelProperty(hidden = true)
-    public boolean isExcludeZero() {
+    public boolean getExcludeZeroValue() {
         return Boolean.TRUE.equals(excludeZero);
     }
 

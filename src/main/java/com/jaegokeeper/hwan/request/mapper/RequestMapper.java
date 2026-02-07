@@ -44,5 +44,10 @@ public interface RequestMapper {
     //상태 수정
     int updateRequestStatus(@Param("storeId") Integer storeId,
                             @Param("requestId") Integer requestId,
-                            @Param("dto") RequestStatusUpdateRequest dto);
+                            @Param("requestStatus") RequestStatus requestStatus);
+
+    RequestStatus findRequestStatus(
+            @Param("storeId") Integer storeId,
+            @Param("requestId") Integer requestId
+    );
 }

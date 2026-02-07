@@ -11,6 +11,7 @@ public interface BufferMapper {
     );
 
     int updateBufferAmount (
+            @Param("storeId") Integer storeId,
             @Param("itemId") Integer itemId,
             @Param("bufferAmount") Integer bufferAmount
     );

@@ -1,6 +1,5 @@
 package com.jaegokeeper.hwan.stock.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,14 +10,9 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class StockAdjustRequestDTO {
+public class StockAmountUpdateRequest {
 
-    @NotNull
-    @Min(0)
-    private Integer targetAmount;
-
-    @NotNull
-    @Min(0)
-    private Integer bufferAmount;
+    @NotNull(message = "stockAmount는 필수입니다.")
+    @Min(value = 0,message = "stockAmount는 0 이상입니다.")
+    private Integer stockAmount;
 }

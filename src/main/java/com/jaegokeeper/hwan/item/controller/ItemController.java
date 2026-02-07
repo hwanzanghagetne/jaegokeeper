@@ -60,7 +60,7 @@ public class ItemController {
     public ResponseEntity<Void> modifyItem(
             @PathVariable Integer storeId,
             @PathVariable Integer itemId,
-            @Valid @RequestBody ItemUpdateRequest dto
+            @Valid @ModelAttribute ItemUpdateRequest dto
     ) {
         itemService.updateItem(storeId,itemId,dto);
         return ResponseEntity.noContent().build();
@@ -76,4 +76,15 @@ public class ItemController {
         itemService.softDeleteItem(storeId, itemId);
         return ResponseEntity.noContent().build();
     }
+
+    @ApiOperation(value = "아이템 즐겨찾기 토글", notes = "아이템의 즐겨찾기 상태를 토글합니다.")
+    @PatchMapping("/{itemId}/pin")
+    public ResponseEntity<Void> toggleIsPinned(
+            @PathVariable Integer storeId,
+            @PathVariable Integer itemId
+    ) {
+        itemService.toggleItemPin(storeId, itemId);
+        return ResponseEntity.noContent().build();
+    }
+
 }
