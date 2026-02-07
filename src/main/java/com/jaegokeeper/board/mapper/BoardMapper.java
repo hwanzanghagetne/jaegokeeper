@@ -1,9 +1,11 @@
 package com.jaegokeeper.board.mapper;
 
+import com.jaegokeeper.board.dto.BoardUpdateParamImg;
 import com.jaegokeeper.board.dto.response.BoardDetailResponse;
 import com.jaegokeeper.board.domain.Board;
 import com.jaegokeeper.board.dto.response.BoardListResponse;
-import com.jaegokeeper.board.dto.response.BoardUpdateResponse;
+import com.jaegokeeper.board.dto.BoardUpdateParam;
+import com.jaegokeeper.board.enums.BoardSearchType;
 import com.jaegokeeper.board.enums.BoardType;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -15,10 +17,14 @@ public interface BoardMapper {
 
     // 게시판 목록 조회 페이지(타입별)
     int countBoardList(@Param("storeId") Integer storeId,
-                       @Param("boardType") BoardType boardType);
+                       @Param("boardType") BoardType boardType,
+                       @Param("keyword") String keyword,
+                       @Param("searchType") BoardSearchType searchType);
 
     List<BoardListResponse> findBoardList(@Param("storeId") Integer storeId,
                                           @Param("boardType") BoardType boardType,
+                                          @Param("keyword") String keyword,
+                                          @Param("searchType") BoardSearchType searchType,
                                           @Param("size") Integer size,
                                           @Param("offset") Integer offset);
 
@@ -33,7 +39,12 @@ public interface BoardMapper {
     // 수정 페이지
     int updateBoard(@Param("storeId") Integer storeId,
                     @Param("boardId") Integer boardId,
-                    @Param("dto") BoardUpdateResponse dto);
+                    @Param("dto") BoardUpdateParam dto);
+
+    // 수정 페이지
+    int updateBoardImg(@Param("storeId") Integer storeId,
+                       @Param("boardId") Integer boardId,
+                       @Param("dto") BoardUpdateParamImg dto);
 
     // 삭제 페이지
 

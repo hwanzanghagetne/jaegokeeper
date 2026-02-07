@@ -1,6 +1,7 @@
 package com.jaegokeeper.hwan.item.mapper;
 
 import com.jaegokeeper.hwan.item.domain.Item;
+import com.jaegokeeper.hwan.item.dto.ItemUpdateParamImg;
 import com.jaegokeeper.hwan.item.dto.response.ItemDetailResponse;
 import com.jaegokeeper.hwan.item.dto.response.ItemListResponse;
 import com.jaegokeeper.hwan.item.enums.ItemFilter;
@@ -38,9 +39,7 @@ public interface ItemMapper {
     //아이템 수정
     int updateItem(@Param("storeId") Integer storeId,
                    @Param("itemId") Integer itemId,
-                   @Param("itemName") String itemName,
-                   @Param("isPinned") Boolean isPinned,
-                   @Param("imageId") Integer imageId);
+                   @Param("dto") ItemUpdateParamImg dto);
 
     int countByStoreIdAndItemId(@Param("storeId") Integer storeId,
                                 @Param("itemId") Integer itemId);

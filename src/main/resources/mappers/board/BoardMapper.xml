@@ -8,12 +8,35 @@
     <select id="countBoardList" resultType="int">
         SELECT COUNT(*)
         FROM board b
-        WHERE b.store_id = #{storeId}
-        AND b.is_active = b'1'
 
-        <if test="boardType != null">
-        AND b.board_type = #{boardType}
-        </if>
+        <where>
+            b.store_id = #{storeId}
+            AND b.is_active = b'1'
+
+            <if test="boardType != null">
+                AND b.board_type = #{boardType}
+            </if>
+            <if test="keyword != null and keyword !=''">
+                <choose>
+                    <when test="searchType != null and searchType.name() == 'TITLE'">
+                        AND b.title LIKE CONCAT('%', #{keyword}, '%')
+                    </when>
+                    <when test="searchType != null and searchType.name() == 'CONTENT'">
+                        AND b.content LIKE CONCAT('%', #{keyword}, '%')
+                    </when>
+                    <when test="searchType != null and searchType.name() == 'WRITER'">
+                        AND b.writer LIKE CONCAT('%', #{keyword}, '%')
+                    </when>
+                    <otherwise>
+                        AND(
+                        b.title LIKE CONCAT('%', #{keyword}, '%')
+                        OR b.content LIKE CONCAT('%', #{keyword}, '%')
+                        OR b.writer LIKE CONCAT('%', #{keyword}, '%')
+                        )
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
     </select>
 
     <select id="findBoardList" resultType="com.jaegokeeper.board.dto.response.BoardListResponse">
@@ -24,12 +47,38 @@
             b.is_pinned AS isPinned,
             b.writer AS writer,
             b.updated_at AS updatedAt
+
         FROM board b
-        WHERE b.store_id = #{storeId}
-        AND b.is_active = b'1'
-        <if test="boardType != null">
-            AND b.board_type = #{boardType}
-        </if>
+
+        <where>
+            b.store_id = #{storeId}
+            AND b.is_active = b'1'
+
+            <if test="boardType != null">
+                AND b.board_type = #{boardType}
+            </if>
+            <if test="keyword != null and keyword !=''">
+                <choose>
+                    <when test="searchType != null and searchType.name() == 'TITLE'">
+                        AND b.title LIKE CONCAT('%', #{keyword}, '%')
+                    </when>
+                    <when test="searchType != null and searchType.name() == 'CONTENT'">
+                        AND b.content LIKE CONCAT('%', #{keyword}, '%')
+                    </when>
+                    <when test="searchType != null and searchType.name() == 'WRITER'">
+                        AND b.writer LIKE CONCAT('%', #{keyword}, '%')
+                    </when>
+                    <otherwise>
+                        AND(
+                        b.title LIKE CONCAT('%', #{keyword}, '%')
+                        OR b.content LIKE CONCAT('%', #{keyword}, '%')
+                        OR b.writer LIKE CONCAT('%', #{keyword}, '%')
+                        )
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+
         ORDER BY b.is_pinned DESC, b.created_at DESC
         LIMIT #{size} OFFSET #{offset}
     </select>
@@ -76,17 +125,55 @@
                 #{imageId})
     </insert>
 
-    <!--  수정 페이지  -->
+<!--
+    &lt;!&ndash;  수정 페이지  &ndash;&gt;
     <update id="updateBoard" >
         UPDATE board b
-        SET b.title = #{dto.title},
-            b.content = #{dto.content},
-            b.writer = #{dto.writer},
-            b.image_id = #{dto.imageId},
+        <set>
+            <if test="dto.title != null">
+                b.title = #{dto.title},
+            </if>
+            <if test="dto.content != null">
+                b.content = #{dto.content},
+            </if>
+            <if test="dto.writer != null">
+                b.writer = #{dto.writer},
+            </if>
+            <if test="dto.imageId != null">
+                b.image_id = #{dto.imageId},
+            </if>
             b.updated_at = CURRENT_TIMESTAMP
+        </set>
         WHERE b.board_id = #{boardId}
         AND b.store_id = #{storeId}
         AND b.is_active = b'1'
+    </update>
+-->
+
+    <update id="updateBoardImg">
+        UPDATE board
+        <set>
+            <if test="dto.title != null">
+                title = #{dto.title},
+            </if>
+            <if test="dto.content != null">
+                content = #{dto.content},
+            </if>
+            <if test="dto.writer != null">
+                writer = #{dto.writer},
+            </if>
+
+            <if test="dto.removeImage != null and dto.removeImage == true">
+                image_id = NULL,
+            </if>
+
+            <if test="(dto.removeImage == null or dto.removeImage == false) and dto.imageId != null">
+                image_id = #{dto.imageId},
+            </if>
+            updated_at = CURRENT_TIMESTAMP
+        </set>
+        WHERE store_id = #{storeId}
+        AND board_id = #{boardId}
     </update>
 
     <!--  삭제 페이지  -->
@@ -106,4 +193,6 @@
         AND store_id = #{storeId}
         AND is_active = b'1'
     </select>
+
+
 </mapper>

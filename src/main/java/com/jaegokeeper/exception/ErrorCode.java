@@ -8,6 +8,8 @@ public enum ErrorCode {
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "요청 값이 올바르지 않습니다."),
     EMAIL_ALREADY_REGISTERED(HttpStatus.BAD_REQUEST, "EMAIL_ALREADY_REGISTERED", "이미 가입된 이메일입니다."),
     EMAIL_CODE_INVALID(HttpStatus.BAD_REQUEST, "EMAIL_CODE_INVALID", "인증번호가 올바르지 않거나 만료되었습니다."),
+    INVALID_WRITER_INFO(HttpStatus.BAD_REQUEST, "INVALID_WRITER_INFO", "writerType, writerId가 올바르지 않습니다."),
+    IMAGE_UPDATE_CONFLICT(HttpStatus.BAD_REQUEST, "IMAGE_UPDATE_CONFLICT", "removeImage와 파일 업로드는 동시에 요청할 수 없습니다."),
 
     // ==== 403 FORBIDDEN ====
     EMAIL_NOT_VERIFIED(HttpStatus.FORBIDDEN, "EMAIL_NOT_VERIFIED", "이메일 인증이 필요합니다."),
@@ -23,6 +25,9 @@ public enum ErrorCode {
 
     // ===== 409 CONFLICT =====
     STATE_CONFLICT(HttpStatus.CONFLICT, "STATE_CONFLICT", "현재 상태에서는 처리할 수 없습니다."),
+    REQUEST_STATUS_NOT_WAIT(HttpStatus.CONFLICT, "REQUEST_STATUS_NOT_WAIT", "대기 상태(WAIT)인 요청만 수정할 수 있습니다."),
+    STOCK_QUANTITY_NOT_ENOUGH(HttpStatus.CONFLICT, "STOCK_QUANTITY_NOT_ENOUGH", "출고 수량이 현재 재고보다 많습니다."),
+
 
     // ===== 500 INTERNAL_SERVER_ERROR =====
     IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "IMAGE_UPLOAD_FAILED", "이미지 업로드에 실패했습니다."),

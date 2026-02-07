@@ -24,69 +24,60 @@
                )
     </insert>
 
-    <select id="findStockAmountByStockId" resultType="Integer">
-        SELECT s.stock_amount
-        FROM stock s
-        JOIN item i
-        ON i.item_id = s.item_id
-        AND i.is_active = b'1'
-        WHERE stock_id = #{stockId}
-    </select>
-
     <select id="findStockAmountByItemId" resultType="Integer">
-        SELECT stock_amount
+        SELECT s.stock_amount
+
         FROM stock s
+
         JOIN item i
           ON i.item_id = s.item_id
+        AND i.store_id = #{storeId}
         AND i.is_active = b'1'
+
         WHERE s.item_id = #{itemId}
     </select>
 
 
 <!--    재고 직접 조정용-->
     <update id="updateStockAmount">
-            UPDATE stock s
-            JOIN item i
-            ON i.item_id = s.item_id
-            AND i.is_active = b'1'
-            SET s.stock_amount = #{amount},
-                s.updated_at = CURRENT_TIMESTAMP
-            WHERE s.item_id = #{itemId}
+        UPDATE stock s
+
+        JOIN item i
+        ON s.item_id = i.item_id
+        AND i.store_id = #{storeId}
+        AND i.is_active = b'1'
+
+        SET s.stock_amount = #{amount},
+        s.updated_at = CURRENT_TIMESTAMP
+
+        WHERE s.item_id = #{itemId}
     </update>
 
+    <!--입고-->
     <update id="increaseQuantity">
         UPDATE stock s
         JOIN item i
         ON i.item_id = s.item_id
-        AND i.is_active = b'1'
         SET s.stock_amount = s.stock_amount + #{amount},
-            s.updated_at = CURRENT_TIMESTAMP
-        WHERE s.stock_id = #{stockId}
-          AND i.store_id = #{storeId}
+        s.updated_at = CURRENT_TIMESTAMP
+        WHERE s.item_id = #{itemId}
+        AND i.store_id = #{storeId}
+        AND i.is_active = b'1'
     </update>
 
+    <!--출고-->
     <update id="decreaseQuantity">
         UPDATE stock s
         JOIN item i
         ON i.item_id = s.item_id
-        AND i.is_active = b'1'
         SET s.stock_amount = s.stock_amount - #{amount},
-            s.updated_at = CURRENT_TIMESTAMP
-        WHERE s.stock_id = #{stockId}
-          AND i.store_id = #{storeId}
-          AND s.stock_amount >= #{amount}
+        s.updated_at = CURRENT_TIMESTAMP
+        WHERE s.item_id = #{itemId}
+        AND i.store_id = #{storeId}
+        AND s.stock_amount >= #{amount}
+        AND i.is_active = b'1'
 
     </update>
-
-    <select id="findStockAmount" resultType="int">
-        SELECT s.stock_amount
-        FROM stock s
-        JOIN item i
-        ON i.item_id = s.item_id
-        AND i.is_active = b'1'
-        WHERE s.stock_id = #{stockId}
-        AND i.store_id = #{storeId}
-    </select>
 
     <select id="findStockIdByItem" resultType="Integer">
         SELECT stock_id
@@ -97,31 +88,23 @@
         AND i.is_active = b'1'
     </select>
 
-    <select id="findItemIdByStockId" resultType="Integer">
-        SELECT s.item_id
-        FROM stock s
-        JOIN item i
-        ON i.item_id =  s.item_id
-        WHERE s.stock_id = #{stockId}
-        AND i.is_active = b'1'
-        AND i.store_id = #{storeId}
-    </select>
-
+    <!--재고 상세 조회-->
     <select id="findStockDetail" resultType="com.jaegokeeper.hwan.stock.dto.StockDetailResponse">
         SELECT
-        s.stock_id AS stockId,
-        s.item_id AS itemId,
-        i.item_name AS itemName,
-        s.stock_amount AS stockAmount,
-        s.created_at AS createdAt,
-        s.updated_at AS updatedAt
+        s.stock_id,
+        s.item_id,
+        i.item_name,
+        s.stock_amount,
+        s.created_at,
+        s.updated_at
 
         FROM stock s
+
         JOIN item i
         ON s.item_id = i.item_id
 
         WHERE
-        s.stock_id = #{stockId}
+        s.item_id = #{itemId}
         AND i.store_id = #{storeId}
         AND i.is_active = b'1'
     </select>
