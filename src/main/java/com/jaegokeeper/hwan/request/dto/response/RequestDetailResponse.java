@@ -14,6 +14,7 @@ public class RequestDetailResponse {
     private String itemName;
     private Integer requestAmount;
     private LocalDateTime requestDate;
+    private Integer albaId;
     private String albaName;
 
 }
