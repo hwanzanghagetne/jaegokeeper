@@ -17,6 +17,7 @@ public class RequestListResponse {
     private String itemName;
     private Integer requestAmount;
     private LocalDateTime requestDate;
+    private Integer albaId;
     private String albaName;
     private RequestStatus requestStatus;
     private LocalDateTime createdAt;
