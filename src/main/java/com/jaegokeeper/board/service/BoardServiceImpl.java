@@ -14,7 +14,7 @@ import com.jaegokeeper.board.mapper.BoardMapper;
 import com.jaegokeeper.ddan.img.service.ImgService;
 import com.jaegokeeper.hwan.alba.mapper.AlbaMapper2;
 import com.jaegokeeper.exception.BusinessException;
-import com.jaegokeeper.hwan.item.dto.response.ItemPageResponse;
+import com.jaegokeeper.common.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +35,7 @@ public class BoardServiceImpl implements BoardService{
 
     // 리스트 조회
     @Override
-    public ItemPageResponse<BoardListResponse> getBoardList(Integer storeId, BoardPageRequest dto) {
+    public PageResponse<BoardListResponse> getBoardList(Integer storeId, BoardPageRequest dto) {
 
         int page = dto.getPageValue();
         int size = dto.getSizeValue();
@@ -50,7 +50,7 @@ public class BoardServiceImpl implements BoardService{
 
         int totalPages = (totalElements + size - 1) / size;
 
-        return new ItemPageResponse<>(content, page, size, totalElements, totalPages);
+        return new PageResponse<>(content, page, size, totalElements, totalPages);
     }
 
     // 상세 조회
@@ -70,7 +70,7 @@ public class BoardServiceImpl implements BoardService{
 
         BoardWriterType writerType = dto.getWriterType();
         if (writerType == null) {
-            throw new BusinessException(BAD_REQUEST);
+            throw new BusinessException(INVALID_WRITER_INFO);
         }
 
         String writer;
@@ -78,13 +78,13 @@ public class BoardServiceImpl implements BoardService{
         if (writerType == BoardWriterType.ANONYMOUS) {
             //익명인데 writerId
             if (dto.getWriterId() != null) {
-                throw new BusinessException(BAD_REQUEST);
+                throw new BusinessException(INVALID_WRITER_INFO);
             }
             writer = "익명";
         } else { // ALBA
             Integer writerId = dto.getWriterId();
             if (writerId == null) {
-                throw new BusinessException(BAD_REQUEST);
+                throw new BusinessException(INVALID_WRITER_INFO);
             }
             int count = albaMapper2.countByStoreIdAndAlbaId(storeId, writerId);
             if (count != 1) {
@@ -197,53 +197,5 @@ public class BoardServiceImpl implements BoardService{
             throw new BusinessException(INTERNAL_ERROR);
         }
     }
-
-/*    // 수정
-    @Override
-    @Transactional
-    public void updateBoard(Integer storeId, Integer boardId, BoardUpdateRequest dto) {
-
-        int exists = boardMapper.countActiveByStoreIdAndBoardId(storeId, boardId);
-        if (exists != 1) {
-            throw new BusinessException(BOARD_NOT_FOUND);
-        }
-
-        String writer = null;
-
-        BoardWriterType writerType = dto.getWriterType();
-        if (writerType != null) {
-
-            if (writerType == BoardWriterType.ANONYMOUS) {
-                //익명인데 writerId
-                if (dto.getWriterId() != null) {
-                    throw new BusinessException(BAD_REQUEST);
-                }
-                writer = "익명";
-            } else { // ALBA
-                Integer writerId = dto.getWriterId();
-                if (writerId == null) {
-                    throw new BusinessException(BAD_REQUEST);
-                }
-
-                int count = albaMapper2.countByStoreIdAndAlbaId(storeId, writerId);
-                if (count != 1) {
-                    throw new BusinessException(ALBA_NOT_IN_STORE);
-                }
-                writer = albaMapper2.findAlbaNameByAlbaId(writerId);
-            }
-        }
-
-        BoardUpdateParam updateBoard = new BoardUpdateParam(
-                dto.getTitle(),
-                dto.getContent(),
-                writer,
-                dto.getImageId()
-        );
-
-        int updatedBoard = boardMapper.updateBoard(storeId,boardId,updateBoard);
-        if (updatedBoard != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
-        }
-    }*/
 
 }

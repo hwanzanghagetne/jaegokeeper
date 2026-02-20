@@ -3,7 +3,7 @@ package com.jaegokeeper.hwan.request.service;
 import com.jaegokeeper.hwan.alba.dto.AlbaOptionDTO;
 import com.jaegokeeper.hwan.alba.mapper.AlbaMapper2;
 import com.jaegokeeper.exception.BusinessException;
-import com.jaegokeeper.hwan.item.dto.response.ItemPageResponse;
+import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.hwan.item.mapper.ItemMapper;
 import com.jaegokeeper.hwan.request.domain.Request;
 import com.jaegokeeper.hwan.request.dto.request.*;
@@ -74,7 +74,7 @@ public class RequestServiceImpl implements RequestService {
 
     // 리스트 조회
     @Override
-    public ItemPageResponse<RequestListResponse> getRequestList(Integer storeId, RequestPageRequest dto) {
+    public PageResponse<RequestListResponse> getRequestList(Integer storeId, RequestPageRequest dto) {
 
         int pageNum = dto.getPageValue();
         int pageSize = dto.getSizeValue();
@@ -87,7 +87,7 @@ public class RequestServiceImpl implements RequestService {
         List<RequestListResponse> content = requestMapper.findRequestList(storeId, requestType, requestStatus, offset, pageSize);
         int totalPages = (totalElements + pageSize - 1) / pageSize;
 
-        return new ItemPageResponse<>(content, pageNum, pageSize, totalElements, totalPages);
+        return new PageResponse<>(content, pageNum, pageSize, totalElements, totalPages);
     }
 
 //    // 임시 요청용 알바 리스트

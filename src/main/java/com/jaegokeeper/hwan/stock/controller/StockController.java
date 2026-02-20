@@ -32,7 +32,7 @@ public class StockController {
 
     @ApiOperation(value = "재고 입고 처리", notes = "itemId 재고에 입고 수량을 반영합니다.")
     @PostMapping("/in")
-    public ResponseEntity<StockResponse> inStock(
+    public ResponseEntity<Void> inStock(
             @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @Valid @RequestBody StockInOutRequest dto)
@@ -43,7 +43,7 @@ public class StockController {
 
     @ApiOperation(value = "재고 출고 처리", notes = "itemId 재고에 출고 수량을 반영합니다.")
     @PostMapping("/out")
-    public ResponseEntity<StockResponse> outStock(
+    public ResponseEntity<Void> outStock(
             @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @Valid @RequestBody StockInOutRequest dto)

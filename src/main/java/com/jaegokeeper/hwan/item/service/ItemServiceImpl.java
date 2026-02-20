@@ -10,7 +10,7 @@ import com.jaegokeeper.hwan.item.dto.request.ItemPageRequest;
 import com.jaegokeeper.hwan.item.dto.request.ItemUpdateRequest;
 import com.jaegokeeper.hwan.item.dto.response.ItemDetailResponse;
 import com.jaegokeeper.hwan.item.dto.response.ItemListResponse;
-import com.jaegokeeper.hwan.item.dto.response.ItemPageResponse;
+import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.hwan.item.mapper.ItemMapper;
 import com.jaegokeeper.hwan.item.mapper.StoreMapper;
 import com.jaegokeeper.hwan.stock.dto.StockAdjustRequest;
@@ -64,7 +64,7 @@ public class ItemServiceImpl implements ItemService {
         if (insertedItem != 1) {
             throw new BusinessException(INTERNAL_ERROR);}
 
-        Stock stock = Stock.of(item.getItemId(), dto.getStockAmount());
+        Stock stock = Stock.create(item.getItemId(), dto.getStockAmount());
 
         int insertedStock = stockMapper.insertStock(stock);
         if (insertedStock != 1) {throw new BusinessException(INTERNAL_ERROR);}
@@ -86,7 +86,7 @@ public class ItemServiceImpl implements ItemService {
 
     //아이템 리스트
     @Override
-    public ItemPageResponse<ItemListResponse> getItemList(Integer storeId, ItemPageRequest dto) {
+    public PageResponse<ItemListResponse> getItemList(Integer storeId, ItemPageRequest dto) {
 
         int pageNum = dto.getPageValue();
         int pageSize = dto.getSizeValue();
@@ -101,7 +101,7 @@ public class ItemServiceImpl implements ItemService {
         List<ItemListResponse> content = itemMapper.findItemList(storeId, filter,keyword,excludeZero, offset, pageSize);
         int totalPages = (totalElements + pageSize - 1) / pageSize;
 
-        return new ItemPageResponse<>(content, pageNum, pageSize, totalElements, totalPages);
+        return new PageResponse<>(content, pageNum, pageSize, totalElements, totalPages);
     }
 
     //아이템 상세 조회
@@ -151,7 +151,7 @@ public class ItemServiceImpl implements ItemService {
         // 재고 수정
         if (dto.getTargetAmount() != null || dto.getBufferAmount() != null) {
             StockAdjustRequest stockAdjustRequest = new StockAdjustRequest(dto.getTargetAmount(), dto.getBufferAmount());
-            stockService.adjustStock(itemId, storeId, stockAdjustRequest);
+            stockService.adjustStock(storeId, itemId, stockAdjustRequest);
         }
     }
 
