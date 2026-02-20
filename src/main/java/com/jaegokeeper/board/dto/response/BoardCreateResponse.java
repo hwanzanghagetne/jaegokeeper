@@ -7,5 +7,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class BoardCreateResponse {
 
-    private Integer BoardId;
+    private Integer boardId;
 }

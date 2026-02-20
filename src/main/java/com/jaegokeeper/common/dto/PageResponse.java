@@ -1,4 +1,4 @@
-package com.jaegokeeper.hwan.item.dto.response;
+package com.jaegokeeper.common.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class ItemPageResponse<T>{
+public class PageResponse<T> {
 
     private List<T> content;
     private Integer page;

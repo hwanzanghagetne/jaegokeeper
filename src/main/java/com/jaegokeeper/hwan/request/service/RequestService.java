@@ -1,7 +1,7 @@
 package com.jaegokeeper.hwan.request.service;
 
 import com.jaegokeeper.hwan.alba.dto.AlbaOptionDTO;
-import com.jaegokeeper.hwan.item.dto.response.ItemPageResponse;
+import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.hwan.request.dto.request.RequestCreateBatchRequest;
 import com.jaegokeeper.hwan.request.dto.request.RequestPageRequest;
 import com.jaegokeeper.hwan.request.dto.request.RequestStatusUpdateRequest;
@@ -18,7 +18,7 @@ public interface RequestService {
     int createRequest(Integer storeId, RequestCreateBatchRequest dto);
 
     //리스트
-    ItemPageResponse<RequestListResponse> getRequestList(Integer storeId, RequestPageRequest dto);
+    PageResponse<RequestListResponse> getRequestList(Integer storeId, RequestPageRequest dto);
 
     //삭제
     void softDeleteRequest(Integer storeId, Integer requestId);

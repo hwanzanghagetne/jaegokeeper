@@ -25,7 +25,7 @@ public class GlobalExceptionHandler {
                 .map(fe -> new FieldErrorResponse(fe.getField(), fe.getDefaultMessage()))
                 .toList();
 
-        ErrorResponse response = new ErrorResponse(BAD_REQUEST.getCode(),
+        ErrorResponse response = new ErrorResponse(BAD_REQUEST.name(),
                 BAD_REQUEST.getMessage(),
                 errors);
 
@@ -41,13 +41,13 @@ public class GlobalExceptionHandler {
 
         if (errorCode.getStatus().is4xxClientError()) {
             log.warn("[BUSINESS EXCEPTION] code={} method={} uri={} param={}",
-                    errorCode.getCode(),
+                    errorCode.name(),
                     request.getMethod(),
                     request.getRequestURI(),
                     request.getParameterMap());
         } else {
             log.error("[BUSINESS EXCEPTION] code={} method={} uri={} param={}",
-                    errorCode.getCode(),
+                    errorCode.name(),
                     request.getMethod(),
                     request.getRequestURI(),
                     request.getParameterMap(),
@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
         }
 
         ErrorResponse response = new ErrorResponse(
-                errorCode.getCode(),
+                errorCode.name(),
                 errorCode.getMessage(),
                 null
         );
@@ -75,7 +75,7 @@ public class GlobalExceptionHandler {
                 e.getMessage());
 
         ErrorResponse response = new ErrorResponse(
-                BAD_REQUEST.getCode(),
+                BAD_REQUEST.name(),
                 BAD_REQUEST.getMessage(),
                 null
         );
@@ -92,7 +92,7 @@ public class GlobalExceptionHandler {
                 request.getMethod(), request.getRequestURI(), request.getParameterMap());
 
         ErrorResponse response = new ErrorResponse(
-                BAD_REQUEST.getCode(),
+                BAD_REQUEST.name(),
                 BAD_REQUEST.getMessage(),
                 null
         );
@@ -111,7 +111,7 @@ public class GlobalExceptionHandler {
                 e);
 
         ErrorResponse response = new ErrorResponse(
-                INTERNAL_ERROR.getCode(),
+                INTERNAL_ERROR.name(),
                 INTERNAL_ERROR.getMessage(),
                 null
         );

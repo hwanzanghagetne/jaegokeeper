@@ -1,7 +1,7 @@
 package com.jaegokeeper.hwan.request.controller;
 
 import com.jaegokeeper.hwan.alba.dto.AlbaOptionDTO;
-import com.jaegokeeper.hwan.item.dto.response.ItemPageResponse;
+import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.hwan.request.dto.request.RequestCreateBatchRequest;
 import com.jaegokeeper.hwan.request.dto.request.RequestPageRequest;
 import com.jaegokeeper.hwan.request.dto.request.RequestStatusUpdateRequest;
@@ -29,7 +29,7 @@ public class RequestController {
     // 조회
     @ApiOperation(value = "요청 목록 조회", notes = "필터/페이지 조건으로 요청 목록을 조회합니다.")
     @GetMapping
-    public ResponseEntity<ItemPageResponse<RequestListResponse>> getRequests(
+    public ResponseEntity<PageResponse<RequestListResponse>> getRequests(
             @PathVariable Integer storeId,
             @Valid @ModelAttribute RequestPageRequest dto
     ) {
@@ -38,7 +38,7 @@ public class RequestController {
 
     // 상세 조회
     @ApiOperation(value = "요청 상세 조회", notes = "요청을 상세 조회합니다.")
-    @GetMapping("{requestId}")
+    @GetMapping("/{requestId}")
     public ResponseEntity<RequestDetailResponse> getRequestDetail(
             @PathVariable Integer storeId,
             @PathVariable Integer requestId
