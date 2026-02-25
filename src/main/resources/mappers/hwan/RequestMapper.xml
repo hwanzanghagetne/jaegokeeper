@@ -93,6 +93,7 @@
     <select id="findRequestDetail" resultType="com.jaegokeeper.hwan.request.dto.response.RequestDetailResponse">
         SELECT
         r.request_type   AS requestType,
+        r.request_status AS requestStatus,
         i.item_name      AS itemName,
         r.request_amount AS requestAmount,
         r.request_date   AS requestDate,
@@ -146,7 +147,6 @@
         </set>
         WHERE r.request_id = #{requestId}
           AND i.store_id = #{storeId}
-          AND r.request_status = 'WAIT'
     </update>
 
     <!--상태 수정-->

@@ -1,9 +1,8 @@
 package com.jaegokeeper.hwan.request.service;
 
-import com.jaegokeeper.hwan.alba.dto.AlbaOptionDTO;
-import com.jaegokeeper.hwan.alba.mapper.AlbaMapper2;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.common.dto.PageResponse;
+import com.jaegokeeper.hwan.alba.mapper.AlbaMapper2;
 import com.jaegokeeper.hwan.item.mapper.ItemMapper;
 import com.jaegokeeper.hwan.request.domain.Request;
 import com.jaegokeeper.hwan.request.dto.request.*;
@@ -38,9 +37,13 @@ public class RequestServiceImpl implements RequestService {
         for (RequestCreateRequest reqDto : dto.getRequests()) {
 
             Integer itemId = reqDto.getItemId();
-            int count = itemMapper.countByStoreIdAndItemId(storeId, itemId);
-            if (count != 1) {
+            if (itemMapper.countByStoreIdAndItemId(storeId, itemId) != 1) {
                 throw new BusinessException(ITEM_NOT_FOUND);
+            }
+
+            Integer albaId = reqDto.getAlbaId();
+            if (albaMapper2.countByStoreIdAndAlbaId(storeId, albaId) != 1) {
+                throw new BusinessException(ALBA_NOT_IN_STORE);
             }
 
             RequestType requestType = reqDto.getRequestType();
@@ -48,7 +51,7 @@ public class RequestServiceImpl implements RequestService {
             LocalDateTime requestDate = reqDto.getRequestDate();
 
             if (requestType == RequestType.ORDER && requestAmount < 1) {
-                    throw new BusinessException(BAD_REQUEST);
+                throw new BusinessException(BAD_REQUEST);
             }
 
             Request request = Request.create(itemId, reqDto.getAlbaId(), requestType, requestAmount, requestDate);
@@ -85,16 +88,9 @@ public class RequestServiceImpl implements RequestService {
 
         int totalElements = requestMapper.countRequestList(storeId, requestType, requestStatus);
         List<RequestListResponse> content = requestMapper.findRequestList(storeId, requestType, requestStatus, offset, pageSize);
-        int totalPages = (totalElements + pageSize - 1) / pageSize;
 
-        return new PageResponse<>(content, pageNum, pageSize, totalElements, totalPages);
+        return PageResponse.of(content, pageNum, pageSize, totalElements);
     }
-
-//    // 임시 요청용 알바 리스트
-//    @Override
-//    public List<AlbaOptionDTO> findAlbaOptionsForRequest(Integer storeId) {
-//        return albaMapper2.findAlbaOptionsForRequest(storeId);
-//    }
 
     //삭제
     @Transactional
@@ -102,7 +98,7 @@ public class RequestServiceImpl implements RequestService {
     public void softDeleteRequest(Integer storeId, Integer requestId) {
         int deleted = requestMapper.softDeleteRequest(storeId, requestId);
         if (deleted != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
+            throw new BusinessException(REQUEST_NOT_FOUND);
         }
     }
 
@@ -119,6 +115,11 @@ public class RequestServiceImpl implements RequestService {
             throw new BusinessException(REQUEST_STATUS_NOT_WAIT);
         }
 
+        if (dto.getRequestType() == RequestType.ORDER
+                && dto.getRequestAmount() != null && dto.getRequestAmount() < 1) {
+            throw new BusinessException(BAD_REQUEST);
+        }
+
         int updated = requestMapper.updateRequest(storeId, requestId, dto);
         if (updated != 1) {
             throw new BusinessException(INTERNAL_ERROR);
@@ -131,7 +132,7 @@ public class RequestServiceImpl implements RequestService {
     public void updateRequestStatus(Integer storeId, Integer requestId, RequestStatusUpdateRequest dto) {
         int updated = requestMapper.updateRequestStatus(storeId, requestId, dto.getRequestStatus());
         if (updated != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
+            throw new BusinessException(REQUEST_NOT_FOUND);
         }
     }
 }

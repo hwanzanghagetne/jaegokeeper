@@ -1,6 +1,5 @@
 package com.jaegokeeper.hwan.request.controller;
 
-import com.jaegokeeper.hwan.alba.dto.AlbaOptionDTO;
 import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.hwan.request.dto.request.RequestCreateBatchRequest;
 import com.jaegokeeper.hwan.request.dto.request.RequestPageRequest;
@@ -16,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @Api(tags = "Request")
 @RestController
@@ -92,11 +90,4 @@ public class RequestController {
         return ResponseEntity.noContent().build();
     }
 
-//    //요청 등록시 알바 목록
-//    @ApiOperation(value = "요청 등록용 알바 목록", notes = "요청 생성 화면에서 선택할 알바 목록을 조회합니다.")
-//    @GetMapping("/albas")
-//    public ResponseEntity<List<AlbaOptionDTO>> getAlbaOptions(
-//            @PathVariable Integer storeId) {
-//        return ResponseEntity.ok(requestService.findAlbaOptionsForRequest(storeId));
-//    }
 }
