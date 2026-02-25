@@ -122,7 +122,7 @@ public class RequestServiceImpl implements RequestService {
 
         int updated = requestMapper.updateRequest(storeId, requestId, dto);
         if (updated != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
+            throw new BusinessException(REQUEST_STATUS_NOT_WAIT);
         }
     }
 
