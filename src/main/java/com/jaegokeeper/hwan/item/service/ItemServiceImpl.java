@@ -1,5 +1,6 @@
 package com.jaegokeeper.hwan.item.service;
 
+import com.jaegokeeper.ddan.img.dto.ImgInfoDTO;
 import com.jaegokeeper.ddan.img.service.ImgService;
 import com.jaegokeeper.hwan.buffer.mapper.BufferMapper;
 import com.jaegokeeper.exception.BusinessException;
@@ -50,14 +51,7 @@ public class ItemServiceImpl implements ItemService {
             throw new BusinessException(STORE_NOT_FOUND);
         }
 
-        Integer imageId = null;
-        try {
-            if (dto.getFile() != null && !dto.getFile().isEmpty()) {
-                imageId = imgService.uploadImg(dto);
-            }
-        } catch (IOException e) {
-            throw new BusinessException(IMAGE_UPLOAD_FAILED, e);
-        }
+        Integer imageId = uploadImageIfPresent(dto);
         Item item = Item.create(storeId, dto.getItemName(), imageId);
 
         int insertedItem = itemMapper.insertItem(item);
@@ -76,11 +70,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     // 삭제
+    @Transactional
     @Override
     public void softDeleteItem(Integer storeId, Integer itemId) {
         int updated = itemMapper.softDeleteItem(storeId, itemId);
         if (updated != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
+            throw new BusinessException(ITEM_NOT_FOUND);
         }
     }
 
@@ -99,9 +94,8 @@ public class ItemServiceImpl implements ItemService {
 
         int totalElements = itemMapper.countItemList(storeId,filter,keyword,excludeZero);
         List<ItemListResponse> content = itemMapper.findItemList(storeId, filter,keyword,excludeZero, offset, pageSize);
-        int totalPages = (totalElements + pageSize - 1) / pageSize;
 
-        return new PageResponse<>(content, pageNum, pageSize, totalElements, totalPages);
+        return PageResponse.of(content, pageNum, pageSize, totalElements);
     }
 
     //아이템 상세 조회
@@ -119,24 +113,9 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public void updateItem(Integer storeId, Integer itemId, ItemUpdateRequest dto) {
 
-        Boolean removeImage = dto.getRemoveImage();
-        MultipartFile file = dto.getFile();
+        boolean wantsRemove = Boolean.TRUE.equals(dto.getRemoveImage());
+        Integer newImageId = resolveImageIdForUpdate(dto.getFile(), dto.getRemoveImage(), dto);
 
-        boolean hasFile = (file != null && !file.isEmpty());
-        boolean wantsRemove = Boolean.TRUE.equals(removeImage);
-
-        if (wantsRemove && hasFile) {
-            throw new BusinessException(IMAGE_UPDATE_CONFLICT);
-        }
-        Integer newImageId = null;
-
-        if (hasFile) {
-            try {
-                newImageId = imgService.uploadImg(dto);
-            } catch (IOException e) {
-                throw new BusinessException(IMAGE_UPLOAD_FAILED, e);
-            }
-        }
         ItemUpdateParamImg updateItem = new ItemUpdateParamImg(
                 dto.getItemName(),
                 dto.getIsPinned(),
@@ -152,6 +131,29 @@ public class ItemServiceImpl implements ItemService {
         if (dto.getTargetAmount() != null || dto.getBufferAmount() != null) {
             StockAdjustRequest stockAdjustRequest = new StockAdjustRequest(dto.getTargetAmount(), dto.getBufferAmount());
             stockService.adjustStock(storeId, itemId, stockAdjustRequest);
+        }
+    }
+
+    private Integer uploadImageIfPresent(ImgInfoDTO dto) {
+        if (dto.getFile() == null || dto.getFile().isEmpty()) return null;
+        try {
+            return imgService.uploadImg(dto);
+        } catch (IOException e) {
+            throw new BusinessException(IMAGE_UPLOAD_FAILED, e);
+        }
+    }
+
+    private Integer resolveImageIdForUpdate(MultipartFile file, Boolean removeImage, ImgInfoDTO dto) {
+        boolean hasFile = (file != null && !file.isEmpty());
+        boolean wantsRemove = Boolean.TRUE.equals(removeImage);
+        if (wantsRemove && hasFile) {
+            throw new BusinessException(IMAGE_UPDATE_CONFLICT);
+        }
+        if (!hasFile) return null;
+        try {
+            return imgService.uploadImg(dto);
+        } catch (IOException e) {
+            throw new BusinessException(IMAGE_UPLOAD_FAILED, e);
         }
     }
 
