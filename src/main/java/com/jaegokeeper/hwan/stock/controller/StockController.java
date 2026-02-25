@@ -3,7 +3,6 @@ package com.jaegokeeper.hwan.stock.controller;
 import com.jaegokeeper.hwan.stock.dto.StockAmountUpdateRequest;
 import com.jaegokeeper.hwan.stock.dto.StockDetailResponse;
 import com.jaegokeeper.hwan.stock.dto.StockInOutRequest;
-import com.jaegokeeper.hwan.stock.dto.StockResponse;
 import com.jaegokeeper.hwan.stock.service.StockService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -54,7 +53,7 @@ public class StockController {
 
     @ApiOperation(value = "재고 직접 조정 처리", notes = "itemId 재고에 재고를 직접 조정합니다.")
     @PostMapping("/adjust")
-    public ResponseEntity<StockResponse> adjustStock(
+    public ResponseEntity<Void> adjustStock(
             @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @Valid @RequestBody StockAmountUpdateRequest dto
