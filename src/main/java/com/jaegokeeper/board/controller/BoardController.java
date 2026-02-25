@@ -81,16 +81,4 @@ public class BoardController {
         return ResponseEntity.noContent().build();
     }
 
-    /*    // 수정
-    @ApiOperation(value = "게시글 수정", notes = "boardId의 게시글을 수정합니다.")
-    @PutMapping("/{boardId}")
-    public ResponseEntity<Void> updateBoard(
-            @PathVariable Integer storeId,
-            @PathVariable Integer boardId,
-            @Valid @RequestBody BoardUpdateRequest dto
-    ) {
-        boardService.updateBoard(storeId, boardId, dto);
-        return ResponseEntity.noContent().build();
-    }*/
-
-}
+    }

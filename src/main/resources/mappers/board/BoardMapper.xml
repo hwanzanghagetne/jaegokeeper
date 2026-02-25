@@ -125,31 +125,6 @@
                 #{imageId})
     </insert>
 
-<!--
-    &lt;!&ndash;  수정 페이지  &ndash;&gt;
-    <update id="updateBoard" >
-        UPDATE board b
-        <set>
-            <if test="dto.title != null">
-                b.title = #{dto.title},
-            </if>
-            <if test="dto.content != null">
-                b.content = #{dto.content},
-            </if>
-            <if test="dto.writer != null">
-                b.writer = #{dto.writer},
-            </if>
-            <if test="dto.imageId != null">
-                b.image_id = #{dto.imageId},
-            </if>
-            b.updated_at = CURRENT_TIMESTAMP
-        </set>
-        WHERE b.board_id = #{boardId}
-        AND b.store_id = #{storeId}
-        AND b.is_active = b'1'
-    </update>
--->
-
     <update id="updateBoardImg">
         UPDATE board
         <set>
@@ -174,6 +149,7 @@
         </set>
         WHERE store_id = #{storeId}
         AND board_id = #{boardId}
+        AND is_active = b'1'
     </update>
 
     <!--  삭제 페이지  -->

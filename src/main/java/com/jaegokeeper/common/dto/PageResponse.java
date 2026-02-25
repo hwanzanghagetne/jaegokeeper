@@ -14,4 +14,9 @@ public class PageResponse<T> {
     private Integer size;
     private Integer totalElements;
     private Integer totalPages;
+
+    public static <T> PageResponse<T> of(List<T> content, int page, int size, int totalElements) {
+        int totalPages = (totalElements + size - 1) / size;
+        return new PageResponse<>(content, page, size, totalElements, totalPages);
+    }
 }
