@@ -120,6 +120,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- AOP (AspectJ) -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>1.9.21</version>
+        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>junit</groupId>
