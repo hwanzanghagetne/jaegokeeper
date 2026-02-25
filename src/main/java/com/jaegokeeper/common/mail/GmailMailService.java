@@ -1,5 +1,6 @@
 package com.jaegokeeper.common.mail;
 
+import com.jaegokeeper.common.timer.Timer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -23,6 +24,7 @@ public class GmailMailService implements MailService {
 
     private static final int MAX_RETRIES = 2;
 
+    @Timer
     @Async("asyncExecutor")
     @Override
     public void sendSignupCode(String to, String code) {
@@ -38,6 +40,7 @@ public class GmailMailService implements MailService {
         }
     }
 
+    @Timer
     @Async("asyncExecutor")
     @Override
     public void sendWelcome(String to, String name) {
