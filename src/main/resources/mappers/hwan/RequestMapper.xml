@@ -147,6 +147,7 @@
         </set>
         WHERE r.request_id = #{requestId}
           AND i.store_id = #{storeId}
+          AND r.request_status = 'WAIT'
     </update>
 
     <!--상태 수정-->
