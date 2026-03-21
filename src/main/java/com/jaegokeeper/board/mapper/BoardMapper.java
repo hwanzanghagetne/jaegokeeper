@@ -4,7 +4,6 @@ import com.jaegokeeper.board.dto.BoardUpdateParamImg;
 import com.jaegokeeper.board.dto.response.BoardDetailResponse;
 import com.jaegokeeper.board.domain.Board;
 import com.jaegokeeper.board.dto.response.BoardListResponse;
-import com.jaegokeeper.board.dto.BoardUpdateParam;
 import com.jaegokeeper.board.enums.BoardSearchType;
 import com.jaegokeeper.board.enums.BoardType;
 import org.apache.ibatis.annotations.Mapper;
@@ -28,7 +27,6 @@ public interface BoardMapper {
                                           @Param("size") Integer size,
                                           @Param("offset") Integer offset);
 
-
     // 상세 페이지
     BoardDetailResponse getBoardDetail(@Param("storeId") Integer storeId,
                                        @Param("boardId") Integer boardId);
@@ -37,17 +35,11 @@ public interface BoardMapper {
     int insertBoard(Board dto);
 
     // 수정 페이지
-    int updateBoard(@Param("storeId") Integer storeId,
-                    @Param("boardId") Integer boardId,
-                    @Param("dto") BoardUpdateParam dto);
-
-    // 수정 페이지
     int updateBoardImg(@Param("storeId") Integer storeId,
                        @Param("boardId") Integer boardId,
                        @Param("dto") BoardUpdateParamImg dto);
 
     // 삭제 페이지
-
     int softDeleteBoard(@Param("storeId") Integer storeId,
                         @Param("boardId") Integer boardId);
 

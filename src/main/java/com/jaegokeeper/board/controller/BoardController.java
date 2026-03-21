@@ -8,7 +8,7 @@ import com.jaegokeeper.board.dto.response.BoardDetailResponse;
 import com.jaegokeeper.board.dto.response.BoardListResponse;
 import com.jaegokeeper.board.enums.BoardType;
 import com.jaegokeeper.board.service.BoardService;
-import com.jaegokeeper.hwan.item.dto.response.ItemPageResponse;
+import com.jaegokeeper.common.dto.PageResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -35,13 +35,13 @@ public class BoardController {
             @Valid @ModelAttribute BoardCreateRequest dto
     ) {
         Integer boardId = boardService.createBoard(storeId, type, dto);
-        return ResponseEntity.ok(new BoardCreateResponse(boardId));
+        return ResponseEntity.status(201).body(new BoardCreateResponse(boardId));
     }
 
     // 게시판 목록 조회(타입별)
     @ApiOperation(value = "게시글 목록 조회", notes = "매장(storeId)의 게시글 목록을 타입/페이지 조건으로 조회합니다.")
     @GetMapping
-    public ResponseEntity<ItemPageResponse<BoardListResponse>> getBoards(
+    public ResponseEntity<PageResponse<BoardListResponse>> getBoards(
             @PathVariable Integer storeId,
             @Valid @ModelAttribute BoardPageRequest dto
     ) {
@@ -81,16 +81,4 @@ public class BoardController {
         return ResponseEntity.noContent().build();
     }
 
-    /*    // 수정
-    @ApiOperation(value = "게시글 수정", notes = "boardId의 게시글을 수정합니다.")
-    @PutMapping("/{boardId}")
-    public ResponseEntity<Void> updateBoard(
-            @PathVariable Integer storeId,
-            @PathVariable Integer boardId,
-            @Valid @RequestBody BoardUpdateRequest dto
-    ) {
-        boardService.updateBoard(storeId, boardId, dto);
-        return ResponseEntity.noContent().build();
-    }*/
-
-}
+    }

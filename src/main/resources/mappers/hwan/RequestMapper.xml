@@ -41,6 +41,7 @@
             i.item_name AS itemName,
             r.request_amount AS requestAmount,
             r.request_date AS requestDate,
+            r.alba_id AS albaId,
             a.alba_name AS albaName,
             r.request_status AS requestStatus,
             r.created_at AS createdAt
@@ -92,9 +93,11 @@
     <select id="findRequestDetail" resultType="com.jaegokeeper.hwan.request.dto.response.RequestDetailResponse">
         SELECT
         r.request_type   AS requestType,
+        r.request_status AS requestStatus,
         i.item_name      AS itemName,
         r.request_amount AS requestAmount,
         r.request_date   AS requestDate,
+        r.alba_id        AS albaId,
         a.alba_name      AS albaName
 
         FROM request r

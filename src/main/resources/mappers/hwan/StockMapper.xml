@@ -79,15 +79,6 @@
 
     </update>
 
-    <select id="findStockIdByItem" resultType="Integer">
-        SELECT stock_id
-        FROM stock s
-        JOIN item i
-        ON i.item_id = s.item_id
-        WHERE s.item_id = #{itemId}
-        AND i.is_active = b'1'
-    </select>
-
     <!--재고 상세 조회-->
     <select id="findStockDetail" resultType="com.jaegokeeper.hwan.stock.dto.StockDetailResponse">
         SELECT

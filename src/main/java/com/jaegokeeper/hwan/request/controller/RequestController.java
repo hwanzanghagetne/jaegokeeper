@@ -1,7 +1,6 @@
 package com.jaegokeeper.hwan.request.controller;
 
-import com.jaegokeeper.hwan.alba.dto.AlbaOptionDTO;
-import com.jaegokeeper.hwan.item.dto.response.ItemPageResponse;
+import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.hwan.request.dto.request.RequestCreateBatchRequest;
 import com.jaegokeeper.hwan.request.dto.request.RequestPageRequest;
 import com.jaegokeeper.hwan.request.dto.request.RequestStatusUpdateRequest;
@@ -16,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @Api(tags = "Request")
 @RestController
@@ -29,7 +27,7 @@ public class RequestController {
     // 조회
     @ApiOperation(value = "요청 목록 조회", notes = "필터/페이지 조건으로 요청 목록을 조회합니다.")
     @GetMapping
-    public ResponseEntity<ItemPageResponse<RequestListResponse>> getRequests(
+    public ResponseEntity<PageResponse<RequestListResponse>> getRequests(
             @PathVariable Integer storeId,
             @Valid @ModelAttribute RequestPageRequest dto
     ) {
@@ -38,7 +36,7 @@ public class RequestController {
 
     // 상세 조회
     @ApiOperation(value = "요청 상세 조회", notes = "요청을 상세 조회합니다.")
-    @GetMapping("{requestId}")
+    @GetMapping("/{requestId}")
     public ResponseEntity<RequestDetailResponse> getRequestDetail(
             @PathVariable Integer storeId,
             @PathVariable Integer requestId
@@ -92,11 +90,4 @@ public class RequestController {
         return ResponseEntity.noContent().build();
     }
 
-//    //요청 등록시 알바 목록
-//    @ApiOperation(value = "요청 등록용 알바 목록", notes = "요청 생성 화면에서 선택할 알바 목록을 조회합니다.")
-//    @GetMapping("/albas")
-//    public ResponseEntity<List<AlbaOptionDTO>> getAlbaOptions(
-//            @PathVariable Integer storeId) {
-//        return ResponseEntity.ok(requestService.findAlbaOptionsForRequest(storeId));
-//    }
 }

@@ -5,7 +5,7 @@ import com.jaegokeeper.hwan.item.dto.request.ItemPageRequest;
 import com.jaegokeeper.hwan.item.dto.request.ItemUpdateRequest;
 import com.jaegokeeper.hwan.item.dto.response.ItemDetailResponse;
 import com.jaegokeeper.hwan.item.dto.response.ItemListResponse;
-import com.jaegokeeper.hwan.item.dto.response.ItemPageResponse;
+import com.jaegokeeper.common.dto.PageResponse;
 
 public interface ItemService {
 
@@ -16,7 +16,7 @@ public interface ItemService {
     void softDeleteItem(Integer storeId, Integer itemId);
 
     //아이템 전체조회
-    ItemPageResponse<ItemListResponse> getItemList(Integer storeId, ItemPageRequest dto);
+    PageResponse<ItemListResponse> getItemList(Integer storeId, ItemPageRequest dto);
 
     //아이템 상세
     ItemDetailResponse getItemDetail(Integer storeId, Integer itemId);
