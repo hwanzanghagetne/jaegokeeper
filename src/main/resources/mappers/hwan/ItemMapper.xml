@@ -109,13 +109,14 @@
         JOIN stock s
         ON s.item_id = i.item_id
 
+        LEFT JOIN (
+            SELECT item_id, MAX(created_at) AS max_created_at
+            FROM request
+            GROUP BY item_id
+        ) latest_r ON latest_r.item_id = i.item_id
         LEFT JOIN request r
-        ON r.item_id = i.item_id
-        AND r.created_at = (
-            SELECT MAX(r2.created_at)
-            FROM request r2
-            WHERE r2.item_id = i.item_id
-        )
+            ON r.item_id = i.item_id
+            AND r.created_at = latest_r.max_created_at
 
         <where>
             i.store_id = #{storeId}

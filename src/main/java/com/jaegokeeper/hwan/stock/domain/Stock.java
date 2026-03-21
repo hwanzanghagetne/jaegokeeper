@@ -7,21 +7,22 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
 @NoArgsConstructor
 public class Stock {
 
+    @Setter
     private Integer stockId;
+
     private Integer itemId;
     private Integer stockAmount;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static Stock of(Integer itemId, Integer stockAmount) {
+    public static Stock create(Integer itemId, Integer stockAmount) {
         Stock stock = new Stock();
-        stock.setItemId(itemId);
-        stock.setStockAmount(stockAmount);
+        stock.itemId = itemId;
+        stock.stockAmount = stockAmount;
         return stock;
     }
 }

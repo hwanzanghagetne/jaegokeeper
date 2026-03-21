@@ -6,7 +6,7 @@ import com.jaegokeeper.hwan.item.dto.request.ItemUpdateRequest;
 import com.jaegokeeper.hwan.item.dto.response.ItemCreateResponse;
 import com.jaegokeeper.hwan.item.dto.response.ItemDetailResponse;
 import com.jaegokeeper.hwan.item.dto.response.ItemListResponse;
-import com.jaegokeeper.hwan.item.dto.response.ItemPageResponse;
+import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.hwan.item.service.ItemService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -31,13 +31,13 @@ public class ItemController {
             @PathVariable Integer storeId,
             @Valid @ModelAttribute ItemCreateRequest dto) {
         Integer itemId = itemService.createItem(storeId, dto);
-        return ResponseEntity.ok(new ItemCreateResponse(itemId));
+        return ResponseEntity.status(201).body(new ItemCreateResponse(itemId));
     }
 
     // 조회
     @ApiOperation(value = "아이템 목록 조회", notes = "필터/페이지 조건으로 아이템 목록을 조회합니다.")
     @GetMapping
-    public ResponseEntity<ItemPageResponse<ItemListResponse>> getItems(
+    public ResponseEntity<PageResponse<ItemListResponse>> getItems(
             @PathVariable Integer storeId,
             @Valid @ModelAttribute ItemPageRequest dto
     ) {

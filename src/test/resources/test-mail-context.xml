@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context
+            https://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/aop
+            https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- mail.properties 로드 -->
+    <context:property-placeholder location="classpath:mail.properties"/>
+
+    <!-- 메일/AOP 관련 빈만 스캔 (SwaggerConfig는 ServletContext가 필요해 테스트 환경에서 제외) -->
+    <context:component-scan base-package="
+        com.jaegokeeper.common.mail,
+        com.jaegokeeper.common.timer,
+        com.jaegokeeper.config">
+        <context:exclude-filter type="assignable"
+            expression="com.jaegokeeper.config.SwaggerConfig"/>
+    </context:component-scan>
+
+    <!-- AOP 프록시 활성화 -->
+    <aop:aspectj-autoproxy/>
+
+    <!-- JavaMailSender -->
+    <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host"     value="${mail.host}"/>
+        <property name="port"     value="${mail.port}"/>
+        <property name="username" value="${mail.username}"/>
+        <property name="password" value="${mail.password}"/>
+        <property name="javaMailProperties">
+            <props>
+                <prop key="mail.smtp.auth">${mail.smtp.auth}</prop>
+                <prop key="mail.smtp.starttls.enable">${mail.smtp.starttls.enable}</prop>
+                <prop key="mail.smtp.starttls.required">${mail.smtp.starttls.required}</prop>
+                <prop key="mail.smtp.connectiontimeout">${mail.smtp.connectiontimeout}</prop>
+                <prop key="mail.smtp.timeout">${mail.smtp.timeout}</prop>
+                <prop key="mail.smtp.writetimeout">${mail.smtp.writetimeout}</prop>
+            </props>
+        </property>
+    </bean>
+
+</beans>

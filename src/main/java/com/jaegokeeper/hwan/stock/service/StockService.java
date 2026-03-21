@@ -15,7 +15,7 @@ public interface StockService {
     void updateStockAmount(Integer storeId, Integer itemId, StockAmountUpdateRequest dto);
 
     //아이템 재고 수정 (재고, 버퍼 모두 수정)
-    void adjustStock(Integer itemId, Integer storeId, StockAdjustRequest dto);
+    void adjustStock(Integer storeId, Integer itemId, StockAdjustRequest dto);
 
 
     StockDetailResponse getStockDetail(Integer storeId, Integer itemId);
