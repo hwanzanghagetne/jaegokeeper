@@ -41,3 +41,7 @@ build/
 
 # mail secrets
 src/main/resources/mail.properties
+
+# Claude Code
+CLAUDE.md
+.claude/

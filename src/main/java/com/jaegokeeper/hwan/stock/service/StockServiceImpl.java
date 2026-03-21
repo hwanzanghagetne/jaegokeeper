@@ -66,6 +66,7 @@ public class StockServiceImpl implements StockService {
     }
 
     /*재고만 딱 조정*/
+    @Transactional
     @Override
     public void updateStockAmount(Integer storeId, Integer itemId, StockAmountUpdateRequest dto) {
 
@@ -83,11 +84,9 @@ public class StockServiceImpl implements StockService {
             throw new BusinessException(INTERNAL_ERROR);
         }
 
-        if (!dto.getStockAmount().equals(existAmount)) {
-            int inserted = logMapper.insertLog(itemId, ADJUST, dto.getStockAmount());
-            if (inserted != 1) {
-                throw new BusinessException(INTERNAL_ERROR);
-            }
+        int inserted = logMapper.insertLog(itemId, ADJUST, dto.getStockAmount());
+        if (inserted != 1) {
+            throw new BusinessException(INTERNAL_ERROR);
         }
     }
 
@@ -95,7 +94,7 @@ public class StockServiceImpl implements StockService {
     /*재고, 버퍼 모두*/
     @Transactional
     @Override
-    public void adjustStock(Integer itemId,Integer storeId, StockAdjustRequest dto) {
+    public void adjustStock(Integer storeId, Integer itemId, StockAdjustRequest dto) {
 
         Integer newTargetAmount = dto.getTargetAmount();
         Integer newBufferAmount = dto.getBufferAmount();
