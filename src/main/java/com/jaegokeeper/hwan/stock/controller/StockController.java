@@ -3,7 +3,6 @@ package com.jaegokeeper.hwan.stock.controller;
 import com.jaegokeeper.hwan.stock.dto.StockAmountUpdateRequest;
 import com.jaegokeeper.hwan.stock.dto.StockDetailResponse;
 import com.jaegokeeper.hwan.stock.dto.StockInOutRequest;
-import com.jaegokeeper.hwan.stock.dto.StockResponse;
 import com.jaegokeeper.hwan.stock.service.StockService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -32,7 +31,7 @@ public class StockController {
 
     @ApiOperation(value = "재고 입고 처리", notes = "itemId 재고에 입고 수량을 반영합니다.")
     @PostMapping("/in")
-    public ResponseEntity<StockResponse> inStock(
+    public ResponseEntity<Void> inStock(
             @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @Valid @RequestBody StockInOutRequest dto)
@@ -43,7 +42,7 @@ public class StockController {
 
     @ApiOperation(value = "재고 출고 처리", notes = "itemId 재고에 출고 수량을 반영합니다.")
     @PostMapping("/out")
-    public ResponseEntity<StockResponse> outStock(
+    public ResponseEntity<Void> outStock(
             @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @Valid @RequestBody StockInOutRequest dto)
@@ -54,7 +53,7 @@ public class StockController {
 
     @ApiOperation(value = "재고 직접 조정 처리", notes = "itemId 재고에 재고를 직접 조정합니다.")
     @PostMapping("/adjust")
-    public ResponseEntity<StockResponse> adjustStock(
+    public ResponseEntity<Void> adjustStock(
             @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @Valid @RequestBody StockAmountUpdateRequest dto
