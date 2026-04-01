@@ -11,9 +11,9 @@ import com.jaegokeeper.board.enums.BoardSearchType;
 import com.jaegokeeper.board.enums.BoardType;
 import com.jaegokeeper.board.enums.BoardWriterType;
 import com.jaegokeeper.board.mapper.BoardMapper;
-import com.jaegokeeper.ddan.img.dto.ImgInfoDTO;
-import com.jaegokeeper.ddan.img.service.ImgService;
-import com.jaegokeeper.hwan.alba.mapper.AlbaMapper2;
+import com.jaegokeeper.image.dto.ImageInfoDTO;
+import com.jaegokeeper.image.service.ImageService;
+import com.jaegokeeper.alba.mapper.AlbaMapper;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.common.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
@@ -30,9 +30,9 @@ import static com.jaegokeeper.exception.ErrorCode.*;
 @RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService{
 
-    private final ImgService imgService;
+    private final ImageService imgService;
     private final BoardMapper boardMapper;
-    private final AlbaMapper2 albaMapper2;
+    private final AlbaMapper albaMapper2;
 
     // 리스트 조회
     @Override
@@ -136,7 +136,7 @@ public class BoardServiceImpl implements BoardService{
         return albaMapper2.findAlbaNameByAlbaId(writerId);
     }
 
-    private Integer uploadImageIfPresent(ImgInfoDTO dto) {
+    private Integer uploadImageIfPresent(ImageInfoDTO dto) {
         if (dto.getFile() == null || dto.getFile().isEmpty()) return null;
         try {
             return imgService.uploadImg(dto);
@@ -145,7 +145,7 @@ public class BoardServiceImpl implements BoardService{
         }
     }
 
-    private Integer resolveImageIdForUpdate(MultipartFile file, Boolean removeImage, ImgInfoDTO dto) {
+    private Integer resolveImageIdForUpdate(MultipartFile file, Boolean removeImage, ImageInfoDTO dto) {
         boolean hasFile = (file != null && !file.isEmpty());
         boolean wantsRemove = Boolean.TRUE.equals(removeImage);
         if (wantsRemove && hasFile) {

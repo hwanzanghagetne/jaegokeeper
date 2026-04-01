@@ -8,8 +8,8 @@ import com.jaegokeeper.auth.mapper.UserAuthMapper;
 import com.jaegokeeper.auth.utils.SocialProfile;
 import com.jaegokeeper.auth.utils.SocialVerifier;
 import com.jaegokeeper.common.api.ApiException;
-import com.jaegokeeper.psj.dto.StoreDto;
-import com.jaegokeeper.psj.mapper.StoreMapper2;
+import com.jaegokeeper.store.dto.StoreDto;
+import com.jaegokeeper.store.mapper.StoreMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,13 +19,13 @@ import java.util.*;
 @Service
 public class SocialService {
 
-    private final StoreMapper2 storeMapper;
+    private final StoreMapper storeMapper;
     private final UserAuthMapper userAuthMapper;
 
     private final Map<String, SocialVerifier> verifiersByProvider;
 
     public SocialService(
-            StoreMapper2 storeMapper,
+            StoreMapper storeMapper,
             UserAuthMapper userAuthMapper,
             List<SocialVerifier> verifiers
     ) {

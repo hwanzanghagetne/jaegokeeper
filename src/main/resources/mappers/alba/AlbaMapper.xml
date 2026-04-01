@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jaegokeeper.alba.mapper.AlbaMapper">
+
+    <select id="selectAllAlba" resultType="com.jaegokeeper.alba.dto.AlbaListDto">
+        SELECT
+            alba.alba_id    AS albaId,
+            work.work_id    AS workId,
+            work.work_status AS workStatus,
+            work.work_date  AS workDate,
+            alba.alba_name  AS albaName,
+            alba.alba_phone AS albaPhone,
+            alba.alba_status AS albaStatus
+        FROM alba
+        LEFT JOIN work ON alba.alba_id = work.alba_id
+        <where>
+            <if test="storeId != null">
+                alba.store_id = #{storeId}
+            </if>
+        </where>
+        ORDER BY alba.alba_id DESC
+    </select>
+
+    <select id="getAlbaById" parameterType="int" resultType="com.jaegokeeper.alba.dto.AlbaDetailDto">
+        SELECT alba_id    AS albaId,
+               store_id   AS storeId,
+               alba_name  AS albaName,
+               alba_phone AS albaPhone,
+               alba_status AS albaStatus
+        FROM alba
+        WHERE alba_id = #{albaId}
+    </select>
+
+    <select id="getAlbaByStore" parameterType="int" resultType="com.jaegokeeper.alba.dto.AlbaDetailDto">
+        SELECT alba_id    AS albaId,
+               store_id   AS storeId,
+               alba_name  AS albaName,
+               alba_phone AS albaPhone,
+               alba_status AS albaStatus
+        FROM alba
+        WHERE store_id = #{storeId}
+    </select>
+
+    <select id="existsAlbaById" parameterType="int" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM alba
+        WHERE alba_id = #{albaId}
+    </select>
+
+    <select id="existsByStoreId" parameterType="int" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1 FROM store WHERE store_id = #{storeId}
+        )
+    </select>
+
+    <select id="existsByAlbaPhone" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM alba
+        WHERE alba_phone = #{albaPhone}
+    </select>
+
+    <insert id="insertAlba" parameterType="com.jaegokeeper.alba.dto.AlbaRegisterDto"
+            useGeneratedKeys="true" keyProperty="albaId">
+        INSERT INTO alba (store_id, alba_name, alba_phone, alba_status, created_at, image_id)
+        VALUES (#{storeId}, #{albaName}, #{albaPhone}, #{albaStatus}, NOW(), #{imageId})
+    </insert>
+
+    <update id="updateAlba" parameterType="com.jaegokeeper.alba.dto.AlbaDetailDto">
+        UPDATE alba
+        <set>
+            <if test="storeId != null">store_id = #{storeId},</if>
+            <if test="albaName != null">alba_name = #{albaName},</if>
+            <if test="albaPhone != null">alba_phone = #{albaPhone},</if>
+            <if test="albaStatus != null">alba_status = #{albaStatus},</if>
+            updated_at = NOW()
+        </set>
+        WHERE alba_id = #{albaId}
+    </update>
+
+    <update id="deleteAlba">
+        UPDATE alba
+        SET is_active = 0,
+            updated_at = NOW()
+        WHERE alba_id = #{albaId}
+    </update>
+
+    <!-- board에서 사용 (AlbaMapper2 통합) -->
+    <select id="countByStoreIdAndAlbaId" resultType="int">
+        SELECT COUNT(*)
+        FROM alba a
+        WHERE a.alba_id = #{albaId}
+          AND a.store_id = #{storeId}
+          AND a.is_active = b'1'
+    </select>
+
+    <select id="findAlbaNameByAlbaId" resultType="string">
+        SELECT a.alba_name
+        FROM alba a
+        WHERE a.alba_id = #{albaId}
+          AND is_active = b'1'
+    </select>
+
+</mapper>

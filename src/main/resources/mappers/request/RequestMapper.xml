@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jaegokeeper.request.mapper.RequestMapper">
+
+    <insert id="insertRequest"
+            parameterType="com.jaegokeeper.request.domain.Request"
+            useGeneratedKeys="true"
+            keyProperty="requestId">
+        INSERT INTO request (item_id, alba_id, request_amount, request_date, request_type,
+                             request_status, created_at, updated_at, is_active)
+        VALUES (#{itemId}, #{albaId}, #{requestAmount}, #{requestDate}, #{requestType},
+                #{requestStatus}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, b'1')
+    </insert>
+
+    <select id="findRequestList" resultType="com.jaegokeeper.request.dto.response.RequestListResponse">
+        SELECT
+            r.request_id     AS requestId,
+            r.request_type   AS requestType,
+            i.item_name      AS itemName,
+            r.request_amount AS requestAmount,
+            r.request_date   AS requestDate,
+            r.alba_id        AS albaId,
+            a.alba_name      AS albaName,
+            r.request_status AS requestStatus,
+            r.created_at     AS createdAt
+        FROM request r
+        JOIN item i ON r.item_id = i.item_id
+        JOIN alba a ON r.alba_id = a.alba_id
+        <where>
+            i.store_id = #{storeId}
+            AND r.is_active = b'1'
+            <if test="requestType != null">AND r.request_type = #{requestType}</if>
+            <if test="requestStatus != null">AND r.request_status = #{requestStatus}</if>
+        </where>
+        ORDER BY r.created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countRequestList" resultType="int">
+        SELECT COUNT(*)
+        FROM request r
+        JOIN item i ON r.item_id = i.item_id
+        <where>
+            i.store_id = #{storeId}
+            AND r.is_active = b'1'
+            <if test="requestType != null">AND r.request_type = #{requestType}</if>
+            <if test="requestStatus != null">AND r.request_status = #{requestStatus}</if>
+        </where>
+    </select>
+
+    <select id="findRequestDetail" resultType="com.jaegokeeper.request.dto.response.RequestDetailResponse">
+        SELECT
+            r.request_type   AS requestType,
+            r.request_status AS requestStatus,
+            i.item_name      AS itemName,
+            r.request_amount AS requestAmount,
+            r.request_date   AS requestDate,
+            r.alba_id        AS albaId,
+            a.alba_name      AS albaName
+        FROM request r
+        JOIN item i ON r.item_id = i.item_id
+        JOIN alba a ON r.alba_id = a.alba_id
+        <where>
+            i.store_id = #{storeId}
+            AND r.request_id = #{requestId}
+            AND r.is_active = b'1'
+        </where>
+    </select>
+
+    <update id="softDeleteRequest">
+        UPDATE request r
+        JOIN item i ON r.item_id = i.item_id
+            AND r.is_active = b'1'
+        SET r.is_active   = b'0',
+            r.updated_at  = CURRENT_TIMESTAMP
+        WHERE r.request_id = #{requestId}
+          AND i.store_id = #{storeId}
+    </update>
+
+    <update id="updateRequest">
+        UPDATE request r
+        JOIN item i ON r.item_id = i.item_id
+        <set>
+            <if test="dto.requestType != null">r.request_type = #{dto.requestType},</if>
+            <if test="dto.requestAmount != null">r.request_amount = #{dto.requestAmount},</if>
+            <if test="dto.albaId != null">r.alba_id = #{dto.albaId},</if>
+            <if test="dto.requestDate != null">r.request_date = #{dto.requestDate},</if>
+            r.updated_at = CURRENT_TIMESTAMP
+        </set>
+        WHERE r.request_id = #{requestId}
+          AND i.store_id = #{storeId}
+          AND r.request_status = 'WAIT'
+    </update>
+
+    <update id="updateRequestStatus">
+        UPDATE request r
+        JOIN item i ON r.item_id = i.item_id
+            AND r.is_active = b'1'
+        SET r.request_status = #{requestStatus},
+            r.updated_at     = CURRENT_TIMESTAMP
+        WHERE r.request_id = #{requestId}
+          AND i.store_id = #{storeId}
+    </update>
+
+    <select id="findRequestStatus" resultType="com.jaegokeeper.request.enums.RequestStatus">
+        SELECT r.request_status
+        FROM request r
+        JOIN item i ON r.item_id = i.item_id
+        WHERE r.request_id = #{requestId}
+          AND i.store_id = #{storeId}
+          AND r.is_active = b'1'
+    </select>
+
+</mapper>

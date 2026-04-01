@@ -1,7 +1,7 @@
 package com.jaegokeeper.board.dto.request;
 
 import com.jaegokeeper.board.enums.BoardWriterType;
-import com.jaegokeeper.ddan.img.dto.ImgInfoDTO;
+import com.jaegokeeper.image.dto.ImageInfoDTO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +13,7 @@ import javax.validation.constraints.NotBlank;
 @Getter
 @Setter
 @NoArgsConstructor
-public class BoardCreateRequest extends ImgInfoDTO {
+public class BoardCreateRequest extends ImageInfoDTO {
 
     @NotBlank(message = "title 필수입니다.")
     private String title;

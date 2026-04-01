@@ -68,7 +68,7 @@ public class LocalService {
             throw ApiException.unauthorized("INVALID_CREDENTIALS", "이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        if (redirectUrl == null) {
+        if (redirectUrl == null || !redirectUrl.startsWith("/")) {
             redirectUrl = "/";
         }
 

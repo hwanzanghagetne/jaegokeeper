@@ -53,10 +53,10 @@ public class SessionService {
                 provider
         ));
 
-        String redirectUrl =
-                (ticket.getRedirectUrl() != null && !ticket.getRedirectUrl().isEmpty())
-                        ? ticket.getRedirectUrl()
-                        : "/";
+        String redirectUrl = ticket.getRedirectUrl();
+        if (redirectUrl == null || !redirectUrl.startsWith("/")) {
+            redirectUrl = "/";
+        }
 
         return SessionResponse.builder()
                 .redirectUrl(redirectUrl)

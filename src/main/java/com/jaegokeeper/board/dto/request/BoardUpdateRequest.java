@@ -1,7 +1,7 @@
 package com.jaegokeeper.board.dto.request;
 
 import com.jaegokeeper.board.enums.BoardWriterType;
-import com.jaegokeeper.ddan.img.dto.ImgInfoDTO;
+import com.jaegokeeper.image.dto.ImageInfoDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,7 +11,7 @@ import javax.validation.constraints.NotBlank;
 @Getter
 @Setter
 @NoArgsConstructor
-public class BoardUpdateRequest extends ImgInfoDTO {
+public class BoardUpdateRequest extends ImageInfoDTO {
 
     private String title;
 

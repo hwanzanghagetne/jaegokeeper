@@ -1,0 +1,13 @@
+package com.jaegokeeper.store.mapper;
+
+import com.jaegokeeper.store.dto.StoreDto;
+import org.apache.ibatis.annotations.Mapper;
+
+@Mapper
+public interface StoreMapper {
+    boolean existsById(int storeId);
+
+    int insertStore(StoreDto storeDto);
+
+    void updateStore(StoreDto storeDto);
+}

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jaegokeeper.stock.mapper.StockMapper">
+
+    <insert id="insertStock"
+            parameterType="com.jaegokeeper.stock.domain.Stock"
+            useGeneratedKeys="true"
+            keyProperty="stockId">
+        INSERT INTO stock (item_id, stock_amount, created_at, updated_at)
+        VALUES (#{itemId}, #{stockAmount}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    </insert>
+
+    <select id="findStockAmountByItemId" resultType="Integer">
+        SELECT s.stock_amount
+        FROM stock s
+        JOIN item i ON i.item_id = s.item_id
+            AND i.store_id = #{storeId}
+            AND i.is_active = b'1'
+        WHERE s.item_id = #{itemId}
+    </select>
+
+    <update id="updateStockAmount">
+        UPDATE stock s
+        JOIN item i ON s.item_id = i.item_id
+            AND i.store_id = #{storeId}
+            AND i.is_active = b'1'
+        SET s.stock_amount = #{amount},
+            s.updated_at   = CURRENT_TIMESTAMP
+        WHERE s.item_id = #{itemId}
+    </update>
+
+    <update id="increaseQuantity">
+        UPDATE stock s
+        JOIN item i ON i.item_id = s.item_id
+        SET s.stock_amount = s.stock_amount + #{amount},
+            s.updated_at   = CURRENT_TIMESTAMP
+        WHERE s.item_id = #{itemId}
+          AND i.store_id = #{storeId}
+          AND i.is_active = b'1'
+    </update>
+
+    <update id="decreaseQuantity">
+        UPDATE stock s
+        JOIN item i ON i.item_id = s.item_id
+        SET s.stock_amount = s.stock_amount - #{amount},
+            s.updated_at   = CURRENT_TIMESTAMP
+        WHERE s.item_id = #{itemId}
+          AND i.store_id = #{storeId}
+          AND s.stock_amount >= #{amount}
+          AND i.is_active = b'1'
+    </update>
+
+    <select id="findStockDetail" resultType="com.jaegokeeper.stock.dto.StockDetailResponse">
+        SELECT
+            s.stock_id,
+            s.item_id,
+            i.item_name,
+            s.stock_amount,
+            s.created_at,
+            s.updated_at
+        FROM stock s
+        JOIN item i ON s.item_id = i.item_id
+        WHERE s.item_id = #{itemId}
+          AND i.store_id = #{storeId}
+          AND i.is_active = b'1'
+    </select>
+
+</mapper>
