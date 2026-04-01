@@ -3,7 +3,7 @@ package com.jaegokeeper.email.service;
 import com.jaegokeeper.email.mapper.EmailAuthMapper;
 import com.jaegokeeper.common.mail.MailService;
 import com.jaegokeeper.exception.BusinessException;
-import com.jaegokeeper.user.mapper.UsrMapper;
+import com.jaegokeeper.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +18,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final EmailAuthMapper emailAuthMapper;
-    private final UsrMapper usrMapper;
+    private final UserMapper usrMapper;
     private final MailService mailService;
 
     /*코드 전송*/

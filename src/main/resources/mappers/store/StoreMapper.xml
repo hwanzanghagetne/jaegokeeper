@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jaegokeeper.store.mapper.StoreMapper">
+
+    <select id="existsById" parameterType="int" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM store
+        WHERE store_id = #{storeId}
+    </select>
+
+    <insert id="insertStore"
+            parameterType="com.jaegokeeper.store.dto.StoreDto"
+            useGeneratedKeys="true"
+            keyProperty="storeId">
+        INSERT INTO store (
+            user_id,
+            store_name,
+            store_add1,
+            store_add2,
+            store_tel
+        ) VALUES (
+            #{userId},
+            #{storeName},
+            #{storeAdd1},
+            #{storeAdd2},
+            #{storeTel}
+        )
+    </insert>
+
+    <update id="updateStore" parameterType="com.jaegokeeper.store.dto.StoreDto">
+        UPDATE store
+        SET store_Name = #{storeName},
+            store_add1 = #{storeAdd1},
+            store_add2 = #{storeAdd2},
+            store_tel = #{storeTel}
+        WHERE store_id = #{storeId}
+    </update>
+
+</mapper>

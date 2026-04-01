@@ -1,0 +1,17 @@
+package com.jaegokeeper.stock.mapper;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+@Mapper
+public interface BufferMapper {
+
+    int insertBuffer(@Param("itemId") Integer itemId,
+                     @Param("bufferAmount") Integer bufferAmount);
+
+    int updateBufferAmount(@Param("storeId") Integer storeId,
+                           @Param("itemId") Integer itemId,
+                           @Param("bufferAmount") Integer bufferAmount);
+
+    Integer findBufferAmountByItemId(@Param("itemId") Integer itemId);
+}
