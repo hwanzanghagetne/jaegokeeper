@@ -7,8 +7,10 @@ import com.jaegokeeper.auth.dto.UserDTO;
 import com.jaegokeeper.auth.mapper.UserAuthMapper;
 import com.jaegokeeper.auth.utils.SocialProfile;
 import com.jaegokeeper.auth.utils.SocialVerifier;
-import com.jaegokeeper.common.api.ApiException;
+import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.store.dto.StoreDto;
+
+import static com.jaegokeeper.exception.ErrorCode.*;
 import com.jaegokeeper.store.mapper.StoreMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,7 +91,7 @@ public class SocialService {
 
         int inserted = userAuthMapper.insertTicket(ticket);
         if (inserted != 1) {
-            throw ApiException.badRequest("TICKET_ISSUE_FAILED", "티켓 발급에 실패했습니다.");
+            throw new BusinessException(TICKET_ISSUE_FAILED);
         }
 
         return ticketKey;

@@ -1,13 +1,54 @@
 package com.jaegokeeper.email.service;
 
-public interface EmailAuthService {
+import com.jaegokeeper.email.mapper.EmailAuthMapper;
+import com.jaegokeeper.common.mail.MailService;
+import com.jaegokeeper.exception.BusinessException;
+import com.jaegokeeper.user.mapper.UserMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-    /*인증번호 발송*/
-    void sendCode(String email);
+import java.security.SecureRandom;
 
-    /*인증번호 검증*/
-    void verifyCode(String email, String code);
+import static com.jaegokeeper.exception.ErrorCode.*;
 
-    /*회원가입 직전 인증 여부 확인*/
-    void assertVerified(String email);
+@Service
+@RequiredArgsConstructor
+public class EmailAuthService {
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+    private final EmailAuthMapper emailAuthMapper;
+    private final UserMapper usrMapper;
+    private final MailService mailService;
+
+    public void sendCode(String email) {
+        int exists = usrMapper.countByEmail(email);
+        if (exists > 0) {
+            throw new BusinessException(EMAIL_ALREADY_REGISTERED);
+        }
+
+        String code = generate6DigitCode();
+
+        emailAuthMapper.upsertAuthCode(email, code);
+        mailService.sendSignupCode(email, code);
+    }
+
+    public void verifyCode(String email, String code) {
+        int updated = emailAuthMapper.verifyCode(email, code);
+        if (updated != 1) {
+            throw new BusinessException(EMAIL_CODE_INVALID);
+        }
+    }
+
+    public void assertVerified(String email) {
+        int verified = emailAuthMapper.isVerified(email);
+        if (verified != 1) {
+            throw new BusinessException(EMAIL_NOT_VERIFIED);
+        }
+    }
+
+    private String generate6DigitCode() {
+        int n = SECURE_RANDOM.nextInt(1_000_000);
+        return String.format("%06d", n);
+    }
 }

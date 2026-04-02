@@ -3,17 +3,14 @@ package com.jaegokeeper.auth.controller;
 import com.jaegokeeper.auth.dto.*;
 import com.jaegokeeper.auth.service.SessionService;
 import com.jaegokeeper.auth.service.SocialService;
-import com.jaegokeeper.common.api.ApiResponse;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,7 +25,7 @@ public class SocialController {
     @PostMapping(value = "/complete",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiResponse<SessionResponse> complete(
+    public ResponseEntity<SessionResponse> complete(
             @Validated @RequestBody SocialRequest req,
             @RequestParam(value = "redirectUrl", required = false) String redirectUrl,
             HttpServletRequest request
@@ -38,7 +35,7 @@ public class SocialController {
         );
 
         SessionResponse data = sessionService.handleSessionAuth(ticketKey, req.getProvider(), request);
-        return ApiResponse.ok(data);
+        return ResponseEntity.ok(data);
     }
 
 }

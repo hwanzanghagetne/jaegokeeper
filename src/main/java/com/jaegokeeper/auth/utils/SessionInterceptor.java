@@ -1,7 +1,7 @@
 package com.jaegokeeper.auth.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jaegokeeper.common.api.ApiResponse;
+import com.jaegokeeper.exception.ErrorResponse;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -36,7 +36,7 @@ public class SessionInterceptor implements HandlerInterceptor {
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        ApiResponse<Void> body = ApiResponse.fail("UNAUTHORIZED", "로그인이 필요합니다.");
+        ErrorResponse body = new ErrorResponse("UNAUTHORIZED", "로그인이 필요합니다.", null);
         response.getWriter().write(objectMapper.writeValueAsString(body));
         return false;
     }

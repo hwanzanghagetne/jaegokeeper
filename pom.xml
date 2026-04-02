@@ -87,11 +87,6 @@
             <artifactId>mysql-connector-j</artifactId>
             <version>${mysql.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.mariadb.jdbc</groupId>
-            <artifactId>mariadb-java-client</artifactId>
-            <version>3.3.3</version>
-        </dependency>
 
 
         <!-- Swagger (Springfox 2.x + Jackson) -->
