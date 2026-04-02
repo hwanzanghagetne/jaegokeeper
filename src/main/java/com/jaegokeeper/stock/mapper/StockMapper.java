@@ -1,6 +1,6 @@
 package com.jaegokeeper.stock.mapper;
 
-import com.jaegokeeper.stock.domain.Stock;
+import com.jaegokeeper.stock.model.Stock;
 import com.jaegokeeper.stock.dto.StockDetailResponse;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;

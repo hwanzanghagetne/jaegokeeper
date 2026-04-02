@@ -41,10 +41,10 @@ public class SocialService {
 
     /** 1) accessToken 검증 후, user 없으면 생성, ticket 발급 */
     @Transactional
-    public String completeAndIssueTicket(String provider, String accessToken, String redirectUrl) throws Exception {
+    public String completeAndIssueTicket(String provider, String accessToken, String redirectUrl) {
         SocialVerifier verifier = verifiersByProvider.get(provider);
-        if (verifier == null) throw new IllegalArgumentException("unsupported provider: " + provider);
-        if (accessToken == null || accessToken.isEmpty()) throw new IllegalArgumentException("accessToken required");
+        if (verifier == null) throw new BusinessException(BAD_REQUEST);
+        if (accessToken == null || accessToken.isEmpty()) throw new BusinessException(BAD_REQUEST);
 
         SocialProfile profile = verifier.verify(accessToken);
         String providerUid = profile.getProviderUid();
@@ -76,7 +76,7 @@ public class SocialService {
 
             userId = user.getUserId();
         } else {
-            if (tgt.getIsActive() == false) throw new IllegalStateException("user inactive");
+            if (tgt.getIsActive() == false) throw new BusinessException(USER_NOT_ACTIVE);
             userId = tgt.getUserId();
         }
 

@@ -103,6 +103,7 @@
             r.updated_at     = CURRENT_TIMESTAMP
         WHERE r.request_id = #{requestId}
           AND i.store_id = #{storeId}
+          AND r.request_status = #{currentStatus}
     </update>
 
     <select id="findRequestStatus" resultType="com.jaegokeeper.request.enums.RequestStatus">

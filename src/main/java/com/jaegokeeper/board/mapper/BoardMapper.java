@@ -2,7 +2,7 @@ package com.jaegokeeper.board.mapper;
 
 import com.jaegokeeper.board.dto.BoardUpdateParamImg;
 import com.jaegokeeper.board.dto.response.BoardDetailResponse;
-import com.jaegokeeper.board.domain.Board;
+import com.jaegokeeper.board.model.Board;
 import com.jaegokeeper.board.dto.response.BoardListResponse;
 import com.jaegokeeper.board.enums.BoardSearchType;
 import com.jaegokeeper.board.enums.BoardType;

@@ -29,12 +29,13 @@ public class SocialController {
             @Validated @RequestBody SocialRequest req,
             @RequestParam(value = "redirectUrl", required = false) String redirectUrl,
             HttpServletRequest request
-    ) throws Exception {
+    ) {
+        String provider = req.getProvider().name();
         String ticketKey = socialService.completeAndIssueTicket(
-                req.getProvider().toUpperCase(), req.getAccessToken(), redirectUrl
+                provider, req.getAccessToken(), redirectUrl
         );
 
-        SessionResponse data = sessionService.handleSessionAuth(ticketKey, req.getProvider(), request);
+        SessionResponse data = sessionService.handleSessionAuth(ticketKey, provider, request);
         return ResponseEntity.ok(data);
     }
 

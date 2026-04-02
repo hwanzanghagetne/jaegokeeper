@@ -19,12 +19,17 @@
         <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
     </context:component-scan>
 
-    <!-- DataSource 설정 -->
-    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+    <!-- DataSource 설정 (커넥션 풀: DBCP2) -->
+    <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
         <property name="url" value="${DB_URL}"/>
         <property name="username" value="${DB_USERNAME}"/>
         <property name="password" value="${DB_PASSWORD}"/>
+        <property name="initialSize" value="5"/>
+        <property name="maxTotal" value="20"/>
+        <property name="maxIdle" value="10"/>
+        <property name="minIdle" value="5"/>
+        <property name="maxWaitMillis" value="3000"/>
     </bean>
 
   

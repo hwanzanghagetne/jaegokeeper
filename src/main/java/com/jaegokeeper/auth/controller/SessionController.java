@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import static com.jaegokeeper.exception.ErrorCode.USER_NOT_FOUND;
+import static com.jaegokeeper.exception.ErrorCode.LOGIN_REQUIRED;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,7 +24,7 @@ public class SessionController {
 
     // 토큰으로 인가하기
     @ApiOperation(value = "토큰으로 인가하기", notes = "로그인 시도할 때 자동으로 소모합니다. 호출하지 않아도 됩니다.")
-    @PostMapping(value="/consume", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value="/consume", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SessionResponse> consume(
             @RequestParam("ticketKey") String key,
             @RequestParam("provider") String provider,
@@ -48,7 +48,7 @@ public class SessionController {
     public ResponseEntity<SessionResponse> me(HttpSession session) {
         LoginContext login = (session != null) ? (LoginContext) session.getAttribute("login") : null;
         if (login == null) {
-            throw new BusinessException(USER_NOT_FOUND);
+            throw new BusinessException(LOGIN_REQUIRED);
         }
 
         return ResponseEntity.ok(

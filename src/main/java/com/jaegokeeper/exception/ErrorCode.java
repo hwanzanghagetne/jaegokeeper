@@ -13,6 +13,7 @@ public enum ErrorCode {
     IMAGE_UPDATE_CONFLICT(HttpStatus.BAD_REQUEST, "removeImage와 파일 업로드는 동시에 요청할 수 없습니다."),
 
     // ==== 401 UNAUTHORIZED ====
+    LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
     INVALID_TICKET(HttpStatus.UNAUTHORIZED, "티켓이 존재하지 않습니다."),
     INVALID_OR_USED_TICKET(HttpStatus.UNAUTHORIZED, "티켓이 유효하지 않거나 이미 사용되었습니다."),
     USER_NOT_FOUND(HttpStatus.UNAUTHORIZED, "유저를 찾을 수 없습니다."),
