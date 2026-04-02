@@ -8,6 +8,7 @@ import com.jaegokeeper.stock.dto.StockInOutRequest;
 import com.jaegokeeper.stock.mapper.BufferMapper;
 import com.jaegokeeper.stock.mapper.LogMapper;
 import com.jaegokeeper.stock.mapper.StockMapper;
+import com.jaegokeeper.stock.model.Stock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
