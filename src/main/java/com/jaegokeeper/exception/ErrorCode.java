@@ -7,9 +7,18 @@ public enum ErrorCode {
     // ==== 400 BAD_REQUEST ====
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "요청 값이 올바르지 않습니다."),
     EMAIL_ALREADY_REGISTERED(HttpStatus.BAD_REQUEST, "이미 가입된 이메일입니다."),
+    REGISTER_FAILED(HttpStatus.BAD_REQUEST, "회원가입 처리에 실패했습니다."),
+    TICKET_ISSUE_FAILED(HttpStatus.BAD_REQUEST, "티켓 발급에 실패했습니다."),
     EMAIL_CODE_INVALID(HttpStatus.BAD_REQUEST, "인증번호가 올바르지 않거나 만료되었습니다."),
     INVALID_WRITER_INFO(HttpStatus.BAD_REQUEST, "writerType, writerId가 올바르지 않습니다."),
     IMAGE_UPDATE_CONFLICT(HttpStatus.BAD_REQUEST, "removeImage와 파일 업로드는 동시에 요청할 수 없습니다."),
+
+    // ==== 401 UNAUTHORIZED ====
+    INVALID_TICKET(HttpStatus.UNAUTHORIZED, "티켓이 존재하지 않습니다."),
+    INVALID_OR_USED_TICKET(HttpStatus.UNAUTHORIZED, "티켓이 유효하지 않거나 이미 사용되었습니다."),
+    USER_NOT_FOUND(HttpStatus.UNAUTHORIZED, "유저를 찾을 수 없습니다."),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다."),
+    USER_NOT_ACTIVE(HttpStatus.UNAUTHORIZED, "사용할 수 없는 계정 상태입니다."),
 
     // ==== 403 FORBIDDEN ====
     EMAIL_NOT_VERIFIED(HttpStatus.FORBIDDEN, "이메일 인증이 필요합니다."),
@@ -23,7 +32,8 @@ public enum ErrorCode {
     STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "재고를 찾을 수 없습니다."),
     REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "요청을 찾을 수 없습니다."),
 
-    // ===== 409 CONFLICT =====
+    // ==== 409 CONFLICT ====
+    EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 가입된 이메일입니다."),
     STATE_CONFLICT(HttpStatus.CONFLICT, "현재 상태에서는 처리할 수 없습니다."),
     REQUEST_STATUS_NOT_WAIT(HttpStatus.CONFLICT, "대기 상태(WAIT)인 요청만 수정할 수 있습니다."),
     STOCK_QUANTITY_NOT_ENOUGH(HttpStatus.CONFLICT, "출고 수량이 현재 재고보다 많습니다."),

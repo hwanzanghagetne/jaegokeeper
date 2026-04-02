@@ -3,15 +3,14 @@ package com.jaegokeeper.auth.controller;
 import com.jaegokeeper.auth.dto.*;
 import com.jaegokeeper.auth.service.LocalService;
 import com.jaegokeeper.auth.service.SessionService;
-import com.jaegokeeper.common.api.ApiResponse;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,8 +25,8 @@ public class LocalController {
     @PostMapping(value="/register",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiResponse<AuthResponse> register(@Validated @RequestBody RegisterRequest req) throws Exception {
-        return ApiResponse.ok(localService.register(req));
+    public ResponseEntity<AuthResponse> register(@Validated @RequestBody RegisterRequest req) {
+        return ResponseEntity.ok(localService.register(req));
     }
 
     // 로컬 로그인
@@ -35,15 +34,15 @@ public class LocalController {
     @PostMapping(value="/login",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiResponse<SessionResponse> login(
+    public ResponseEntity<SessionResponse> login(
             @Validated @RequestBody LoginRequest req,
             @RequestParam(value = "redirectUrl", required = false) String redirectUrl,
             HttpServletRequest request
-    ) throws Exception {
+    ) {
         String ticketKey = localService.loginAndIssueTicket(req, redirectUrl);
 
         SessionResponse data = sessionService.handleSessionAuth(ticketKey, "LOCAL", request);
-        return ApiResponse.ok(data);
+        return ResponseEntity.ok(data);
     }
 
 }

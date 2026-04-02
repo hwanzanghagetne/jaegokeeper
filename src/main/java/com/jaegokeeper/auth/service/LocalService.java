@@ -3,13 +3,17 @@ package com.jaegokeeper.auth.service;
 import com.jaegokeeper.auth.dto.*;
 import com.jaegokeeper.auth.mapper.UserAuthMapper;
 import com.jaegokeeper.auth.utils.PasswordHasher;
-import com.jaegokeeper.common.api.ApiException;
+import com.jaegokeeper.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
+import static com.jaegokeeper.exception.ErrorCode.*;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LocalService {
@@ -17,11 +21,11 @@ public class LocalService {
     private final UserAuthMapper userAuthMapper;
 
     @Transactional
-    public AuthResponse register(RegisterRequest req) throws Exception {
+    public AuthResponse register(RegisterRequest req) {
         String email = req.getEmail().trim().toLowerCase();
 
         if (userAuthMapper.findUserByEmail(email) != null) {
-            throw ApiException.conflict("EMAIL_ALREADY_EXISTS", "이미 가입된 이메일입니다.");
+            throw new BusinessException(EMAIL_ALREADY_EXISTS);
         }
 
         UserDTO toInsert = UserDTO.builder()
@@ -35,11 +39,11 @@ public class LocalService {
         try {
             int inserted = userAuthMapper.insertUser(toInsert);
             if (inserted != 1 || toInsert.getUserId() == null) {
-                throw ApiException.badRequest("REGISTER_FAILED", "회원가입 처리에 실패했습니다.");
+                throw new BusinessException(REGISTER_FAILED);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            throw ApiException.badRequest("REGISTER_FAILED", "회원가입 처리에 실패했습니다.");
+            log.error("[REGISTER_FAILED]", e);
+            throw new BusinessException(REGISTER_FAILED);
             // UNIQUE(email) 동시성 충돌까지 커버(실무에서 중요)
             // throw ApiException.conflict("EMAIL_ALREADY_EXISTS", "이미 가입된 이메일입니다.");
         }
@@ -52,20 +56,20 @@ public class LocalService {
     }
 
     @Transactional
-    public String loginAndIssueTicket(LoginRequest req, String redirectUrl) throws Exception {
+    public String loginAndIssueTicket(LoginRequest req, String redirectUrl) {
         String email = req.getEmail().trim().toLowerCase();
 
         UserDTO user = userAuthMapper.findUserByEmail(email);
         if (user == null) {
-            throw ApiException.unauthorized("INVALID_CREDENTIALS", "이메일 또는 비밀번호가 올바르지 않습니다.");
+            throw new BusinessException(INVALID_CREDENTIALS);
         }
 
         if (!Boolean.TRUE.equals(user.getIsActive())) {
-            throw ApiException.unauthorized("USER_NOT_ACTIVE", "사용할 수 없는 계정 상태입니다.");
+            throw new BusinessException(USER_NOT_ACTIVE);
         }
 
         if (!PasswordHasher.matches(req.getPassword(), user.getPassHash())) {
-            throw ApiException.unauthorized("INVALID_CREDENTIALS", "이메일 또는 비밀번호가 올바르지 않습니다.");
+            throw new BusinessException(INVALID_CREDENTIALS);
         }
 
         if (redirectUrl == null || !redirectUrl.startsWith("/")) {
@@ -83,7 +87,7 @@ public class LocalService {
 
         int inserted = userAuthMapper.insertTicket(ticket);
         if (inserted != 1) {
-            throw ApiException.badRequest("TICKET_ISSUE_FAILED", "티켓 발급에 실패했습니다.");
+            throw new BusinessException(TICKET_ISSUE_FAILED);
         }
 
         return ticketKey;
