@@ -6,7 +6,7 @@
 <mapper namespace="com.jaegokeeper.item.mapper.ItemMapper">
 
     <insert id="insertItem"
-            parameterType="com.jaegokeeper.item.domain.Item"
+            parameterType="com.jaegokeeper.item.model.Item"
             useGeneratedKeys="true"
             keyProperty="itemId">
         INSERT INTO item (store_id, item_name, image_id, is_active, is_pinned, created_at, updated_at)

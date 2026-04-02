@@ -6,7 +6,7 @@
 <mapper namespace="com.jaegokeeper.stock.mapper.StockMapper">
 
     <insert id="insertStock"
-            parameterType="com.jaegokeeper.stock.domain.Stock"
+            parameterType="com.jaegokeeper.stock.model.Stock"
             useGeneratedKeys="true"
             keyProperty="stockId">
         INSERT INTO stock (item_id, stock_amount, created_at, updated_at)
