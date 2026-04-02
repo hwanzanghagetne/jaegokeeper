@@ -107,7 +107,7 @@ public class BoardService {
 
         int updatedBoard = boardMapper.updateBoardImg(storeId, boardId, updateBoard);
         if (updatedBoard != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
+            throw new BusinessException(BOARD_NOT_FOUND);
         }
     }
 
@@ -120,7 +120,7 @@ public class BoardService {
 
         int deletedBoard = boardMapper.softDeleteBoard(storeId, boardId);
         if (deletedBoard != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
+            throw new BusinessException(BOARD_NOT_FOUND);
         }
     }
 

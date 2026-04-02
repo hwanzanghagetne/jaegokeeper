@@ -6,7 +6,6 @@ public enum ErrorCode {
 
     // ==== 400 BAD_REQUEST ====
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "요청 값이 올바르지 않습니다."),
-    EMAIL_ALREADY_REGISTERED(HttpStatus.BAD_REQUEST, "이미 가입된 이메일입니다."),
     REGISTER_FAILED(HttpStatus.BAD_REQUEST, "회원가입 처리에 실패했습니다."),
     TICKET_ISSUE_FAILED(HttpStatus.BAD_REQUEST, "티켓 발급에 실패했습니다."),
     EMAIL_CODE_INVALID(HttpStatus.BAD_REQUEST, "인증번호가 올바르지 않거나 만료되었습니다."),

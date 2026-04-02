@@ -112,7 +112,7 @@ public class ItemService {
 
         int itemUpdated = itemMapper.updateItem(storeId, itemId, updateItem);
         if (itemUpdated != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
+            throw new BusinessException(ITEM_NOT_FOUND);
         }
 
         if (dto.getTargetAmount() != null || dto.getBufferAmount() != null) {

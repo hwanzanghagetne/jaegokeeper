@@ -24,7 +24,7 @@ public class EmailAuthService {
     public void sendCode(String email) {
         int exists = usrMapper.countByEmail(email);
         if (exists > 0) {
-            throw new BusinessException(EMAIL_ALREADY_REGISTERED);
+            throw new BusinessException(EMAIL_ALREADY_EXISTS);
         }
 
         String code = generate6DigitCode();
