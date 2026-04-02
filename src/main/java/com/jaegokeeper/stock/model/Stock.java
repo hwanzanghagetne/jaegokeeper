@@ -1,4 +1,4 @@
-package com.jaegokeeper.stock.domain;
+package com.jaegokeeper.stock.model;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

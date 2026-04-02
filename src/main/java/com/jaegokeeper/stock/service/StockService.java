@@ -46,7 +46,7 @@ public class StockService {
         }
         int updated = stockMapper.decreaseQuantity(storeId, itemId, dto.getAmount());
         if (updated != 1) {
-            throw new BusinessException(STOCK_NOT_FOUND);
+            throw new BusinessException(STOCK_QUANTITY_NOT_ENOUGH);
         }
         int inserted = logMapper.insertLog(itemId, OUT, dto.getAmount());
         if (inserted != 1) {
@@ -104,6 +104,19 @@ public class StockService {
             if (updatedSafe != 1) {
                 throw new BusinessException(STOCK_NOT_FOUND);
             }
+        }
+    }
+
+    @Transactional
+    public void initStock(Integer itemId, Integer stockAmount) {
+        Stock stock = Stock.create(itemId, stockAmount);
+        int insertedStock = stockMapper.insertStock(stock);
+        if (insertedStock != 1) {
+            throw new BusinessException(INTERNAL_ERROR);
+        }
+        int insertedBuffer = bufferMapper.insertBuffer(itemId, 0);
+        if (insertedBuffer != 1) {
+            throw new BusinessException(INTERNAL_ERROR);
         }
     }
 

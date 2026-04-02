@@ -2,14 +2,11 @@ package com.jaegokeeper.item.service;
 
 import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.exception.BusinessException;
-import com.jaegokeeper.stock.mapper.BufferMapper;
-import com.jaegokeeper.stock.domain.Stock;
 import com.jaegokeeper.stock.dto.StockAdjustRequest;
-import com.jaegokeeper.stock.mapper.StockMapper;
 import com.jaegokeeper.stock.service.StockService;
 import com.jaegokeeper.image.dto.ImageInfoDTO;
 import com.jaegokeeper.image.service.ImageService;
-import com.jaegokeeper.item.domain.Item;
+import com.jaegokeeper.item.model.Item;
 import com.jaegokeeper.item.dto.ItemUpdateParamImg;
 import com.jaegokeeper.item.dto.request.ItemCreateRequest;
 import com.jaegokeeper.item.dto.request.ItemPageRequest;
@@ -34,10 +31,8 @@ import static com.jaegokeeper.exception.ErrorCode.*;
 public class ItemService {
 
     private final ItemMapper itemMapper;
-    private final StockMapper stockMapper;
     private final StoreMapper storeMapper;
     private final StockService stockService;
-    private final BufferMapper bufferMapper;
     private final ImageService imgService;
 
     @Transactional
@@ -54,16 +49,7 @@ public class ItemService {
             throw new BusinessException(INTERNAL_ERROR);
         }
 
-        Stock stock = Stock.create(item.getItemId(), dto.getStockAmount());
-        int insertedStock = stockMapper.insertStock(stock);
-        if (insertedStock != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
-        }
-
-        int bufferInserted = bufferMapper.insertBuffer(item.getItemId(), 0);
-        if (bufferInserted != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
-        }
+        stockService.initStock(item.getItemId(), dto.getStockAmount());
 
         return item.getItemId();
     }

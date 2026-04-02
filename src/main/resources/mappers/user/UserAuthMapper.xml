@@ -45,12 +45,16 @@
             user_name,
             pass_hash,
             user_mail,
-            user_phone
+            user_phone,
+            is_active,
+            email_verified
         ) VALUES (
             #{userName},
             #{passHash},
             #{userMail},
-            #{userPhone}
+            #{userPhone},
+            #{isActive},
+            #{emailVerified}
         )
     </insert>
 

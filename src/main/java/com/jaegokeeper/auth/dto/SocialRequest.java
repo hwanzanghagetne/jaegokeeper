@@ -1,5 +1,6 @@
 package com.jaegokeeper.auth.dto;
 
+import com.jaegokeeper.auth.enums.Provider;
 import lombok.*;
 
 @Getter
@@ -8,6 +9,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class SocialRequest {
-    String provider;
+    Provider provider;
     String accessToken;
 }

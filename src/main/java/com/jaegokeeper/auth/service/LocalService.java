@@ -41,11 +41,12 @@ public class LocalService {
             if (inserted != 1 || toInsert.getUserId() == null) {
                 throw new BusinessException(REGISTER_FAILED);
             }
-        } catch (Exception e) {
+        } catch (org.springframework.dao.DuplicateKeyException e) {
+            // DB unique 제약 충돌 (동시 요청 등)
+            throw new BusinessException(EMAIL_ALREADY_EXISTS);
+        } catch (org.springframework.dao.DataAccessException e) {
             log.error("[REGISTER_FAILED]", e);
-            throw new BusinessException(REGISTER_FAILED);
-            // UNIQUE(email) 동시성 충돌까지 커버(실무에서 중요)
-            // throw ApiException.conflict("EMAIL_ALREADY_EXISTS", "이미 가입된 이메일입니다.");
+            throw new BusinessException(INTERNAL_ERROR);
         }
 
         return AuthResponse.builder()

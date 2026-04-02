@@ -1,4 +1,4 @@
-package com.jaegokeeper.board.domain;
+package com.jaegokeeper.board.model;
 
 import com.jaegokeeper.board.enums.BoardType;
 import lombok.Getter;

@@ -1,6 +1,6 @@
 package com.jaegokeeper.request.mapper;
 
-import com.jaegokeeper.request.domain.Request;
+import com.jaegokeeper.request.model.Request;
 import com.jaegokeeper.request.dto.request.RequestUpdateRequest;
 import com.jaegokeeper.request.dto.response.RequestDetailResponse;
 import com.jaegokeeper.request.dto.response.RequestListResponse;
@@ -38,6 +38,7 @@ public interface RequestMapper {
 
     int updateRequestStatus(@Param("storeId") Integer storeId,
                             @Param("requestId") Integer requestId,
+                            @Param("currentStatus") RequestStatus currentStatus,
                             @Param("requestStatus") RequestStatus requestStatus);
 
     RequestStatus findRequestStatus(@Param("storeId") Integer storeId,

@@ -1,6 +1,6 @@
 package com.jaegokeeper.item.mapper;
 
-import com.jaegokeeper.item.domain.Item;
+import com.jaegokeeper.item.model.Item;
 import com.jaegokeeper.item.dto.ItemUpdateParamImg;
 import com.jaegokeeper.item.dto.response.ItemDetailResponse;
 import com.jaegokeeper.item.dto.response.ItemListResponse;

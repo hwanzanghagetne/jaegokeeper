@@ -3,7 +3,7 @@
         "http://java.sun.com/dtd/web-app_2_3.dtd" >
 
 <web-app>
-    <display-name>Archetype Created Web Application</display-name>
+    <display-name>JaegoKeeper</display-name>
 
     <!-- 한글 인코딩 필터 -->
     <filter>

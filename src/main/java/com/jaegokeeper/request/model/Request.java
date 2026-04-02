@@ -1,4 +1,4 @@
-package com.jaegokeeper.request.domain;
+package com.jaegokeeper.request.model;
 
 import com.jaegokeeper.request.enums.RequestStatus;
 import com.jaegokeeper.request.enums.RequestType;

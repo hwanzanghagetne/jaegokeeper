@@ -4,7 +4,7 @@ import com.jaegokeeper.alba.mapper.AlbaMapper;
 import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.item.mapper.ItemMapper;
-import com.jaegokeeper.request.domain.Request;
+import com.jaegokeeper.request.model.Request;
 import com.jaegokeeper.request.dto.request.RequestCreateBatchRequest;
 import com.jaegokeeper.request.dto.request.RequestCreateRequest;
 import com.jaegokeeper.request.dto.request.RequestPageRequest;
@@ -115,9 +115,13 @@ public class RequestService {
 
     @Transactional
     public void updateRequestStatus(Integer storeId, Integer requestId, RequestStatusUpdateRequest dto) {
-        int updated = requestMapper.updateRequestStatus(storeId, requestId, dto.getRequestStatus());
-        if (updated != 1) {
+        RequestStatus status = requestMapper.findRequestStatus(storeId, requestId);
+        if (status == null) {
             throw new BusinessException(REQUEST_NOT_FOUND);
+        }
+        int updated = requestMapper.updateRequestStatus(storeId, requestId, status, dto.getRequestStatus());
+        if (updated != 1) {
+            throw new BusinessException(STATE_CONFLICT);
         }
     }
 }

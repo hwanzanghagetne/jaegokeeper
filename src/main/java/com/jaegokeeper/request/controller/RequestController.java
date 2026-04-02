@@ -59,7 +59,7 @@ public class RequestController {
     }
 
     @ApiOperation(value = "요청 수정")
-    @PostMapping("/{requestId}")
+    @PutMapping("/{requestId}")
     public ResponseEntity<Void> updateRequest(
             @PathVariable Integer storeId,
             @PathVariable Integer requestId,
@@ -69,7 +69,7 @@ public class RequestController {
     }
 
     @ApiOperation(value = "요청 상태 수정")
-    @PostMapping("/{requestId}/status")
+    @PatchMapping("/{requestId}/status")
     public ResponseEntity<Void> updateRequestStatus(
             @PathVariable Integer storeId,
             @PathVariable Integer requestId,

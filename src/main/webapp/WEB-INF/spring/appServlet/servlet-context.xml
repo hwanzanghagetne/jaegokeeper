@@ -65,14 +65,8 @@
 
     <interceptors>
         <interceptor>
-            <!-- 보호할 범위: 인증이 필요한 모든 경로 -->
-            <mapping path="/item/**"/>
-            <mapping path="/stock/**"/>
-            <mapping path="/request/**"/>
-            <mapping path="/alba/**"/>
-            <mapping path="/board/**"/>
-            <mapping path="/schedule/**"/>
-            <mapping path="/store/**"/>
+            <!-- 보호할 범위: /stores/** 및 기타 인증 필요 경로 -->
+            <mapping path="/stores/**"/>
             <mapping path="/user/**"/>
             <mapping path="/image/**"/>
             <mapping path="/auth/session/consume"/>
