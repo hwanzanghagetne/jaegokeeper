@@ -2,7 +2,7 @@ package com.jaegokeeper.user.controller;
 
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.exception.BusinessException;
-import com.jaegokeeper.user.dto.UserDto;
+import com.jaegokeeper.user.dto.UserUpdateRequest;
 import com.jaegokeeper.user.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class UserController {
     @PutMapping("/{userId}")
     public ResponseEntity<Void> updateUser(
             @PathVariable int userId,
-            @RequestBody UserDto userDto,
+            @RequestBody UserUpdateRequest userDto,
             HttpSession session) {
 
         LoginContext login = (LoginContext) session.getAttribute("login");
