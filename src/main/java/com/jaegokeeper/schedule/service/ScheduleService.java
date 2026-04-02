@@ -1,6 +1,7 @@
 package com.jaegokeeper.schedule.service;
 
 import com.jaegokeeper.alba.mapper.AlbaMapper;
+import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.schedule.dto.ScheduleListDto;
 import com.jaegokeeper.schedule.dto.ScheduleRegisterDto;
 import com.jaegokeeper.schedule.dto.ScheduleWorkInOutDto;
@@ -8,6 +9,8 @@ import com.jaegokeeper.schedule.mapper.ScheduleMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.jaegokeeper.exception.ErrorCode.*;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -23,7 +26,7 @@ public class ScheduleService {
     @Transactional
     public int saveScheduleRegister(ScheduleRegisterDto scheduleRegisterDto) {
         if (!albaMapper.existsAlbaById(scheduleRegisterDto.getAlbaId())) {
-            throw new IllegalArgumentException("alba가 존재하지 않습니다.");
+            throw new BusinessException(ALBA_NOT_FOUND);
         }
         return scheduleMapper.insertSchedule(scheduleRegisterDto);
     }

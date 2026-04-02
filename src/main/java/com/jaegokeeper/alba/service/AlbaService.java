@@ -5,28 +5,29 @@ import com.jaegokeeper.alba.dto.AlbaListDto;
 import com.jaegokeeper.alba.dto.AlbaRegisterDto;
 import com.jaegokeeper.alba.mapper.AlbaMapper;
 import com.jaegokeeper.alba.mapper.WorkMapper;
+import com.jaegokeeper.exception.BusinessException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.jaegokeeper.exception.ErrorCode.*;
+
 @Service
+@RequiredArgsConstructor
 public class AlbaService {
 
     private final AlbaMapper albaMapper;
     private final WorkMapper workMapper;
-    public AlbaService(AlbaMapper albaMapper, WorkMapper workMapper) {
-        this.albaMapper = albaMapper;
-        this.workMapper = workMapper;
-    }
 
     @Transactional
     public void saveAlbaRegister(AlbaRegisterDto albaRegisterDto) {
         if (!albaMapper.existsByStoreId(albaRegisterDto.getStoreId())) {
-            throw new IllegalArgumentException("Store가 존재하지 않습니다.");
+            throw new BusinessException(STORE_NOT_FOUND);
         }
         if (albaMapper.existsByAlbaPhone(albaRegisterDto.getAlbaPhone()) > 0) {
-            throw new IllegalArgumentException("존재하는 알바 전화번호 입니다.");
+            throw new BusinessException(BAD_REQUEST);
         }
         albaMapper.insertAlba(albaRegisterDto);
     }
@@ -45,7 +46,7 @@ public class AlbaService {
     public AlbaDetailDto getAlbaByStore(int storeId) {
         AlbaDetailDto store = albaMapper.getAlbaByStore(storeId);
         if (store == null) {
-            throw new IllegalArgumentException("해당 알바생이 존재하지 않습니다.");
+            throw new BusinessException(ALBA_NOT_FOUND);
         }
         return store;
     }
@@ -53,7 +54,7 @@ public class AlbaService {
     public AlbaDetailDto getAlbaById(int albaId) {
         AlbaDetailDto alba = albaMapper.getAlbaById(albaId);
         if (alba == null) {
-            throw new IllegalArgumentException("해당 알바생이 존재하지 않습니다.");
+            throw new BusinessException(ALBA_NOT_FOUND);
         }
         return alba;
     }

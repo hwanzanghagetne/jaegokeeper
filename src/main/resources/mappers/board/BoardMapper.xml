@@ -99,7 +99,7 @@
     </select>
 
     <!--  등록 페이지  -->
-    <insert id="insertBoard" parameterType="com.jaegokeeper.board.domain.Board"
+    <insert id="insertBoard" parameterType="com.jaegokeeper.board.model.Board"
             useGeneratedKeys="true" keyProperty="boardId">
         INSERT INTO board (
                            store_id,

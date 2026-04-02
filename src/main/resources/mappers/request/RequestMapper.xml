@@ -6,7 +6,7 @@
 <mapper namespace="com.jaegokeeper.request.mapper.RequestMapper">
 
     <insert id="insertRequest"
-            parameterType="com.jaegokeeper.request.domain.Request"
+            parameterType="com.jaegokeeper.request.model.Request"
             useGeneratedKeys="true"
             keyProperty="requestId">
         INSERT INTO request (item_id, alba_id, request_amount, request_date, request_type,

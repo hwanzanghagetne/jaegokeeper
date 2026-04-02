@@ -1,7 +1,9 @@
 package com.jaegokeeper.image.service;
 
+import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.image.dto.ImageInfoDTO;
 import com.jaegokeeper.image.mapper.ImageMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,16 +14,16 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.jaegokeeper.exception.ErrorCode.*;
+
 @Service
+@RequiredArgsConstructor
 public class ImageService {
 
     private static final String BASE_DIR = "/data/upload/img";
     private static final Set<String> ALLOWED_EXT = Set.of("jpg", "jpeg", "png", "webp");
 
     private final ImageMapper imageMapper;
-    public ImageService(ImageMapper imageMapper) {
-        this.imageMapper = imageMapper;
-    }
 
     private String sanitizeFileName(String name) {
         if (name == null) return "unknown";
@@ -43,13 +45,13 @@ public class ImageService {
         MultipartFile file = dto.getFile();
 
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("파일이 비어있습니다.");
+            throw new BusinessException(BAD_REQUEST);
         }
 
         String originalName = sanitizeFileName(file.getOriginalFilename());
         String ext = getLowerExt(originalName);
         if (!ALLOWED_EXT.contains(ext)) {
-            throw new IllegalArgumentException("허용되지 않은 확장자입니다: " + ext);
+            throw new BusinessException(BAD_REQUEST);
         }
 
         LocalDate d = LocalDate.now();
@@ -70,7 +72,7 @@ public class ImageService {
         String mimeType = Files.probeContentType(savePath);
         if (mimeType == null || !mimeType.startsWith("image/")) {
             Files.deleteIfExists(savePath);
-            throw new IllegalArgumentException("이미지 파일만 허용됩니다.");
+            throw new BusinessException(BAD_REQUEST);
         }
 
         dto.setOriginName(originalName);
@@ -85,9 +87,8 @@ public class ImageService {
     public ImageInfoDTO findImgById(int imageId) {
         ImageInfoDTO dto = imageMapper.findImgById(imageId);
         if (dto == null) {
-            throw new IllegalArgumentException("해당 ID의 이미지가 없습니다. id=" + imageId);
+            throw new BusinessException(IMAGE_NOT_FOUND);
         }
         return dto;
     }
-
 }

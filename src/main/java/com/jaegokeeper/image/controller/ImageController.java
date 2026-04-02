@@ -2,6 +2,7 @@ package com.jaegokeeper.image.controller;
 
 import com.jaegokeeper.image.dto.ImageInfoDTO;
 import com.jaegokeeper.image.service.ImageService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
@@ -17,13 +18,11 @@ import java.nio.file.*;
 import java.util.*;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/img")
 public class ImageController {
 
     private final ImageService imageService;
-    public ImageController(ImageService imageService) {
-        this.imageService = imageService;
-    }
 
     /** 이미지 기초 UI */
     @RequestMapping("/main.jacho")
