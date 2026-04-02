@@ -41,8 +41,10 @@
     <resources mapping="swagger-ui.html" location="classpath:/META-INF/resources/" />
     <resources mapping="/webjars/**" location="classpath:/META-INF/resources/webjars/" />
 
-    <!-- 컴포넌트 스캔 -->
-    <context:component-scan base-package="com.jaegokeeper" />
+    <!-- 컴포넌트 스캔: 컨트롤러 계층만 -->
+    <context:component-scan base-package="com.jaegokeeper" use-default-filters="false">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
 
 
     <!-- JSP ViewResolver 설정 -->
@@ -63,14 +65,17 @@
 
     <interceptors>
         <interceptor>
-            <!-- 보호할 범위 -->
-            <mapping path="/api/**"/>
-
-            <!-- 예외: 로그인/회원가입/로그아웃/내정보 등 -->
-            <exclude-mapping path="/api/auth/register"/>
-            <exclude-mapping path="/api/auth/login"/>
-            <exclude-mapping path="/api/auth/logout"/>
-            <exclude-mapping path="/api/auth/me"/>
+            <!-- 보호할 범위: 인증이 필요한 모든 경로 -->
+            <mapping path="/item/**"/>
+            <mapping path="/stock/**"/>
+            <mapping path="/request/**"/>
+            <mapping path="/alba/**"/>
+            <mapping path="/board/**"/>
+            <mapping path="/schedule/**"/>
+            <mapping path="/store/**"/>
+            <mapping path="/user/**"/>
+            <mapping path="/image/**"/>
+            <mapping path="/auth/session/consume"/>
 
             <!-- swagger/springfox -->
             <exclude-mapping path="/v2/api-docs"/>

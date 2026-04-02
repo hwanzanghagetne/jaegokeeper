@@ -14,8 +14,10 @@
             http://www.springframework.org/schema/util
             http://www.springframework.org/schema/util/spring-util.xsd">
 
-    <!-- Component Scan -->
-    <context:component-scan base-package="com.jaegokeeper"/>
+    <!-- Component Scan: 서비스/리포지토리/인프라 계층만 (컨트롤러는 servlet-context에서 담당) -->
+    <context:component-scan base-package="com.jaegokeeper">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
 
     <!-- DataSource 설정 -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">

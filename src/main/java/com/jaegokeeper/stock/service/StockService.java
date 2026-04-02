@@ -27,7 +27,7 @@ public class StockService {
     public void inStock(Integer storeId, Integer itemId, StockInOutRequest dto) {
         int updated = stockMapper.increaseQuantity(storeId, itemId, dto.getAmount());
         if (updated != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
+            throw new BusinessException(STOCK_NOT_FOUND);
         }
         int inserted = logMapper.insertLog(itemId, IN, dto.getAmount());
         if (inserted != 1) {
@@ -46,7 +46,7 @@ public class StockService {
         }
         int updated = stockMapper.decreaseQuantity(storeId, itemId, dto.getAmount());
         if (updated != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
+            throw new BusinessException(STOCK_NOT_FOUND);
         }
         int inserted = logMapper.insertLog(itemId, OUT, dto.getAmount());
         if (inserted != 1) {
@@ -65,7 +65,7 @@ public class StockService {
         }
         int updated = stockMapper.updateStockAmount(storeId, itemId, dto.getStockAmount());
         if (updated != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
+            throw new BusinessException(STOCK_NOT_FOUND);
         }
         int inserted = logMapper.insertLog(itemId, ADJUST, dto.getStockAmount());
         if (inserted != 1) {
@@ -89,7 +89,7 @@ public class StockService {
             }
             int updatedStock = stockMapper.updateStockAmount(storeId, itemId, newTargetAmount);
             if (updatedStock != 1) {
-                throw new BusinessException(INTERNAL_ERROR);
+                throw new BusinessException(STOCK_NOT_FOUND);
             }
             if (!newTargetAmount.equals(existAmount)) {
                 int inserted = logMapper.insertLog(itemId, ADJUST, newTargetAmount);
@@ -102,7 +102,7 @@ public class StockService {
         if (newBufferAmount != null) {
             int updatedSafe = bufferMapper.updateBufferAmount(storeId, itemId, newBufferAmount);
             if (updatedSafe != 1) {
-                throw new BusinessException(INTERNAL_ERROR);
+                throw new BusinessException(STOCK_NOT_FOUND);
             }
         }
     }

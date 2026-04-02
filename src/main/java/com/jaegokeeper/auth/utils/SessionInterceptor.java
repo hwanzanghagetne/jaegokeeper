@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 public class SessionInterceptor implements HandlerInterceptor {
 
     // 세션 키는 AuthService/AuthController에서 쓰던 것과 동일해야 함
-    public static final String SESSION_USER_ID = "LOGIN_USER_ID";
+    public static final String SESSION_KEY = "login";
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -27,7 +27,7 @@ public class SessionInterceptor implements HandlerInterceptor {
         // 2) 세션 존재/로그인 여부 체크
         // getSession(false): 없으면 새로 만들지 않음 (중요)
         var session = request.getSession(false);
-        if (session != null && session.getAttribute(SESSION_USER_ID) != null) {
+        if (session != null && session.getAttribute(SESSION_KEY) != null) {
             return true;
         }
 
