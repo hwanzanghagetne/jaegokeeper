@@ -55,7 +55,7 @@ public class RequestServiceTest {
     @Test
     public void 요청상태변경_상태전이불가_예외() {
         when(requestMapper.findRequestStatus(1, 1)).thenReturn(RequestStatus.CONFIRM);
-        when(requestMapper.updateRequestStatus(1, 1, RequestStatus.CONFIRM)).thenReturn(0);
+        when(requestMapper.updateRequestStatus(1, 1, RequestStatus.CONFIRM, RequestStatus.CONFIRM)).thenReturn(0);
 
         RequestStatusUpdateRequest req = new RequestStatusUpdateRequest();
         req.setRequestStatus(RequestStatus.CONFIRM);
@@ -70,7 +70,7 @@ public class RequestServiceTest {
     @Test
     public void 요청상태변경_성공() {
         when(requestMapper.findRequestStatus(1, 1)).thenReturn(RequestStatus.WAIT);
-        when(requestMapper.updateRequestStatus(1, 1, RequestStatus.CONFIRM)).thenReturn(1);
+        when(requestMapper.updateRequestStatus(1, 1, RequestStatus.WAIT, RequestStatus.CONFIRM)).thenReturn(1);
 
         RequestStatusUpdateRequest req = new RequestStatusUpdateRequest();
         req.setRequestStatus(RequestStatus.CONFIRM);

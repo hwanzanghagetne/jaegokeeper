@@ -46,7 +46,12 @@ public class SocialService {
         if (verifier == null) throw new BusinessException(BAD_REQUEST);
         if (accessToken == null || accessToken.isEmpty()) throw new BusinessException(BAD_REQUEST);
 
-        SocialProfile profile = verifier.verify(accessToken);
+        SocialProfile profile;
+        try {
+            profile = verifier.verify(accessToken);
+        } catch (Exception e) {
+            throw new BusinessException(BAD_REQUEST);
+        }
         String providerUid = profile.getProviderUid();
 
         LoginTarget tgt = userAuthMapper.findByProviderUid(provider, providerUid);
