@@ -13,7 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 public class StockServiceTest {
@@ -45,7 +45,7 @@ public class StockServiceTest {
         when(stockMapper.increaseQuantity(1, 1, 10)).thenReturn(1);
         when(logMapper.insertLog(1, com.jaegokeeper.stock.enums.LogType.IN, 10)).thenReturn(1);
 
-        stockService.inStock(1, 1, req); // 예외 없으면 성공
+        stockService.inStock(1, 1, req);
     }
 
     @Test
@@ -57,6 +57,7 @@ public class StockServiceTest {
 
         try {
             stockService.inStock(1, 999, req);
+            fail("BusinessException이 발생해야 합니다");
         } catch (BusinessException e) {
             assertEquals(ErrorCode.STOCK_NOT_FOUND, e.getErrorCode());
         }
@@ -70,9 +71,11 @@ public class StockServiceTest {
         req.setAmount(100);
 
         when(stockMapper.findStockAmountByItemId(1, 1)).thenReturn(10);
+        when(stockMapper.decreaseQuantity(1, 1, 100)).thenReturn(0);
 
         try {
             stockService.outStock(1, 1, req);
+            fail("BusinessException이 발생해야 합니다");
         } catch (BusinessException e) {
             assertEquals(ErrorCode.STOCK_QUANTITY_NOT_ENOUGH, e.getErrorCode());
         }
@@ -87,6 +90,7 @@ public class StockServiceTest {
 
         try {
             stockService.outStock(1, 999, req);
+            fail("BusinessException이 발생해야 합니다");
         } catch (BusinessException e) {
             assertEquals(ErrorCode.STOCK_NOT_FOUND, e.getErrorCode());
         }
@@ -101,6 +105,6 @@ public class StockServiceTest {
         when(stockMapper.decreaseQuantity(1, 1, 5)).thenReturn(1);
         when(logMapper.insertLog(1, com.jaegokeeper.stock.enums.LogType.OUT, 5)).thenReturn(1);
 
-        stockService.outStock(1, 1, req); // 예외 없으면 성공
+        stockService.outStock(1, 1, req);
     }
 }

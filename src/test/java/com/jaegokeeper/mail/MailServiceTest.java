@@ -1,44 +1,51 @@
 package com.jaegokeeper.mail;
 
-import com.jaegokeeper.common.mail.MailService;
+import com.jaegokeeper.common.mail.GmailMailService;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.util.StopWatch;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.thymeleaf.spring5.SpringTemplateEngine;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "classpath:test-mail-context.xml")
+import javax.mail.Session;
+import javax.mail.internet.MimeMessage;
+import java.util.Properties;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
 public class MailServiceTest {
 
-    private static final Logger log = LoggerFactory.getLogger(MailServiceTest.class);
+    private JavaMailSender mailSender;
+    private SpringTemplateEngine mailTemplateEngine;
+    private GmailMailService gmailMailService;
 
-    @Autowired
-    private MailService mailService;
+    @Before
+    public void setUp() {
+        mailSender = mock(JavaMailSender.class);
+        mailTemplateEngine = mock(SpringTemplateEngine.class);
+        gmailMailService = new GmailMailService(mailSender, mailTemplateEngine);
+    }
 
-    /**
-     * 비동기 적용 전/후 응답 반환 시간 비교 테스트
-     *
-     * [@Async 주석 처리 후 실행 - 동기]
-     * → [테스트] 호출 반환 시간: 3.37초  ← 메일 전송 완료될 때까지 블로킹
-     *
-     * [@Async 복원 후 실행 - 비동기]
-     * → [테스트] 호출 반환 시간: 0.003초 ← 스레드풀에 위임 후 즉시 반환
-     */
     @Test
-    public void 메일_전송_속도_측정() throws InterruptedException {
-        StopWatch stopWatch = new StopWatch();
+    public void 회원가입_인증메일_전송_성공() throws Exception {
+        MimeMessage message = new MimeMessage(Session.getInstance(new Properties()));
+        when(mailSender.createMimeMessage()).thenReturn(message);
+        when(mailTemplateEngine.process(eq("signup"), any())).thenReturn("<html>123456</html>");
 
-        stopWatch.start();
-        mailService.sendSignupCode("dltmdghks543@gmail.com", "123456");
-        stopWatch.stop();
+        gmailMailService.sendSignupCode("test@example.com", "123456");
 
-        log.info("[테스트] sendSignupCode 호출 반환 시간: {}초", stopWatch.getTotalTimeSeconds());
+        verify(mailSender).send(message);
+    }
 
-        // 비동기 작업이 실제로 완료될 때까지 대기
-        Thread.sleep(5000);
+    @Test
+    public void 환영메일_전송_성공() throws Exception {
+        MimeMessage message = new MimeMessage(Session.getInstance(new Properties()));
+        when(mailSender.createMimeMessage()).thenReturn(message);
+        when(mailTemplateEngine.process(eq("welcome"), any())).thenReturn("<html>홍길동</html>");
+
+        gmailMailService.sendWelcome("test@example.com", "홍길동");
+
+        verify(mailSender).send(message);
     }
 }

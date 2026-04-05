@@ -14,7 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 public class RequestServiceTest {
@@ -47,6 +47,7 @@ public class RequestServiceTest {
 
         try {
             requestService.updateRequestStatus(1, 999, req);
+            fail("BusinessException이 발생해야 합니다");
         } catch (BusinessException e) {
             assertEquals(ErrorCode.REQUEST_NOT_FOUND, e.getErrorCode());
         }
@@ -62,6 +63,7 @@ public class RequestServiceTest {
 
         try {
             requestService.updateRequestStatus(1, 1, req);
+            fail("BusinessException이 발생해야 합니다");
         } catch (BusinessException e) {
             assertEquals(ErrorCode.STATE_CONFLICT, e.getErrorCode());
         }
@@ -75,7 +77,7 @@ public class RequestServiceTest {
         RequestStatusUpdateRequest req = new RequestStatusUpdateRequest();
         req.setRequestStatus(RequestStatus.CONFIRM);
 
-        requestService.updateRequestStatus(1, 1, req); // 예외 없으면 성공
+        requestService.updateRequestStatus(1, 1, req);
     }
 
     // ===================== getRequestDetail =====================
@@ -86,6 +88,7 @@ public class RequestServiceTest {
 
         try {
             requestService.getRequestDetail(1, 999);
+            fail("BusinessException이 발생해야 합니다");
         } catch (BusinessException e) {
             assertEquals(ErrorCode.REQUEST_NOT_FOUND, e.getErrorCode());
         }
