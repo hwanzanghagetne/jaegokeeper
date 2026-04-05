@@ -1,7 +1,6 @@
 package com.jaegokeeper.user.controller;
 
 import com.jaegokeeper.auth.dto.LoginContext;
-import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.user.dto.UserUpdateRequest;
 import com.jaegokeeper.user.service.UserService;
 import io.swagger.annotations.ApiOperation;
@@ -11,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 
-import static com.jaegokeeper.exception.ErrorCode.FORBIDDEN;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,12 +26,7 @@ public class UserController {
             HttpSession session) {
 
         LoginContext login = (LoginContext) session.getAttribute("login");
-        if (login.getUserId() != userId) {
-            throw new BusinessException(FORBIDDEN);
-        }
-
-        userDto.setUserId(userId);
-        userService.updateUser(userDto);
+        userService.updateUser(login, userId, userDto);
         return ResponseEntity.noContent().build();
     }
 }

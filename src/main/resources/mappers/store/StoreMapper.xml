@@ -30,7 +30,7 @@
         )
     </insert>
 
-    <update id="updateStore" parameterType="com.jaegokeeper.store.dto.StoreDto">
+    <update id="updateStore" parameterType="com.jaegokeeper.store.dto.StoreUpdateRequest">
         UPDATE store
         SET store_Name = #{storeName},
             store_add1 = #{storeAdd1},

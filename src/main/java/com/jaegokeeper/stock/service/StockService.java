@@ -42,9 +42,6 @@ public class StockService {
         if (existAmount == null) {
             throw new BusinessException(STOCK_NOT_FOUND);
         }
-        if (existAmount < dto.getAmount()) {
-            throw new BusinessException(STOCK_QUANTITY_NOT_ENOUGH);
-        }
         int updated = stockMapper.decreaseQuantity(storeId, itemId, dto.getAmount());
         if (updated != 1) {
             throw new BusinessException(STOCK_QUANTITY_NOT_ENOUGH);

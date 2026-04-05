@@ -1,8 +1,9 @@
 package com.jaegokeeper.alba.service;
 
-import com.jaegokeeper.alba.dto.AlbaDetailDto;
-import com.jaegokeeper.alba.dto.AlbaListDto;
-import com.jaegokeeper.alba.dto.AlbaRegisterDto;
+import com.jaegokeeper.alba.dto.AlbaDetailResponse;
+import com.jaegokeeper.alba.dto.AlbaListResponse;
+import com.jaegokeeper.alba.dto.AlbaRegisterRequest;
+import com.jaegokeeper.alba.dto.AlbaUpdateRequest;
 import com.jaegokeeper.alba.mapper.AlbaMapper;
 import com.jaegokeeper.alba.mapper.WorkMapper;
 import com.jaegokeeper.exception.BusinessException;
@@ -22,19 +23,19 @@ public class AlbaService {
     private final WorkMapper workMapper;
 
     @Transactional
-    public void saveAlbaRegister(AlbaRegisterDto albaRegisterDto) {
-        if (!albaMapper.existsByStoreId(albaRegisterDto.getStoreId())) {
+    public void saveAlbaRegister(AlbaRegisterRequest req) {
+        if (!albaMapper.existsByStoreId(req.getStoreId())) {
             throw new BusinessException(STORE_NOT_FOUND);
         }
-        if (albaMapper.existsByAlbaPhone(albaRegisterDto.getAlbaPhone()) > 0) {
+        if (albaMapper.existsByAlbaPhone(req.getAlbaPhone()) > 0) {
             throw new BusinessException(BAD_REQUEST);
         }
-        albaMapper.insertAlba(albaRegisterDto);
+        albaMapper.insertAlba(req);
     }
 
     @Transactional
-    public void updateAlba(AlbaDetailDto albaDetailDto) {
-        albaMapper.updateAlba(albaDetailDto);
+    public void updateAlba(AlbaUpdateRequest req) {
+        albaMapper.updateAlba(req);
     }
 
     @Transactional
@@ -43,23 +44,23 @@ public class AlbaService {
         return deleteResult > 0;
     }
 
-    public AlbaDetailDto getAlbaByStore(int storeId) {
-        AlbaDetailDto store = albaMapper.getAlbaByStore(storeId);
-        if (store == null) {
-            throw new BusinessException(ALBA_NOT_FOUND);
-        }
-        return store;
-    }
-
-    public AlbaDetailDto getAlbaById(int albaId) {
-        AlbaDetailDto alba = albaMapper.getAlbaById(albaId);
+    public AlbaDetailResponse getAlbaByStore(int storeId) {
+        AlbaDetailResponse alba = albaMapper.getAlbaByStore(storeId);
         if (alba == null) {
             throw new BusinessException(ALBA_NOT_FOUND);
         }
         return alba;
     }
 
-    public List<AlbaListDto> getAllAlbaList(Integer storeId) {
+    public AlbaDetailResponse getAlbaById(int albaId) {
+        AlbaDetailResponse alba = albaMapper.getAlbaById(albaId);
+        if (alba == null) {
+            throw new BusinessException(ALBA_NOT_FOUND);
+        }
+        return alba;
+    }
+
+    public List<AlbaListResponse> getAllAlbaList(Integer storeId) {
         return albaMapper.selectAllAlba(storeId);
     }
 }

@@ -5,7 +5,7 @@
 
 <mapper namespace="com.jaegokeeper.alba.mapper.WorkMapper">
 
-    <select id="selectAllWork" resultType="com.jaegokeeper.alba.dto.AlbaListDto">
+    <select id="selectAllWork" resultType="com.jaegokeeper.alba.dto.AlbaListResponse">
         SELECT work.work_id    AS workId,
                work.work_status AS workStatus,
                work.work_date  AS workDate,

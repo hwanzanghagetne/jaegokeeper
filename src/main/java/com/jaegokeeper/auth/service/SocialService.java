@@ -9,8 +9,6 @@ import com.jaegokeeper.auth.utils.SocialProfile;
 import com.jaegokeeper.auth.utils.SocialVerifier;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.store.dto.StoreDto;
-
-import static com.jaegokeeper.exception.ErrorCode.*;
 import com.jaegokeeper.store.mapper.StoreMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,12 +16,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.*;
 
+import static com.jaegokeeper.exception.ErrorCode.*;
+
 @Service
 public class SocialService {
 
     private final StoreMapper storeMapper;
     private final UserAuthMapper userAuthMapper;
-
     private final Map<String, SocialVerifier> verifiersByProvider;
 
     public SocialService(
@@ -39,7 +38,6 @@ public class SocialService {
         this.verifiersByProvider = Collections.unmodifiableMap(m);
     }
 
-    /** 1) accessToken 검증 후, user 없으면 생성, ticket 발급 */
     @Transactional
     public String completeAndIssueTicket(String provider, String accessToken, String redirectUrl) {
         SocialVerifier verifier = verifiersByProvider.get(provider);
@@ -52,47 +50,15 @@ public class SocialService {
         } catch (Exception e) {
             throw new BusinessException(BAD_REQUEST);
         }
-        String providerUid = profile.getProviderUid();
 
-        LoginTarget tgt = userAuthMapper.findByProviderUid(provider, providerUid);
+        int userId = findOrRegister(provider, profile);
 
-        int userId;
-        if (tgt == null) {
-            // user 생성
-            UserDTO user = new UserDTO();
-            user.setUserName(defaultName(profile.getDisplayName(), provider));
-            user.setUserMail(profile.getEmail());        // email은 없을 수도 있음(또는 중복 가능성 있음)
-            user.setIsActive(true);
-            userAuthMapper.insertUser(user);
-
-            // store 생성(요구사항)
-            StoreDto store = new StoreDto();
-            store.setUserId(user.getUserId());
-            store.setStoreName(user.getUserName() + "의 스토어");
-            storeMapper.insertStore(store);
-
-            // auth 생성
-            UidDTO auth = new UidDTO();
-            auth.setUserId(user.getUserId());
-            auth.setProvider(provider);
-            auth.setProviderUid(providerUid);
-            auth.setPassHash(null);
-            userAuthMapper.insertAuth(auth);
-
-            userId = user.getUserId();
-        } else {
-            if (tgt.getIsActive() == false) throw new BusinessException(USER_NOT_ACTIVE);
-            userId = tgt.getUserId();
-        }
-
-        // ticket 생성 (예: 2분 TTL)
         String ticketKey = UUID.randomUUID().toString();
-
         TicketDTO ticket = new TicketDTO();
-            ticket.setTicketKey(ticketKey);
-            ticket.setUserId(userId);
-            ticket.setRedirectUrl(redirectUrl);
-            ticket.setExpiresAt(Date.from(Instant.now().plusSeconds(300)));
+        ticket.setTicketKey(ticketKey);
+        ticket.setUserId(userId);
+        ticket.setRedirectUrl(redirectUrl);
+        ticket.setExpiresAt(Date.from(Instant.now().plusSeconds(300)));
 
         int inserted = userAuthMapper.insertTicket(ticket);
         if (inserted != 1) {
@@ -100,6 +66,37 @@ public class SocialService {
         }
 
         return ticketKey;
+    }
+
+    private int findOrRegister(String provider, SocialProfile profile) {
+        String providerUid = profile.getProviderUid();
+        LoginTarget tgt = userAuthMapper.findByProviderUid(provider, providerUid);
+
+        if (tgt != null) {
+            if (!tgt.getIsActive()) throw new BusinessException(USER_NOT_ACTIVE);
+            return tgt.getUserId();
+        }
+
+        // 신규 유저 등록
+        UserDTO user = new UserDTO();
+        user.setUserName(defaultName(profile.getDisplayName(), provider));
+        user.setUserMail(profile.getEmail());
+        user.setIsActive(true);
+        userAuthMapper.insertUser(user);
+
+        StoreDto store = new StoreDto();
+        store.setUserId(user.getUserId());
+        store.setStoreName(user.getUserName() + "의 스토어");
+        storeMapper.insertStore(store);
+
+        UidDTO auth = new UidDTO();
+        auth.setUserId(user.getUserId());
+        auth.setProvider(provider);
+        auth.setProviderUid(providerUid);
+        auth.setPassHash(null);
+        userAuthMapper.insertAuth(auth);
+
+        return user.getUserId();
     }
 
     private String defaultName(String displayName, String provider) {
