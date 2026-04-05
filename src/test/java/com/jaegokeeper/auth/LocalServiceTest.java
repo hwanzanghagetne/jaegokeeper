@@ -14,8 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -55,30 +54,18 @@ public class LocalServiceTest {
         assertEquals("홍길동", result.getName());
     }
 
-    @Test(expected = BusinessException.class)
+    @Test
     public void 회원가입_이메일중복_예외() {
         RegisterRequest req = new RegisterRequest();
         req.setEmail("dup@example.com");
         req.setPassword("password123");
         req.setName("홍길동");
 
-        UserDTO existing = new UserDTO();
-        when(userAuthMapper.findUserByEmail("dup@example.com")).thenReturn(existing);
-
-        localService.register(req);
-    }
-
-    public void 회원가입_이메일중복_에러코드확인() {
-        RegisterRequest req = new RegisterRequest();
-        req.setEmail("dup@example.com");
-        req.setPassword("password123");
-        req.setName("홍길동");
-
-        UserDTO existing = new UserDTO();
-        when(userAuthMapper.findUserByEmail("dup@example.com")).thenReturn(existing);
+        when(userAuthMapper.findUserByEmail("dup@example.com")).thenReturn(new UserDTO());
 
         try {
             localService.register(req);
+            fail("BusinessException이 발생해야 합니다");
         } catch (BusinessException e) {
             assertEquals(ErrorCode.EMAIL_ALREADY_EXISTS, e.getErrorCode());
         }
@@ -86,7 +73,7 @@ public class LocalServiceTest {
 
     // ===================== loginAndIssueTicket =====================
 
-    @Test(expected = BusinessException.class)
+    @Test
     public void 로그인_존재하지않는_이메일_예외() {
         LoginRequest req = new LoginRequest();
         req.setEmail("notexist@example.com");
@@ -94,10 +81,15 @@ public class LocalServiceTest {
 
         when(userAuthMapper.findUserByEmail("notexist@example.com")).thenReturn(null);
 
-        localService.loginAndIssueTicket(req, null);
+        try {
+            localService.loginAndIssueTicket(req, null);
+            fail("BusinessException이 발생해야 합니다");
+        } catch (BusinessException e) {
+            assertEquals(ErrorCode.INVALID_CREDENTIALS, e.getErrorCode());
+        }
     }
 
-    @Test(expected = BusinessException.class)
+    @Test
     public void 로그인_비밀번호불일치_예외() {
         LoginRequest req = new LoginRequest();
         req.setEmail("test@example.com");
@@ -109,10 +101,15 @@ public class LocalServiceTest {
 
         when(userAuthMapper.findUserByEmail("test@example.com")).thenReturn(user);
 
-        localService.loginAndIssueTicket(req, null);
+        try {
+            localService.loginAndIssueTicket(req, null);
+            fail("BusinessException이 발생해야 합니다");
+        } catch (BusinessException e) {
+            assertEquals(ErrorCode.INVALID_CREDENTIALS, e.getErrorCode());
+        }
     }
 
-    @Test(expected = BusinessException.class)
+    @Test
     public void 로그인_비활성계정_예외() {
         LoginRequest req = new LoginRequest();
         req.setEmail("test@example.com");
@@ -124,6 +121,11 @@ public class LocalServiceTest {
 
         when(userAuthMapper.findUserByEmail("test@example.com")).thenReturn(user);
 
-        localService.loginAndIssueTicket(req, null);
+        try {
+            localService.loginAndIssueTicket(req, null);
+            fail("BusinessException이 발생해야 합니다");
+        } catch (BusinessException e) {
+            assertEquals(ErrorCode.USER_NOT_ACTIVE, e.getErrorCode());
+        }
     }
 }
