@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 import static com.jaegokeeper.exception.ErrorCode.*;
@@ -142,11 +141,7 @@ public class BoardService {
 
     private Integer uploadImageIfPresent(ImageInfoDTO dto) {
         if (dto.getFile() == null || dto.getFile().isEmpty()) return null;
-        try {
-            return imgService.uploadImg(dto);
-        } catch (IOException e) {
-            throw new BusinessException(IMAGE_UPLOAD_FAILED, e);
-        }
+        return imgService.uploadImg(dto);
     }
 
     private Integer resolveImageIdForUpdate(MultipartFile file, Boolean removeImage, ImageInfoDTO dto) {
@@ -156,11 +151,7 @@ public class BoardService {
             throw new BusinessException(IMAGE_UPDATE_CONFLICT);
         }
         if (!hasFile) return null;
-        try {
-            return imgService.uploadImg(dto);
-        } catch (IOException e) {
-            throw new BusinessException(IMAGE_UPLOAD_FAILED, e);
-        }
+        return imgService.uploadImg(dto);
     }
 
 }

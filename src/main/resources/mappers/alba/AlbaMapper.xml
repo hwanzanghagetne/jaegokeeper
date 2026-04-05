@@ -5,7 +5,7 @@
 
 <mapper namespace="com.jaegokeeper.alba.mapper.AlbaMapper">
 
-    <select id="selectAllAlba" resultType="com.jaegokeeper.alba.dto.AlbaListDto">
+    <select id="selectAllAlba" resultType="com.jaegokeeper.alba.dto.AlbaListResponse">
         SELECT
             alba.alba_id    AS albaId,
             work.work_id    AS workId,
@@ -24,7 +24,7 @@
         ORDER BY alba.alba_id DESC
     </select>
 
-    <select id="getAlbaById" parameterType="int" resultType="com.jaegokeeper.alba.dto.AlbaDetailDto">
+    <select id="getAlbaById" parameterType="int" resultType="com.jaegokeeper.alba.dto.AlbaDetailResponse">
         SELECT alba_id    AS albaId,
                store_id   AS storeId,
                alba_name  AS albaName,
@@ -34,7 +34,7 @@
         WHERE alba_id = #{albaId}
     </select>
 
-    <select id="getAlbaByStore" parameterType="int" resultType="com.jaegokeeper.alba.dto.AlbaDetailDto">
+    <select id="getAlbaByStore" parameterType="int" resultType="com.jaegokeeper.alba.dto.AlbaDetailResponse">
         SELECT alba_id    AS albaId,
                store_id   AS storeId,
                alba_name  AS albaName,
@@ -62,13 +62,13 @@
         WHERE alba_phone = #{albaPhone}
     </select>
 
-    <insert id="insertAlba" parameterType="com.jaegokeeper.alba.dto.AlbaRegisterDto"
+    <insert id="insertAlba" parameterType="com.jaegokeeper.alba.dto.AlbaRegisterRequest"
             useGeneratedKeys="true" keyProperty="albaId">
         INSERT INTO alba (store_id, alba_name, alba_phone, alba_status, created_at, image_id)
         VALUES (#{storeId}, #{albaName}, #{albaPhone}, #{albaStatus}, NOW(), #{imageId})
     </insert>
 
-    <update id="updateAlba" parameterType="com.jaegokeeper.alba.dto.AlbaDetailDto">
+    <update id="updateAlba" parameterType="com.jaegokeeper.alba.dto.AlbaUpdateRequest">
         UPDATE alba
         <set>
             <if test="storeId != null">store_id = #{storeId},</if>

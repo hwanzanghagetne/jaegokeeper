@@ -1,20 +1,18 @@
 package com.jaegokeeper.schedule.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
-@Data
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class ScheduleRegisterDto {
+public class ScheduleRegisterRequest {
+
     private Integer albaId;
-    private Integer scheduleId;
 
     @NotBlank(message = "알바 근무 요일은 필수입니다.")
     @Size(max = 50, message = "알바 근무 요일은 최대 50자까지 입력 가능합니다.")

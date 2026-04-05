@@ -41,7 +41,7 @@ public class ImageService {
     }
 
     @Transactional
-    public int uploadImg(ImageInfoDTO dto) throws IOException {
+    public int uploadImg(ImageInfoDTO dto) {
         MultipartFile file = dto.getFile();
 
         if (file == null || file.isEmpty()) {
@@ -54,33 +54,35 @@ public class ImageService {
             throw new BusinessException(BAD_REQUEST);
         }
 
-        LocalDate d = LocalDate.now();
-        String relDir = String.format("/%04d/%02d/%02d", d.getYear(), d.getMonthValue(), d.getDayOfMonth());
-        Path dirPath = Paths.get(BASE_DIR + relDir);
-        Files.createDirectories(dirPath);
-
-        String storedName = UUID.randomUUID().toString().replace("-", "") + "." + ext;
-        String relPath = relDir + "/" + storedName;
-        Path savePath = Paths.get(BASE_DIR + relPath);
-
         try {
+            LocalDate d = LocalDate.now();
+            String relDir = String.format("/%04d/%02d/%02d", d.getYear(), d.getMonthValue(), d.getDayOfMonth());
+            Path dirPath = Paths.get(BASE_DIR + relDir);
+            Files.createDirectories(dirPath);
+
+            String storedName = UUID.randomUUID().toString().replace("-", "") + "." + ext;
+            String relPath = relDir + "/" + storedName;
+            Path savePath = Paths.get(BASE_DIR + relPath);
+
             file.transferTo(savePath);
+
+            String mimeType = Files.probeContentType(savePath);
+            if (mimeType == null || !mimeType.startsWith("image/")) {
+                Files.deleteIfExists(savePath);
+                throw new BusinessException(BAD_REQUEST);
+            }
+
+            dto.setOriginName(originalName);
+            dto.setImagePath(String.valueOf(savePath));
+
+            imageMapper.insertImgInfo(dto);
+
+            return dto.getImageId();
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
-            throw new IOException("파일 저장 실패: " + e.getMessage(), e);
+            throw new BusinessException(INTERNAL_ERROR);
         }
-
-        String mimeType = Files.probeContentType(savePath);
-        if (mimeType == null || !mimeType.startsWith("image/")) {
-            Files.deleteIfExists(savePath);
-            throw new BusinessException(BAD_REQUEST);
-        }
-
-        dto.setOriginName(originalName);
-        dto.setImagePath(String.valueOf(savePath));
-
-        imageMapper.insertImgInfo(dto);
-
-        return dto.getImageId();
     }
 
     @Transactional(readOnly = true)

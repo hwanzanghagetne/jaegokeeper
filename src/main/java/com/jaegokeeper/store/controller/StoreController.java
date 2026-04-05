@@ -1,8 +1,7 @@
 package com.jaegokeeper.store.controller;
 
 import com.jaegokeeper.auth.dto.LoginContext;
-import com.jaegokeeper.exception.BusinessException;
-import com.jaegokeeper.store.dto.StoreDto;
+import com.jaegokeeper.store.dto.StoreUpdateRequest;
 import com.jaegokeeper.store.service.StoreService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-
-import static com.jaegokeeper.exception.ErrorCode.FORBIDDEN;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,16 +21,11 @@ public class StoreController {
     @PutMapping("/{storeId}")
     public ResponseEntity<Void> updateStore(
             @PathVariable int storeId,
-            @RequestBody StoreDto storeDto,
+            @RequestBody StoreUpdateRequest req,
             HttpSession session) {
 
         LoginContext login = (LoginContext) session.getAttribute("login");
-        if (login.getStoreId() != storeId) {
-            throw new BusinessException(FORBIDDEN);
-        }
-
-        storeDto.setStoreId(storeId);
-        storeService.updateStore(storeDto);
+        storeService.updateStore(login, storeId, req);
         return ResponseEntity.noContent().build();
     }
 }

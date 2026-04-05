@@ -1,28 +1,24 @@
 package com.jaegokeeper.schedule.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class ScheduleWorkInOutDto {
+public class ScheduleListResponse {
+
     private Integer albaId;
-    private String workStatus;
+    private Integer workId;
+    private Integer scheduleId;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime workIn;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime workOut;
-
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate workDate;
 }

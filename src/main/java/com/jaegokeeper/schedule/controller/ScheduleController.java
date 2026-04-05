@@ -1,8 +1,10 @@
 package com.jaegokeeper.schedule.controller;
 
-import com.jaegokeeper.schedule.dto.ScheduleListDto;
-import com.jaegokeeper.schedule.dto.ScheduleRegisterDto;
-import com.jaegokeeper.schedule.dto.ScheduleWorkInOutDto;
+import com.jaegokeeper.schedule.dto.ScheduleListResponse;
+import com.jaegokeeper.schedule.dto.ScheduleRegisterRequest;
+import com.jaegokeeper.schedule.dto.ScheduleUpdateRequest;
+import com.jaegokeeper.schedule.dto.WorkInOutRequest;
+import com.jaegokeeper.schedule.dto.WorkTimeResponse;
 import com.jaegokeeper.schedule.service.ScheduleService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -24,50 +26,48 @@ public class ScheduleController {
 
     @ApiOperation(value = "알바 근무 스케줄 등록")
     @PostMapping("/register")
-    public ResponseEntity<ScheduleRegisterDto> saveScheduleRegister(@Valid @RequestBody ScheduleRegisterDto scheduleRegisterDto) {
-        scheduleService.saveScheduleRegister(scheduleRegisterDto);
-        return ResponseEntity.ok(scheduleRegisterDto);
+    public ResponseEntity<Void> saveScheduleRegister(@Valid @RequestBody ScheduleRegisterRequest req) {
+        scheduleService.saveScheduleRegister(req);
+        return ResponseEntity.status(201).build();
     }
 
     @ApiOperation(value = "알바 근무 스케줄 수정")
     @PutMapping("/register/{scheduleId}")
-    public ResponseEntity<ScheduleRegisterDto> updateScheduleRegister(@PathVariable int scheduleId, @RequestBody ScheduleRegisterDto scheduleRegisterDto) {
-        scheduleRegisterDto.setScheduleId(scheduleId);
-        scheduleService.updateSchedule(scheduleRegisterDto);
-        return ResponseEntity.ok(scheduleRegisterDto);
+    public ResponseEntity<Void> updateScheduleRegister(@PathVariable int scheduleId, @RequestBody ScheduleUpdateRequest req) {
+        req.setScheduleId(scheduleId);
+        scheduleService.updateSchedule(req);
+        return ResponseEntity.noContent().build();
     }
 
     @ApiOperation(value = "특정 날짜에 근무하는 알바생들의 출퇴근 기록 조회")
     @GetMapping("/list")
-    public ResponseEntity<List<ScheduleListDto>> selectScheduleListByDate(@RequestParam String date) {
-        List<ScheduleListDto> scheduleList = scheduleService.getScheduleListByDate(date);
-        return ResponseEntity.ok(scheduleList);
+    public ResponseEntity<List<ScheduleListResponse>> selectScheduleListByDate(@RequestParam String date) {
+        return ResponseEntity.ok(scheduleService.getScheduleListByDate(date));
     }
 
     @ApiOperation(value = "알바생 출/퇴근 시간 조회")
     @GetMapping("/worktime")
-    public ResponseEntity<List<ScheduleWorkInOutDto>> selectWorkTime(
+    public ResponseEntity<List<WorkTimeResponse>> selectWorkTime(
             @RequestParam int albaId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        List<ScheduleWorkInOutDto> workTime = scheduleService.selectWorkTime(albaId, date);
-        return ResponseEntity.ok(workTime);
+        return ResponseEntity.ok(scheduleService.selectWorkTime(albaId, date));
     }
 
     @ApiOperation(value = "출근 기록")
     @PostMapping("/workin")
-    public ResponseEntity<Void> recordWorkIn(@RequestBody ScheduleWorkInOutDto scheduleWorkInOutDto) {
-        scheduleWorkInOutDto.setWorkIn(LocalDateTime.now());
-        scheduleWorkInOutDto.setWorkDate(LocalDate.now());
-        scheduleService.recordWorkIn(scheduleWorkInOutDto);
+    public ResponseEntity<Void> recordWorkIn(@RequestBody WorkInOutRequest req) {
+        req.setWorkIn(LocalDateTime.now());
+        req.setWorkDate(LocalDate.now());
+        scheduleService.recordWorkIn(req);
         return ResponseEntity.ok().build();
     }
 
     @ApiOperation(value = "퇴근 기록")
     @PostMapping("/workout")
-    public ResponseEntity<Void> recordWorkOut(@RequestBody ScheduleWorkInOutDto scheduleWorkInOutDto) {
-        scheduleWorkInOutDto.setWorkOut(LocalDateTime.now());
-        scheduleWorkInOutDto.setWorkDate(LocalDate.now());
-        scheduleService.recordWorkOut(scheduleWorkInOutDto);
+    public ResponseEntity<Void> recordWorkOut(@RequestBody WorkInOutRequest req) {
+        req.setWorkOut(LocalDateTime.now());
+        req.setWorkDate(LocalDate.now());
+        scheduleService.recordWorkOut(req);
         return ResponseEntity.ok().build();
     }
 }

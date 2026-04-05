@@ -1,27 +1,21 @@
 package com.jaegokeeper.alba.dto;
 
-import com.jaegokeeper.image.dto.ImageInfoDTO;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-@Data
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class AlbaRegisterDto extends ImageInfoDTO {
+public class AlbaRegisterRequest {
 
     @NotNull(message = "스토어 아이디는 null입니다.")
     private Integer storeId;
-
-    private Integer workId;
-
-    private Integer albaId;
 
     @NotBlank(message = "알바 이름은 필수입니다.")
     @Size(max = 50, message = "알바 이름은 최대 50자까지 입력 가능합니다.")
@@ -33,4 +27,8 @@ public class AlbaRegisterDto extends ImageInfoDTO {
 
     @Size(max = 50, message = "알바 근로상태는 최대 50자까지 입력 가능합니다.")
     private String albaStatus;
+
+    private Integer imageId;
+
+    private MultipartFile file;
 }

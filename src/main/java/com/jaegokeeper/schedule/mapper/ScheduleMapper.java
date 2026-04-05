@@ -1,8 +1,11 @@
 package com.jaegokeeper.schedule.mapper;
 
-import com.jaegokeeper.schedule.dto.ScheduleListDto;
-import com.jaegokeeper.schedule.dto.ScheduleRegisterDto;
-import com.jaegokeeper.schedule.dto.ScheduleWorkInOutDto;
+import com.jaegokeeper.schedule.dto.ScheduleDetailResponse;
+import com.jaegokeeper.schedule.dto.ScheduleListResponse;
+import com.jaegokeeper.schedule.dto.ScheduleRegisterRequest;
+import com.jaegokeeper.schedule.dto.ScheduleUpdateRequest;
+import com.jaegokeeper.schedule.dto.WorkInOutRequest;
+import com.jaegokeeper.schedule.dto.WorkTimeResponse;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -12,21 +15,21 @@ import java.util.List;
 @Mapper
 public interface ScheduleMapper {
 
-    int insertSchedule(ScheduleRegisterDto scheduleRegisterDto);
+    int insertSchedule(ScheduleRegisterRequest req);
 
-    void updateSchedule(ScheduleRegisterDto scheduleRegisterDto);
+    void updateSchedule(ScheduleUpdateRequest req);
 
-    List<ScheduleRegisterDto> selectSchedulesByDate(@Param("scheduleTime") String scheduleTime);
+    List<ScheduleDetailResponse> selectSchedulesByDate(@Param("scheduleTime") String scheduleTime);
 
-    List<ScheduleListDto> selectSchedulesWithWorkByDate(
+    List<ScheduleListResponse> selectSchedulesWithWorkByDate(
             @Param("date") String date,
             @Param("scheduleTime") String scheduleTime
     );
 
-    List<ScheduleWorkInOutDto> selectWorkTime(@Param("albaId") Integer albaId,
-                                              @Param("date") LocalDate date);
+    List<WorkTimeResponse> selectWorkTime(@Param("albaId") Integer albaId,
+                                          @Param("date") LocalDate date);
 
-    void insertWorkIn(ScheduleWorkInOutDto dto);
+    void insertWorkIn(WorkInOutRequest req);
 
-    void updateWorkOut(ScheduleWorkInOutDto dto);
+    void updateWorkOut(WorkInOutRequest req);
 }

@@ -5,19 +5,19 @@
 
 <mapper namespace="com.jaegokeeper.schedule.mapper.ScheduleMapper">
 
-    <insert id="insertSchedule" parameterType="com.jaegokeeper.schedule.dto.ScheduleRegisterDto"
+    <insert id="insertSchedule" parameterType="com.jaegokeeper.schedule.dto.ScheduleRegisterRequest"
             useGeneratedKeys="true" keyProperty="scheduleId">
         INSERT INTO schedule (alba_id, schedule_time)
         VALUES (#{albaId}, #{scheduleTime})
     </insert>
 
-    <update id="updateSchedule" parameterType="com.jaegokeeper.schedule.dto.ScheduleRegisterDto">
+    <update id="updateSchedule" parameterType="com.jaegokeeper.schedule.dto.ScheduleUpdateRequest">
         UPDATE schedule
         SET schedule_time = #{scheduleTime}
         WHERE schedule_id = #{scheduleId}
     </update>
 
-    <select id="selectSchedulesByDate" resultType="com.jaegokeeper.schedule.dto.ScheduleRegisterDto">
+    <select id="selectSchedulesByDate" resultType="com.jaegokeeper.schedule.dto.ScheduleDetailResponse">
         SELECT
             schedule_id AS scheduleId,
             alba_id     AS albaId,
@@ -26,7 +26,7 @@
         WHERE schedule_time = #{scheduleTime}
     </select>
 
-    <select id="selectSchedulesWithWorkByDate" resultType="com.jaegokeeper.schedule.dto.ScheduleListDto">
+    <select id="selectSchedulesWithWorkByDate" resultType="com.jaegokeeper.schedule.dto.ScheduleListResponse">
         SELECT
             a.alba_id     AS albaId,
             s.schedule_id AS scheduleId,
@@ -41,7 +41,7 @@
         ORDER BY a.alba_id
     </select>
 
-    <select id="selectWorkTime" resultType="com.jaegokeeper.schedule.dto.ScheduleWorkInOutDto">
+    <select id="selectWorkTime" resultType="com.jaegokeeper.schedule.dto.WorkTimeResponse">
         SELECT DISTINCT
             w.alba_id     AS albaId,
             w.work_date   AS workDate,
@@ -53,12 +53,12 @@
           AND w.work_date = #{date}
     </select>
 
-    <insert id="insertWorkIn" parameterType="com.jaegokeeper.schedule.dto.ScheduleWorkInOutDto">
+    <insert id="insertWorkIn" parameterType="com.jaegokeeper.schedule.dto.WorkInOutRequest">
         INSERT INTO work (alba_id, work_date, work_in, work_status)
         VALUES (#{albaId}, #{workDate}, #{workIn}, #{workStatus})
     </insert>
 
-    <update id="updateWorkOut" parameterType="com.jaegokeeper.schedule.dto.ScheduleWorkInOutDto">
+    <update id="updateWorkOut" parameterType="com.jaegokeeper.schedule.dto.WorkInOutRequest">
         UPDATE work
         SET work_out = #{workOut}
         WHERE alba_id = #{albaId}
