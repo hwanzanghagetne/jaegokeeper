@@ -1,6 +1,8 @@
 package com.jaegokeeper.auth.service;
 
-import com.jaegokeeper.auth.dto.*;
+import com.jaegokeeper.auth.dto.LoginRequest;
+import com.jaegokeeper.auth.dto.TicketDTO;
+import com.jaegokeeper.auth.dto.UserDTO;
 import com.jaegokeeper.auth.mapper.UserAuthMapper;
 import com.jaegokeeper.auth.utils.PasswordHasher;
 import com.jaegokeeper.exception.BusinessException;
@@ -19,42 +21,6 @@ import static com.jaegokeeper.exception.ErrorCode.*;
 public class LocalService {
 
     private final UserAuthMapper userAuthMapper;
-
-    @Transactional
-    public AuthResponse register(RegisterRequest req) {
-        String email = req.getEmail().trim().toLowerCase();
-
-        if (userAuthMapper.findUserByEmail(email) != null) {
-            throw new BusinessException(EMAIL_ALREADY_EXISTS);
-        }
-
-        UserDTO toInsert = UserDTO.builder()
-                .userMail(email)
-                .passHash(PasswordHasher.hash(req.getPassword()))
-                .userName(req.getName().trim())
-                .emailVerified(false)
-                .isActive(true)
-                .build();
-
-        try {
-            int inserted = userAuthMapper.insertUser(toInsert);
-            if (inserted != 1 || toInsert.getUserId() == null) {
-                throw new BusinessException(REGISTER_FAILED);
-            }
-        } catch (org.springframework.dao.DuplicateKeyException e) {
-            // DB unique 제약 충돌 (동시 요청 등)
-            throw new BusinessException(EMAIL_ALREADY_EXISTS);
-        } catch (org.springframework.dao.DataAccessException e) {
-            log.error("[REGISTER_FAILED]", e);
-            throw new BusinessException(INTERNAL_ERROR);
-        }
-
-        return AuthResponse.builder()
-                .userId(toInsert.getUserId())
-                .email(toInsert.getUserMail())
-                .name(toInsert.getUserName())
-                .build();
-    }
 
     @Transactional
     public String loginAndIssueTicket(LoginRequest req, String redirectUrl) {

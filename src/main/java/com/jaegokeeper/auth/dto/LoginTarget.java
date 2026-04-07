@@ -11,5 +11,6 @@ public class LoginTarget {
     private int storeId;
     private String userName;
     private Boolean isActive;
+    private String provider;
 
 }
