@@ -1,7 +1,6 @@
 package com.jaegokeeper.auth.service;
 
 import com.jaegokeeper.auth.dto.LoginTarget;
-import com.jaegokeeper.auth.dto.TicketDTO;
 import com.jaegokeeper.auth.mapper.UserAuthMapper;
 import com.jaegokeeper.auth.utils.SocialProfile;
 import com.jaegokeeper.auth.utils.SocialVerifier;
@@ -10,7 +9,6 @@ import com.jaegokeeper.onboarding.service.OnboardingService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.*;
 
 import static com.jaegokeeper.exception.ErrorCode.*;
@@ -36,7 +34,7 @@ public class SocialService {
     }
 
     @Transactional
-    public String completeAndIssueTicket(String provider, String accessToken, String redirectUrl) {
+    public int complete(String provider, String accessToken) {
         SocialVerifier verifier = verifiersByProvider.get(provider);
         if (verifier == null) throw new BusinessException(BAD_REQUEST);
         if (accessToken == null || accessToken.isEmpty()) throw new BusinessException(BAD_REQUEST);
@@ -48,21 +46,7 @@ public class SocialService {
             throw new BusinessException(BAD_REQUEST);
         }
 
-        int userId = findOrRegister(provider, profile);
-
-        String ticketKey = UUID.randomUUID().toString();
-        TicketDTO ticket = new TicketDTO();
-        ticket.setTicketKey(ticketKey);
-        ticket.setUserId(userId);
-        ticket.setRedirectUrl(redirectUrl);
-        ticket.setExpiresAt(Date.from(Instant.now().plusSeconds(300)));
-
-        int inserted = userAuthMapper.insertTicket(ticket);
-        if (inserted != 1) {
-            throw new BusinessException(TICKET_ISSUE_FAILED);
-        }
-
-        return ticketKey;
+        return findOrRegister(provider, profile);
     }
 
     private int findOrRegister(String provider, SocialProfile profile) {

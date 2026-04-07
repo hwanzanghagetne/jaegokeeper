@@ -31,10 +31,8 @@ public class LocalController {
             @RequestParam(value = "redirectUrl", required = false) String redirectUrl,
             HttpServletRequest request
     ) {
-        String ticketKey = localService.loginAndIssueTicket(req, redirectUrl);
-
-        SessionResponse data = sessionService.handleSessionAuth(ticketKey, request);
-        return ResponseEntity.ok(data);
+        int userId = localService.login(req);
+        return ResponseEntity.ok(sessionService.createSession(userId, "LOCAL", redirectUrl, request));
     }
 
 }

@@ -7,15 +7,12 @@ public enum ErrorCode {
     // ==== 400 BAD_REQUEST ====
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "요청 값이 올바르지 않습니다."),
     REGISTER_FAILED(HttpStatus.BAD_REQUEST, "회원가입 처리에 실패했습니다."),
-    TICKET_ISSUE_FAILED(HttpStatus.BAD_REQUEST, "티켓 발급에 실패했습니다."),
     EMAIL_CODE_INVALID(HttpStatus.BAD_REQUEST, "인증번호가 올바르지 않거나 만료되었습니다."),
     INVALID_WRITER_INFO(HttpStatus.BAD_REQUEST, "writerType, writerId가 올바르지 않습니다."),
     IMAGE_UPDATE_CONFLICT(HttpStatus.BAD_REQUEST, "removeImage와 파일 업로드는 동시에 요청할 수 없습니다."),
 
     // ==== 401 UNAUTHORIZED ====
     LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
-    INVALID_TICKET(HttpStatus.UNAUTHORIZED, "티켓이 존재하지 않습니다."),
-    INVALID_OR_USED_TICKET(HttpStatus.UNAUTHORIZED, "티켓이 유효하지 않거나 이미 사용되었습니다."),
     USER_NOT_FOUND(HttpStatus.UNAUTHORIZED, "유저를 찾을 수 없습니다."),
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다."),
     USER_NOT_ACTIVE(HttpStatus.UNAUTHORIZED, "사용할 수 없는 계정 상태입니다."),

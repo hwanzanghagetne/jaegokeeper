@@ -18,8 +18,9 @@ public class NaverVerifier implements SocialVerifier {
         String id = resp.has("id") ? resp.get("id").asText() : null;
         String name = resp.has("name") ? resp.get("name").asText() : null;
         String email = resp.has("email") ? resp.get("email").asText() : null;
+        boolean emailVerified = false; // Naver 프로필 API에 검증 플래그가 없어 자동 이메일 연동에서 제외
 
         if (id == null) throw new IllegalArgumentException("naver id missing");
-        return new SocialProfile(id, name, email);
+        return new SocialProfile(id, name, email, emailVerified);
     }
 }

@@ -29,7 +29,7 @@ public class LocalServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    // ===================== loginAndIssueTicket =====================
+    // ===================== login =====================
 
     @Test
     public void 로그인_존재하지않는_이메일_예외() {
@@ -40,7 +40,7 @@ public class LocalServiceTest {
         when(userAuthMapper.findUserByEmail("notexist@example.com")).thenReturn(null);
 
         try {
-            localService.loginAndIssueTicket(req, null);
+            localService.login(req);
             fail("BusinessException이 발생해야 합니다");
         } catch (BusinessException e) {
             assertEquals(ErrorCode.INVALID_CREDENTIALS, e.getErrorCode());
@@ -60,7 +60,7 @@ public class LocalServiceTest {
         when(userAuthMapper.findUserByEmail("test@example.com")).thenReturn(user);
 
         try {
-            localService.loginAndIssueTicket(req, null);
+            localService.login(req);
             fail("BusinessException이 발생해야 합니다");
         } catch (BusinessException e) {
             assertEquals(ErrorCode.INVALID_CREDENTIALS, e.getErrorCode());
@@ -80,7 +80,7 @@ public class LocalServiceTest {
         when(userAuthMapper.findUserByEmail("test@example.com")).thenReturn(user);
 
         try {
-            localService.loginAndIssueTicket(req, null);
+            localService.login(req);
             fail("BusinessException이 발생해야 합니다");
         } catch (BusinessException e) {
             assertEquals(ErrorCode.USER_NOT_ACTIVE, e.getErrorCode());
