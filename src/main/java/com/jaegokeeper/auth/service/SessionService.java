@@ -23,7 +23,7 @@ public class SessionService {
 
     @Transactional
     public SessionResponse handleSessionAuth(
-            String ticketKey, String provider, HttpServletRequest request
+            String ticketKey, HttpServletRequest request
     ) {
         // 1) 티켓 조회
         TicketDTO ticket = userAuthMapper.findValidTicket(ticketKey);
@@ -52,7 +52,7 @@ public class SessionService {
                 target.getUserId(),
                 target.getStoreId(),
                 target.getUserName(),
-                provider
+                target.getProvider()
         ));
 
         String redirectUrl = ticket.getRedirectUrl();

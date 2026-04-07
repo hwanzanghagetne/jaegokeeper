@@ -35,7 +35,7 @@ public class SocialController {
                 provider, req.getAccessToken(), redirectUrl
         );
 
-        SessionResponse data = sessionService.handleSessionAuth(ticketKey, provider, request);
+        SessionResponse data = sessionService.handleSessionAuth(ticketKey, request);
         return ResponseEntity.ok(data);
     }
 
