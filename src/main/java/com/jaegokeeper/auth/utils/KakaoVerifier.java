@@ -15,15 +15,19 @@ public class KakaoVerifier implements SocialVerifier {
         String id = n.has("id") ? n.get("id").asText() : null;
         String nickname = null;
         String email = null;
+        boolean emailVerified = false;
 
         JsonNode kakaoAccount = n.get("kakao_account");
         if (kakaoAccount != null) {
             JsonNode profile = kakaoAccount.get("profile");
             if (profile != null && profile.has("nickname")) nickname = profile.get("nickname").asText();
             if (kakaoAccount.has("email")) email = kakaoAccount.get("email").asText();
+            if (kakaoAccount.has("is_email_verified")) {
+                emailVerified = kakaoAccount.get("is_email_verified").asBoolean(false);
+            }
         }
 
         if (id == null) throw new IllegalArgumentException("kakao id missing");
-        return new SocialProfile(id, nickname, email);
+        return new SocialProfile(id, nickname, email, emailVerified);
     }
 }

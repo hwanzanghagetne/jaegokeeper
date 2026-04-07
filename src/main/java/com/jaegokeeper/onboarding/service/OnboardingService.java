@@ -70,7 +70,6 @@ public class OnboardingService {
         uid.setUserId(user.getUserId());
         uid.setProvider("LOCAL");
         uid.setProviderUid(email);
-        uid.setPassHash(null);
         userAuthMapper.insertAuth(uid);
 
         // 5. 스토어 생성
@@ -102,24 +101,74 @@ public class OnboardingService {
 
     @Transactional
     public int socialSignUp(String provider, SocialProfile profile) {
+        String email = profile.getEmail() != null ? profile.getEmail().trim().toLowerCase() : null;
+
+        // 정책: 이메일이 있고 provider에서 검증된 경우에만 기존 유저와 자동 연동
+        if (email != null && !email.isEmpty() && profile.isEmailVerified()) {
+            UserDTO existing = userAuthMapper.findUserByEmail(email);
+            if (existing != null) {
+                if (!Boolean.TRUE.equals(existing.getIsActive())) {
+                    throw new BusinessException(USER_NOT_ACTIVE);
+                }
+
+                UidDTO linked = new UidDTO();
+                linked.setUserId(existing.getUserId());
+                linked.setProvider(provider);
+                linked.setProviderUid(profile.getProviderUid());
+                try {
+                    userAuthMapper.insertAuth(linked);
+                } catch (org.springframework.dao.DuplicateKeyException ignore) {
+                    // 동일 매핑이 이미 있으면 재삽입하지 않고 기존 유저를 사용
+                }
+                return existing.getUserId();
+            }
+        }
+
         UserDTO user = new UserDTO();
         String displayName = profile.getDisplayName();
         user.setUserName(displayName != null && !displayName.trim().isEmpty() ? displayName.trim() : provider + "_USER");
-        user.setUserMail(profile.getEmail() != null ? profile.getEmail().trim().toLowerCase() : null);
+        user.setUserMail(email);
         user.setIsActive(true);
-        userAuthMapper.insertUser(user);
+        user.setEmailVerified(profile.isEmailVerified());
+
+        try {
+            int inserted = userAuthMapper.insertUser(user);
+            if (inserted != 1 || user.getUserId() == null) {
+                throw new BusinessException(REGISTER_FAILED);
+            }
+        } catch (org.springframework.dao.DuplicateKeyException e) {
+            throw new BusinessException(EMAIL_ALREADY_EXISTS);
+        } catch (org.springframework.dao.DataAccessException e) {
+            log.error("[SOCIAL_SIGNUP] 유저 생성 실패 provider={}", provider, e);
+            throw new BusinessException(INTERNAL_ERROR);
+        }
 
         StoreDto store = new StoreDto();
         store.setUserId(user.getUserId());
         store.setStoreName(user.getUserName() + "의 스토어");
-        storeMapper.insertStore(store);
+        try {
+            int inserted = storeMapper.insertStore(store);
+            if (inserted != 1 || store.getStoreId() == 0) {
+                throw new BusinessException(INTERNAL_ERROR);
+            }
+        } catch (org.springframework.dao.DataAccessException e) {
+            log.error("[SOCIAL_SIGNUP] 스토어 생성 실패 userId={}", user.getUserId(), e);
+            throw new BusinessException(INTERNAL_ERROR);
+        }
 
         UidDTO uid = new UidDTO();
         uid.setUserId(user.getUserId());
         uid.setProvider(provider);
         uid.setProviderUid(profile.getProviderUid());
-        uid.setPassHash(null);
-        userAuthMapper.insertAuth(uid);
+        try {
+            int inserted = userAuthMapper.insertAuth(uid);
+            if (inserted != 1) {
+                throw new BusinessException(INTERNAL_ERROR);
+            }
+        } catch (org.springframework.dao.DataAccessException e) {
+            log.error("[SOCIAL_SIGNUP] uid 생성 실패 userId={}, provider={}", user.getUserId(), provider, e);
+            throw new BusinessException(INTERNAL_ERROR);
+        }
 
         return user.getUserId();
     }

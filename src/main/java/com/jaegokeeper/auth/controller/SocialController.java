@@ -31,12 +31,8 @@ public class SocialController {
             HttpServletRequest request
     ) {
         String provider = req.getProvider().name();
-        String ticketKey = socialService.completeAndIssueTicket(
-                provider, req.getAccessToken(), redirectUrl
-        );
-
-        SessionResponse data = sessionService.handleSessionAuth(ticketKey, request);
-        return ResponseEntity.ok(data);
+        int userId = socialService.complete(provider, req.getAccessToken());
+        return ResponseEntity.ok(sessionService.createSession(userId, provider, redirectUrl, request));
     }
 
 }

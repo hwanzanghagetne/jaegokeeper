@@ -17,12 +17,17 @@ public class GoogleVerifier implements SocialVerifier {
         String sub = text(n, "sub");           // providerUid로 사용
         String name = text(n, "name");
         String email = text(n, "email");
+        boolean emailVerified = bool(n, "email_verified");
         if (sub == null) throw new IllegalArgumentException("google userinfo sub missing");
 
-        return new SocialProfile(sub, name, email);
+        return new SocialProfile(sub, name, email, emailVerified);
     }
 
     private String text(JsonNode n, String k) {
         return (n != null && n.has(k) && !n.get(k).isNull()) ? n.get(k).asText() : null;
+    }
+
+    private boolean bool(JsonNode n, String k) {
+        return n != null && n.has(k) && !n.get(k).isNull() && n.get(k).asBoolean(false);
     }
 }
