@@ -10,5 +10,5 @@ public interface StoreMapper {
 
     int insertStore(StoreDto storeDto);
 
-    void updateStore(StoreUpdateRequest req);
+    int updateStore(StoreUpdateRequest req);
 }

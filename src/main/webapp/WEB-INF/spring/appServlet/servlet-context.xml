@@ -69,6 +69,8 @@
             <mapping path="/stores/**"/>
             <mapping path="/user/**"/>
             <mapping path="/img/**"/>
+            <mapping path="/alba/**"/>
+            <mapping path="/schedule/**"/>
 
             <!-- swagger/springfox -->
             <exclude-mapping path="/v2/api-docs"/>

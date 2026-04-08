@@ -18,4 +18,10 @@
         WHERE user_mail = #{email}
     </select>
 
+    <select id="existsById" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM user
+        WHERE user_id = #{userId}
+    </select>
+
 </mapper>

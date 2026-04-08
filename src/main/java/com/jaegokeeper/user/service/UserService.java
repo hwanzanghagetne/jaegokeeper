@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.jaegokeeper.exception.ErrorCode.FORBIDDEN;
+import static com.jaegokeeper.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +21,13 @@ public class UserService {
         if (login.getUserId() != userId) {
             throw new BusinessException(FORBIDDEN);
         }
+        if (!userMapper.existsById(userId)) {
+            throw new BusinessException(USER_NOT_FOUND);
+        }
         dto.setUserId(userId);
-        userMapper.updateUser(dto);
+        int updated = userMapper.updateUser(dto);
+        if (updated == 0) {
+            throw new BusinessException(STATE_CONFLICT);
+        }
     }
 }

@@ -6,7 +6,6 @@ import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Getter
@@ -14,7 +13,6 @@ import javax.validation.constraints.Size;
 @NoArgsConstructor
 public class AlbaRegisterRequest {
 
-    @NotNull(message = "스토어 아이디는 null입니다.")
     private Integer storeId;
 
     @NotBlank(message = "알바 이름은 필수입니다.")
