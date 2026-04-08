@@ -23,63 +23,80 @@ import java.util.List;
 import static com.jaegokeeper.exception.ErrorCode.LOGIN_REQUIRED;
 
 @RestController
-@RequestMapping("/schedule")
+@RequestMapping("/stores/{storeId}/schedules")
 @RequiredArgsConstructor
-public class ScheduleController {
+public class StoreScheduleController {
 
     private final ScheduleService scheduleService;
 
-    @ApiOperation(value = "알바 근무 스케줄 등록")
-    @PostMapping("/register")
-    public ResponseEntity<Void> saveScheduleRegister(@Valid @RequestBody ScheduleRegisterRequest req, HttpSession session) {
+    @ApiOperation(value = "스토어별 알바 근무 스케줄 등록")
+    @PostMapping
+    public ResponseEntity<Void> createSchedule(
+            @PathVariable int storeId,
+            @Valid @RequestBody ScheduleRegisterRequest req,
+            HttpSession session) {
         LoginContext login = requireLogin(session);
-        scheduleService.saveScheduleRegister(login, req);
+        scheduleService.saveScheduleRegister(login, storeId, req);
         return ResponseEntity.status(201).build();
     }
 
-    @ApiOperation(value = "알바 근무 스케줄 수정")
-    @PutMapping("/register/{scheduleId}")
-    public ResponseEntity<Void> updateScheduleRegister(@PathVariable int scheduleId, @RequestBody ScheduleUpdateRequest req, HttpSession session) {
+    @ApiOperation(value = "스토어별 알바 근무 스케줄 수정")
+    @PutMapping("/{scheduleId}")
+    public ResponseEntity<Void> updateSchedule(
+            @PathVariable int storeId,
+            @PathVariable int scheduleId,
+            @RequestBody ScheduleUpdateRequest req,
+            HttpSession session) {
         LoginContext login = requireLogin(session);
         req.setScheduleId(scheduleId);
-        scheduleService.updateSchedule(login, req);
+        scheduleService.updateSchedule(login, storeId, req);
         return ResponseEntity.noContent().build();
     }
 
-    @ApiOperation(value = "특정 날짜에 근무하는 알바생들의 출퇴근 기록 조회")
-    @GetMapping("/list")
-    public ResponseEntity<List<ScheduleListResponse>> selectScheduleListByDate(@RequestParam String date, HttpSession session) {
+    @ApiOperation(value = "스토어별 특정 날짜 스케줄 조회")
+    @GetMapping
+    public ResponseEntity<List<ScheduleListResponse>> getSchedulesByDate(
+            @PathVariable int storeId,
+            @RequestParam String date,
+            HttpSession session) {
         LoginContext login = requireLogin(session);
-        return ResponseEntity.ok(scheduleService.getScheduleListByDate(login, date));
+        return ResponseEntity.ok(scheduleService.getScheduleListByDate(login, storeId, date));
     }
 
-    @ApiOperation(value = "알바생 출/퇴근 시간 조회")
+    @ApiOperation(value = "스토어별 알바 출/퇴근 시간 조회")
     @GetMapping("/worktime")
-    public ResponseEntity<List<WorkTimeResponse>> selectWorkTime(
+    public ResponseEntity<List<WorkTimeResponse>> getWorkTime(
+            @PathVariable int storeId,
             @RequestParam int albaId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             HttpSession session) {
         LoginContext login = requireLogin(session);
-        return ResponseEntity.ok(scheduleService.selectWorkTime(login, albaId, date));
+        return ResponseEntity.ok(scheduleService.selectWorkTime(login, storeId, albaId, date));
     }
 
-    @ApiOperation(value = "출근 기록")
+    @ApiOperation(value = "스토어별 출근 기록")
     @PostMapping("/workin")
-    public ResponseEntity<Void> recordWorkIn(@RequestBody WorkInOutRequest req, HttpSession session) {
+    public ResponseEntity<Void> recordWorkIn(
+            @PathVariable int storeId,
+            @RequestBody WorkInOutRequest req,
+            HttpSession session) {
         LoginContext login = requireLogin(session);
         req.setWorkIn(LocalDateTime.now());
         req.setWorkDate(LocalDate.now());
-        scheduleService.recordWorkIn(login, req);
+        scheduleService.recordWorkIn(login, storeId, req);
         return ResponseEntity.ok().build();
     }
 
-    @ApiOperation(value = "퇴근 기록")
+    @ApiOperation(value = "스토어별 퇴근 기록")
     @PostMapping("/workout")
-    public ResponseEntity<Void> recordWorkOut(@RequestBody WorkInOutRequest req, HttpSession session) {
+    public ResponseEntity<Void> recordWorkOut(
+            @PathVariable int storeId,
+            @RequestBody WorkInOutRequest req,
+            HttpSession session) {
         LoginContext login = requireLogin(session);
         req.setWorkOut(LocalDateTime.now());
         req.setWorkDate(LocalDate.now());
-        scheduleService.recordWorkOut(login, req);
+        scheduleService.recordWorkOut(login, storeId, req);
         return ResponseEntity.ok().build();
     }
 

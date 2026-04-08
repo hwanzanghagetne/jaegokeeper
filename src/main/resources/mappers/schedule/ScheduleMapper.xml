@@ -17,6 +17,21 @@
         WHERE schedule_id = #{scheduleId}
     </update>
 
+    <select id="existsScheduleById" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM schedule
+        WHERE schedule_id = #{scheduleId}
+    </select>
+
+    <select id="countByStoreIdAndScheduleId" resultType="int">
+        SELECT COUNT(*)
+        FROM schedule s
+        INNER JOIN alba a ON a.alba_id = s.alba_id
+        WHERE s.schedule_id = #{scheduleId}
+          AND a.store_id = #{storeId}
+          AND a.is_active = b'1'
+    </select>
+
     <select id="selectSchedulesByDate" resultType="com.jaegokeeper.schedule.dto.ScheduleDetailResponse">
         SELECT
             schedule_id AS scheduleId,
@@ -38,6 +53,8 @@
         LEFT JOIN work w ON a.alba_id = w.alba_id
                         AND DATE(work_in) = #{date}
         WHERE s.schedule_time = #{scheduleTime}
+          AND a.store_id = #{storeId}
+          AND a.is_active = b'1'
         ORDER BY a.alba_id
     </select>
 
@@ -49,8 +66,11 @@
             w.work_out    AS workOut,
             w.work_status AS workStatus
         FROM work w
+        INNER JOIN alba a ON a.alba_id = w.alba_id
         WHERE w.alba_id = #{albaId}
           AND w.work_date = #{date}
+          AND a.store_id = #{storeId}
+          AND a.is_active = b'1'
     </select>
 
     <insert id="insertWorkIn" parameterType="com.jaegokeeper.schedule.dto.WorkInOutRequest">

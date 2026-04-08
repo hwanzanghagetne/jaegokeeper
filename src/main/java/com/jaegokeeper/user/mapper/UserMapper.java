@@ -7,7 +7,9 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface UserMapper {
 
-    void updateUser(UserUpdateRequest userUpdateRequest);
+    int updateUser(UserUpdateRequest userUpdateRequest);
 
     int countByEmail(@Param("email") String email);
+
+    boolean existsById(@Param("userId") int userId);
 }

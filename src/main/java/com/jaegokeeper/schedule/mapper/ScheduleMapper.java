@@ -17,19 +17,26 @@ public interface ScheduleMapper {
 
     int insertSchedule(ScheduleRegisterRequest req);
 
-    void updateSchedule(ScheduleUpdateRequest req);
+    int updateSchedule(ScheduleUpdateRequest req);
+
+    boolean existsScheduleById(@Param("scheduleId") Integer scheduleId);
+
+    int countByStoreIdAndScheduleId(@Param("storeId") Integer storeId,
+                                    @Param("scheduleId") Integer scheduleId);
 
     List<ScheduleDetailResponse> selectSchedulesByDate(@Param("scheduleTime") String scheduleTime);
 
     List<ScheduleListResponse> selectSchedulesWithWorkByDate(
+            @Param("storeId") Integer storeId,
             @Param("date") String date,
             @Param("scheduleTime") String scheduleTime
     );
 
-    List<WorkTimeResponse> selectWorkTime(@Param("albaId") Integer albaId,
+    List<WorkTimeResponse> selectWorkTime(@Param("storeId") Integer storeId,
+                                          @Param("albaId") Integer albaId,
                                           @Param("date") LocalDate date);
 
     void insertWorkIn(WorkInOutRequest req);
 
-    void updateWorkOut(WorkInOutRequest req);
+    int updateWorkOut(WorkInOutRequest req);
 }
