@@ -18,7 +18,7 @@ public interface AlbaMapper {
 
     boolean existsByStoreId(int storeId);
 
-    int existsByAlbaPhone(String albaPhone);
+    int existsByAlbaPhone(@Param("storeId") Integer storeId, @Param("albaPhone") String albaPhone);
 
     List<AlbaListResponse> selectAllAlba(@Param("storeId") Integer storeId);
 

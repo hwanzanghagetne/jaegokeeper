@@ -9,6 +9,8 @@ import com.jaegokeeper.alba.mapper.WorkMapper;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,10 +37,16 @@ public class AlbaService {
         if (!albaMapper.existsByStoreId(storeId)) {
             throw new BusinessException(STORE_NOT_FOUND);
         }
-        if (albaMapper.existsByAlbaPhone(req.getAlbaPhone()) > 0) {
+        if (albaMapper.existsByAlbaPhone(storeId, req.getAlbaPhone()) > 0) {
             throw new BusinessException(BAD_REQUEST);
         }
-        albaMapper.insertAlba(req);
+        try {
+            albaMapper.insertAlba(req);
+        } catch (DuplicateKeyException e) {
+            throw new BusinessException(BAD_REQUEST);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException(BAD_REQUEST);
+        }
     }
 
     @Transactional

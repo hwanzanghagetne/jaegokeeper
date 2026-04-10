@@ -56,16 +56,17 @@
         )
     </select>
 
-    <select id="existsByAlbaPhone" parameterType="string" resultType="int">
+    <select id="existsByAlbaPhone" resultType="int">
         SELECT COUNT(*)
         FROM alba
-        WHERE alba_phone = #{albaPhone}
+        WHERE store_id = #{storeId}
+          AND alba_phone = #{albaPhone}
+          AND is_active = b'1'
     </select>
 
-    <insert id="insertAlba" parameterType="com.jaegokeeper.alba.dto.AlbaRegisterRequest"
-            useGeneratedKeys="true" keyProperty="albaId">
-        INSERT INTO alba (store_id, alba_name, alba_phone, alba_status, created_at, image_id)
-        VALUES (#{storeId}, #{albaName}, #{albaPhone}, #{albaStatus}, NOW(), #{imageId})
+    <insert id="insertAlba" parameterType="com.jaegokeeper.alba.dto.AlbaRegisterRequest">
+        INSERT INTO alba (store_id, alba_name, alba_phone, alba_status, created_at, updated_at, is_active, image_id)
+        VALUES (#{storeId}, #{albaName}, #{albaPhone}, #{albaStatus}, NOW(), NOW(), b'1', #{imageId})
     </insert>
 
     <update id="updateAlba" parameterType="com.jaegokeeper.alba.dto.AlbaUpdateRequest">
