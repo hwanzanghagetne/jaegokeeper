@@ -1,8 +1,8 @@
 package com.jaegokeeper.request.controller;
 
+import com.jaegokeeper.auth.annotation.LoginUser;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.common.dto.PageResponse;
-import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.request.dto.request.RequestCreateBatchRequest;
 import com.jaegokeeper.request.dto.request.RequestPageRequest;
 import com.jaegokeeper.request.dto.request.RequestStatusUpdateRequest;
@@ -16,10 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-
-import static com.jaegokeeper.exception.ErrorCode.LOGIN_REQUIRED;
 
 @Api(tags = "Request")
 @RestController
@@ -34,8 +31,7 @@ public class RequestController {
     public ResponseEntity<PageResponse<RequestListResponse>> getRequests(
             @PathVariable Integer storeId,
             @Valid @ModelAttribute RequestPageRequest dto,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         return ResponseEntity.ok(requestService.getRequestList(login, storeId, dto));
     }
 
@@ -44,8 +40,7 @@ public class RequestController {
     public ResponseEntity<RequestDetailResponse> getRequestDetail(
             @PathVariable Integer storeId,
             @PathVariable Integer requestId,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         return ResponseEntity.ok(requestService.getRequestDetail(login, storeId, requestId));
     }
 
@@ -54,8 +49,7 @@ public class RequestController {
     public ResponseEntity<Integer> createRequests(
             @PathVariable Integer storeId,
             @Valid @RequestBody RequestCreateBatchRequest dto,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         int createdCount = requestService.createRequest(login, storeId, dto);
         return ResponseEntity.status(201).body(createdCount);
     }
@@ -65,8 +59,7 @@ public class RequestController {
     public ResponseEntity<Void> deleteRequest(
             @PathVariable Integer storeId,
             @PathVariable Integer requestId,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         requestService.softDeleteRequest(login, storeId, requestId);
         return ResponseEntity.noContent().build();
     }
@@ -77,8 +70,7 @@ public class RequestController {
             @PathVariable Integer storeId,
             @PathVariable Integer requestId,
             @Valid @RequestBody RequestUpdateRequest dto,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         requestService.updateRequest(login, storeId, requestId, dto);
         return ResponseEntity.noContent().build();
     }
@@ -89,17 +81,8 @@ public class RequestController {
             @PathVariable Integer storeId,
             @PathVariable Integer requestId,
             @Valid @RequestBody RequestStatusUpdateRequest dto,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         requestService.updateRequestStatus(login, storeId, requestId, dto);
         return ResponseEntity.noContent().build();
-    }
-
-    private LoginContext requireLogin(HttpSession session) {
-        LoginContext login = (session != null) ? (LoginContext) session.getAttribute("login") : null;
-        if (login == null) {
-            throw new BusinessException(LOGIN_REQUIRED);
-        }
-        return login;
     }
 }

@@ -54,7 +54,7 @@ public class RequestService {
             LocalDateTime requestDate = reqDto.getRequestDate();
 
             if (requestType == RequestType.ORDER && requestAmount < 1) {
-                throw new BusinessException(BAD_REQUEST);
+                throw new BusinessException(REQUEST_AMOUNT_INVALID);
             }
 
             Request request = Request.create(itemId, reqDto.getAlbaId(), requestType, requestAmount, requestDate);
@@ -111,7 +111,7 @@ public class RequestService {
         }
         if (dto.getRequestType() == RequestType.ORDER
                 && dto.getRequestAmount() != null && dto.getRequestAmount() < 1) {
-            throw new BusinessException(BAD_REQUEST);
+            throw new BusinessException(REQUEST_AMOUNT_INVALID);
         }
         if (dto.getAlbaId() != null
                 && albaMapper.countByStoreIdAndAlbaId(storeId, dto.getAlbaId()) != 1) {

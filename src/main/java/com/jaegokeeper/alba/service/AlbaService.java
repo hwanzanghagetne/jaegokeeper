@@ -34,12 +34,12 @@ public class AlbaService {
     private final ImageService imageService;
 
     @Transactional
-    public void saveAlbaRegister(LoginContext login, AlbaRegisterRequest req) {
-        saveAlbaRegister(login, req.getStoreId(), req);
+    public int saveAlbaRegister(LoginContext login, AlbaRegisterRequest req) {
+        return saveAlbaRegister(login, req.getStoreId(), req);
     }
 
     @Transactional
-    public void saveAlbaRegister(LoginContext login, int storeId, AlbaRegisterRequest req) {
+    public int saveAlbaRegister(LoginContext login, int storeId, AlbaRegisterRequest req) {
         validateStoreAccess(login, storeId);
         req.setStoreId(storeId);
         req.setAlbaEmail(normalizeOptionalEmail(req.getAlbaEmail()));
@@ -47,10 +47,10 @@ public class AlbaService {
             throw new BusinessException(STORE_NOT_FOUND);
         }
         if (albaMapper.existsByAlbaPhone(storeId, req.getAlbaPhone()) > 0) {
-            throw new BusinessException(BAD_REQUEST);
+            throw new BusinessException(ALBA_PHONE_DUPLICATE);
         }
         if (req.getAlbaEmail() != null && albaMapper.existsByAlbaEmail(storeId, req.getAlbaEmail()) > 0) {
-            throw new BusinessException(BAD_REQUEST);
+            throw new BusinessException(ALBA_EMAIL_DUPLICATE);
         }
         ImageInfoDTO imageDto = null;
         try {
@@ -73,7 +73,12 @@ public class AlbaService {
                 scheduleReq.setScheduleTime(scheduleTime);
                 scheduleMapper.insertSchedule(scheduleReq);
             }
-        } catch (DuplicateKeyException | DataIntegrityViolationException e) {
+
+            return req.getAlbaId();
+        } catch (DuplicateKeyException e) {
+            if (imageDto != null) imageService.deleteImageFile(imageDto.getImagePath());
+            throw new BusinessException(SCHEDULE_TIME_DUPLICATE);
+        } catch (DataIntegrityViolationException e) {
             if (imageDto != null) imageService.deleteImageFile(imageDto.getImagePath());
             throw new BusinessException(BAD_REQUEST);
         } catch (BusinessException e) {

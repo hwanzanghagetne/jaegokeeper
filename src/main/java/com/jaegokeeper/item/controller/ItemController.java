@@ -1,8 +1,8 @@
 package com.jaegokeeper.item.controller;
 
+import com.jaegokeeper.auth.annotation.LoginUser;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.common.dto.PageResponse;
-import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.item.dto.request.ItemCreateRequest;
 import com.jaegokeeper.item.dto.request.ItemPageRequest;
 import com.jaegokeeper.item.dto.request.ItemUpdateRequest;
@@ -16,10 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-
-import static com.jaegokeeper.exception.ErrorCode.LOGIN_REQUIRED;
 
 @Api(tags = "Item")
 @RestController
@@ -34,8 +31,7 @@ public class ItemController {
     public ResponseEntity<ItemCreateResponse> createItem(
             @PathVariable Integer storeId,
             @Valid @ModelAttribute ItemCreateRequest dto,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         Integer itemId = itemService.createItem(login, storeId, dto);
         return ResponseEntity.status(201).body(new ItemCreateResponse(itemId));
     }
@@ -45,8 +41,7 @@ public class ItemController {
     public ResponseEntity<PageResponse<ItemListResponse>> getItems(
             @PathVariable Integer storeId,
             @Valid @ModelAttribute ItemPageRequest dto,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         return ResponseEntity.ok(itemService.getItemList(login, storeId, dto));
     }
 
@@ -55,8 +50,7 @@ public class ItemController {
     public ResponseEntity<ItemDetailResponse> getItemDetail(
             @PathVariable Integer storeId,
             @PathVariable Integer itemId,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         return ResponseEntity.ok(itemService.getItemDetail(login, storeId, itemId));
     }
 
@@ -66,8 +60,7 @@ public class ItemController {
             @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @Valid @ModelAttribute ItemUpdateRequest dto,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         itemService.updateItem(login, storeId, itemId, dto);
         return ResponseEntity.noContent().build();
     }
@@ -77,8 +70,7 @@ public class ItemController {
     public ResponseEntity<Void> deleteItem(
             @PathVariable Integer storeId,
             @PathVariable Integer itemId,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         itemService.softDeleteItem(login, storeId, itemId);
         return ResponseEntity.noContent().build();
     }
@@ -88,17 +80,8 @@ public class ItemController {
     public ResponseEntity<Void> toggleIsPinned(
             @PathVariable Integer storeId,
             @PathVariable Integer itemId,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         itemService.toggleItemPin(login, storeId, itemId);
         return ResponseEntity.noContent().build();
-    }
-
-    private LoginContext requireLogin(HttpSession session) {
-        LoginContext login = (session != null) ? (LoginContext) session.getAttribute("login") : null;
-        if (login == null) {
-            throw new BusinessException(LOGIN_REQUIRED);
-        }
-        return login;
     }
 }

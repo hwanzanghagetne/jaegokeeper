@@ -1,22 +1,20 @@
 package com.jaegokeeper.alba.controller;
 
+import com.jaegokeeper.alba.dto.AlbaCreateResponse;
 import com.jaegokeeper.alba.dto.AlbaDetailResponse;
 import com.jaegokeeper.alba.dto.AlbaListResponse;
 import com.jaegokeeper.alba.dto.AlbaRegisterRequest;
 import com.jaegokeeper.alba.dto.AlbaUpdateRequest;
 import com.jaegokeeper.alba.service.AlbaService;
+import com.jaegokeeper.auth.annotation.LoginUser;
 import com.jaegokeeper.auth.dto.LoginContext;
-import com.jaegokeeper.exception.BusinessException;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.List;
-
-import static com.jaegokeeper.exception.ErrorCode.LOGIN_REQUIRED;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,21 +27,19 @@ public class StoreAlbaController {
     @GetMapping
     public ResponseEntity<List<AlbaListResponse>> getAlbas(
             @PathVariable int storeId,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         return ResponseEntity.ok(albaService.getAllAlbaList(login, storeId));
     }
 
     @ApiOperation(value = "스토어별 알바 등록")
     @PostMapping
-    public ResponseEntity<Void> createAlba(
+    public ResponseEntity<AlbaCreateResponse> createAlba(
             @PathVariable int storeId,
             @Valid @ModelAttribute AlbaRegisterRequest req,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         req.setStoreId(storeId);
-        albaService.saveAlbaRegister(login, storeId, req);
-        return ResponseEntity.status(201).build();
+        int albaId = albaService.saveAlbaRegister(login, storeId, req);
+        return ResponseEntity.status(201).body(new AlbaCreateResponse(albaId));
     }
 
     @ApiOperation(value = "스토어별 알바 상세 조회")
@@ -51,8 +47,7 @@ public class StoreAlbaController {
     public ResponseEntity<AlbaDetailResponse> getAlba(
             @PathVariable int storeId,
             @PathVariable int albaId,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         return ResponseEntity.ok(albaService.getAlbaById(login, storeId, albaId));
     }
 
@@ -62,8 +57,7 @@ public class StoreAlbaController {
             @PathVariable int storeId,
             @PathVariable int albaId,
             @RequestBody AlbaUpdateRequest req,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         req.setAlbaId(albaId);
         albaService.updateAlba(login, storeId, req);
         return ResponseEntity.noContent().build();
@@ -74,17 +68,8 @@ public class StoreAlbaController {
     public ResponseEntity<Void> deleteAlba(
             @PathVariable int storeId,
             @PathVariable int albaId,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         albaService.deleteAlba(login, storeId, albaId);
         return ResponseEntity.noContent().build();
-    }
-
-    private LoginContext requireLogin(HttpSession session) {
-        LoginContext login = (session != null) ? (LoginContext) session.getAttribute("login") : null;
-        if (login == null) {
-            throw new BusinessException(LOGIN_REQUIRED);
-        }
-        return login;
     }
 }

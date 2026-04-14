@@ -13,6 +13,9 @@
 
     <!-- 어노테이션 기반 MVC 활성화(UTF-8 설정 포함) -->
     <annotation-driven>
+        <argument-resolvers>
+            <beans:bean class="com.jaegokeeper.auth.utils.LoginUserArgumentResolver"/>
+        </argument-resolvers>
         <message-converters>
             <beans:bean class="org.springframework.http.converter.StringHttpMessageConverter">
                 <beans:constructor-arg value="UTF-8"/>

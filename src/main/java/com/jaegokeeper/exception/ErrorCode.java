@@ -10,6 +10,8 @@ public enum ErrorCode {
     EMAIL_CODE_INVALID(HttpStatus.BAD_REQUEST, "인증번호가 올바르지 않거나 만료되었습니다."),
     INVALID_WRITER_INFO(HttpStatus.BAD_REQUEST, "writerType, writerId가 올바르지 않습니다."),
     IMAGE_UPDATE_CONFLICT(HttpStatus.BAD_REQUEST, "removeImage와 파일 업로드는 동시에 요청할 수 없습니다."),
+    IMAGE_INVALID_FORMAT(HttpStatus.BAD_REQUEST, "허용되지 않는 이미지 형식입니다."),
+    REQUEST_AMOUNT_INVALID(HttpStatus.BAD_REQUEST, "요청 수량은 1 이상이어야 합니다."),
 
     // ==== 401 UNAUTHORIZED ====
     LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
@@ -34,6 +36,9 @@ public enum ErrorCode {
 
     // ==== 409 CONFLICT ====
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 가입된 이메일입니다."),
+    ALBA_PHONE_DUPLICATE(HttpStatus.CONFLICT, "이미 등록된 전화번호입니다."),
+    ALBA_EMAIL_DUPLICATE(HttpStatus.CONFLICT, "이미 등록된 이메일입니다."),
+    SCHEDULE_TIME_DUPLICATE(HttpStatus.CONFLICT, "이미 등록된 스케줄 시간입니다."),
     STATE_CONFLICT(HttpStatus.CONFLICT, "현재 상태에서는 처리할 수 없습니다."),
     REQUEST_STATUS_NOT_WAIT(HttpStatus.CONFLICT, "대기 상태(WAIT)인 요청만 수정할 수 있습니다."),
     STOCK_QUANTITY_NOT_ENOUGH(HttpStatus.CONFLICT, "출고 수량이 현재 재고보다 많습니다."),

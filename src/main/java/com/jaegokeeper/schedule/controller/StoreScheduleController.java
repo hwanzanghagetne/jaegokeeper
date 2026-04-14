@@ -1,7 +1,7 @@
 package com.jaegokeeper.schedule.controller;
 
+import com.jaegokeeper.auth.annotation.LoginUser;
 import com.jaegokeeper.auth.dto.LoginContext;
-import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.schedule.dto.ScheduleListResponse;
 import com.jaegokeeper.schedule.dto.ScheduleRegisterRequest;
 import com.jaegokeeper.schedule.dto.ScheduleUpdateRequest;
@@ -14,12 +14,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
-
-import static com.jaegokeeper.exception.ErrorCode.LOGIN_REQUIRED;
 
 @RestController
 @RequestMapping("/stores/{storeId}/schedules")
@@ -33,8 +30,7 @@ public class StoreScheduleController {
     public ResponseEntity<Void> createSchedule(
             @PathVariable int storeId,
             @Valid @RequestBody ScheduleRegisterRequest req,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         scheduleService.saveScheduleRegister(login, storeId, req);
         return ResponseEntity.status(201).build();
     }
@@ -45,8 +41,7 @@ public class StoreScheduleController {
             @PathVariable int storeId,
             @PathVariable int scheduleId,
             @RequestBody ScheduleUpdateRequest req,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         req.setScheduleId(scheduleId);
         scheduleService.updateSchedule(login, storeId, req);
         return ResponseEntity.noContent().build();
@@ -57,8 +52,7 @@ public class StoreScheduleController {
     public ResponseEntity<List<ScheduleListResponse>> getSchedulesByDate(
             @PathVariable int storeId,
             @RequestParam String date,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         return ResponseEntity.ok(scheduleService.getScheduleListByDate(login, storeId, date));
     }
 
@@ -68,8 +62,7 @@ public class StoreScheduleController {
             @PathVariable int storeId,
             @RequestParam int albaId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         return ResponseEntity.ok(scheduleService.selectWorkTime(login, storeId, albaId, date));
     }
 
@@ -78,8 +71,7 @@ public class StoreScheduleController {
     public ResponseEntity<Void> recordWorkIn(
             @PathVariable int storeId,
             @RequestBody WorkInOutRequest req,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         scheduleService.recordWorkIn(login, storeId, req);
         return ResponseEntity.ok().build();
     }
@@ -89,17 +81,8 @@ public class StoreScheduleController {
     public ResponseEntity<Void> recordWorkOut(
             @PathVariable int storeId,
             @RequestBody WorkInOutRequest req,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         scheduleService.recordWorkOut(login, storeId, req);
         return ResponseEntity.ok().build();
-    }
-
-    private LoginContext requireLogin(HttpSession session) {
-        LoginContext login = (session != null) ? (LoginContext) session.getAttribute("login") : null;
-        if (login == null) {
-            throw new BusinessException(LOGIN_REQUIRED);
-        }
-        return login;
     }
 }

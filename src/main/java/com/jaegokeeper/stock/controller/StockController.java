@@ -1,7 +1,7 @@
 package com.jaegokeeper.stock.controller;
 
+import com.jaegokeeper.auth.annotation.LoginUser;
 import com.jaegokeeper.auth.dto.LoginContext;
-import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.stock.dto.StockAmountUpdateRequest;
 import com.jaegokeeper.stock.dto.StockDetailResponse;
 import com.jaegokeeper.stock.dto.StockInOutRequest;
@@ -12,10 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-
-import static com.jaegokeeper.exception.ErrorCode.LOGIN_REQUIRED;
 
 @Api(tags = "Stock")
 @RestController
@@ -30,8 +27,7 @@ public class StockController {
     public ResponseEntity<StockDetailResponse> getStockDetail(
             @PathVariable Integer storeId,
             @PathVariable Integer itemId,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         return ResponseEntity.ok(stockService.getStockDetail(login, storeId, itemId));
     }
 
@@ -41,8 +37,7 @@ public class StockController {
             @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @Valid @RequestBody StockInOutRequest dto,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         stockService.inStock(login, storeId, itemId, dto);
         return ResponseEntity.noContent().build();
     }
@@ -53,8 +48,7 @@ public class StockController {
             @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @Valid @RequestBody StockInOutRequest dto,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         stockService.outStock(login, storeId, itemId, dto);
         return ResponseEntity.noContent().build();
     }
@@ -65,17 +59,8 @@ public class StockController {
             @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @Valid @RequestBody StockAmountUpdateRequest dto,
-            HttpSession session) {
-        LoginContext login = requireLogin(session);
+            @LoginUser LoginContext login) {
         stockService.updateStockAmount(login, storeId, itemId, dto);
         return ResponseEntity.noContent().build();
-    }
-
-    private LoginContext requireLogin(HttpSession session) {
-        LoginContext login = (session != null) ? (LoginContext) session.getAttribute("login") : null;
-        if (login == null) {
-            throw new BusinessException(LOGIN_REQUIRED);
-        }
-        return login;
     }
 }

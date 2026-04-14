@@ -59,7 +59,7 @@ public class ImageService {
         String originalName = sanitizeFileName(file.getOriginalFilename());
         String ext = getLowerExt(originalName);
         if (!ALLOWED_EXT.contains(ext)) {
-            throw new BusinessException(BAD_REQUEST);
+            throw new BusinessException(IMAGE_INVALID_FORMAT);
         }
 
         try {
@@ -84,7 +84,7 @@ public class ImageService {
             String mimeType = Files.probeContentType(savedPath);
             if (mimeType == null || !mimeType.startsWith("image/")) {
                 Files.deleteIfExists(savedPath);
-                throw new BusinessException(BAD_REQUEST);
+                throw new BusinessException(IMAGE_INVALID_FORMAT);
             }
 
             dto.setOriginName(originalName);

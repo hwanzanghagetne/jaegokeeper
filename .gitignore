@@ -51,3 +51,7 @@ docs/
 
 # Local toolchain
 tools/
+
+# Local DB scripts and deploy scripts (not for version control)
+db/
+scripts/
