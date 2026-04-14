@@ -26,7 +26,7 @@ public class SessionController {
         return ResponseEntity.noContent().build();
     }
 
-    // 로그미
+    // 로그인
     @ApiOperation(value = "유저정보", notes = "현재 등록된 세션 기준으로 유저 정보를 조회합니다. GET요청으로 바디X")
     @GetMapping(value="/me", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SessionResponse> me(HttpSession session) {

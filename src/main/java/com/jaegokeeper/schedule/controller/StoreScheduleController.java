@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.jaegokeeper.exception.ErrorCode.LOGIN_REQUIRED;
@@ -81,8 +80,6 @@ public class StoreScheduleController {
             @RequestBody WorkInOutRequest req,
             HttpSession session) {
         LoginContext login = requireLogin(session);
-        req.setWorkIn(LocalDateTime.now());
-        req.setWorkDate(LocalDate.now());
         scheduleService.recordWorkIn(login, storeId, req);
         return ResponseEntity.ok().build();
     }
@@ -94,8 +91,6 @@ public class StoreScheduleController {
             @RequestBody WorkInOutRequest req,
             HttpSession session) {
         LoginContext login = requireLogin(session);
-        req.setWorkOut(LocalDateTime.now());
-        req.setWorkDate(LocalDate.now());
         scheduleService.recordWorkOut(login, storeId, req);
         return ResponseEntity.ok().build();
     }

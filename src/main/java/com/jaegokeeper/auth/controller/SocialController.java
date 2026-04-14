@@ -27,12 +27,11 @@ public class SocialController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SessionResponse> complete(
             @Validated @RequestBody SocialRequest req,
-            @RequestParam(value = "redirectUrl", required = false) String redirectUrl,
             HttpServletRequest request
     ) {
         String provider = req.getProvider().name();
         int userId = socialService.complete(provider, req.getAccessToken());
-        return ResponseEntity.ok(sessionService.createSession(userId, provider, redirectUrl, request));
+        return ResponseEntity.ok(sessionService.createSession(userId, provider, request));
     }
 
 }

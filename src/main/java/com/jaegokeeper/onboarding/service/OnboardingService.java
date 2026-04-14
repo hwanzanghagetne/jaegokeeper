@@ -117,11 +117,20 @@ public class OnboardingService {
                 linked.setProviderUid(profile.getProviderUid());
                 try {
                     userAuthMapper.insertAuth(linked);
-                } catch (org.springframework.dao.DuplicateKeyException ignore) {
-                    // 동일 매핑이 이미 있으면 재삽입하지 않고 기존 유저를 사용
+                } catch (org.springframework.dao.DuplicateKeyException e) {
+                    UidDTO existingAuth = userAuthMapper.findAuthByUserAndProvider(existing.getUserId(), provider);
+                    if (existingAuth == null || !profile.getProviderUid().equals(existingAuth.getProviderUid())) {
+                        // 같은 이메일이라도 provider 계정 연결 정보가 다르면 자동 연동하지 않음
+                        throw new BusinessException(FORBIDDEN);
+                    }
                 }
                 return existing.getUserId();
             }
+        }
+
+        if (email == null || email.isEmpty()) {
+            // user.user_mail NOT NULL 스키마와 정책을 맞춰 명시적으로 실패시킴
+            throw new BusinessException(BAD_REQUEST);
         }
 
         UserDTO user = new UserDTO();

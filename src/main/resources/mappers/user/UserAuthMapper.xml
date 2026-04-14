@@ -73,6 +73,18 @@
         LIMIT 1
     </select>
 
+    <select id="findAuthByUserAndProvider" resultType="com.jaegokeeper.auth.dto.UidDTO">
+        SELECT
+            auth_id AS authId,
+            user_id AS userId,
+            provider AS provider,
+            provider_uid AS providerUid
+        FROM uid
+        WHERE user_id = #{userId}
+          AND provider = #{provider}
+        LIMIT 1
+    </select>
+
     <select id="findUserById" parameterType="java.lang.Integer" resultType="com.jaegokeeper.auth.dto.UserDTO">
         SELECT
             user_id as userId,

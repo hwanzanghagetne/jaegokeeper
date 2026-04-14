@@ -8,11 +8,34 @@
     <select id="selectAllAlba" resultType="com.jaegokeeper.alba.dto.AlbaListResponse">
         SELECT
             alba.alba_id    AS albaId,
+            alba.image_id   AS imageId,
             work.work_id    AS workId,
             work.work_status AS workStatus,
             work.work_date  AS workDate,
+            (
+                SELECT GROUP_CONCAT(
+                    DISTINCT CASE s.schedule_time
+                        WHEN 'SUNDAY' THEN '일'
+                        WHEN 'MONDAY' THEN '월'
+                        WHEN 'TUESDAY' THEN '화'
+                        WHEN 'WEDNESDAY' THEN '수'
+                        WHEN 'THURSDAY' THEN '목'
+                        WHEN 'FRIDAY' THEN '금'
+                        WHEN 'SATURDAY' THEN '토'
+                        ELSE s.schedule_time
+                    END
+                    ORDER BY FIELD(
+                        s.schedule_time,
+                        'SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'
+                    )
+                    SEPARATOR ','
+                )
+                FROM schedule s
+                WHERE s.alba_id = alba.alba_id
+            ) AS scheduleTimes,
             alba.alba_name  AS albaName,
             alba.alba_phone AS albaPhone,
+            alba.alba_email AS albaEmail,
             alba.alba_status AS albaStatus
         FROM alba
         LEFT JOIN work ON alba.alba_id = work.alba_id
@@ -26,9 +49,11 @@
 
     <select id="getAlbaById" parameterType="int" resultType="com.jaegokeeper.alba.dto.AlbaDetailResponse">
         SELECT alba_id    AS albaId,
+               image_id   AS imageId,
                store_id   AS storeId,
                alba_name  AS albaName,
                alba_phone AS albaPhone,
+               alba_email AS albaEmail,
                alba_status AS albaStatus
         FROM alba
         WHERE alba_id = #{albaId}
@@ -36,9 +61,11 @@
 
     <select id="getAlbaByStore" parameterType="int" resultType="com.jaegokeeper.alba.dto.AlbaDetailResponse">
         SELECT alba_id    AS albaId,
+               image_id   AS imageId,
                store_id   AS storeId,
                alba_name  AS albaName,
                alba_phone AS albaPhone,
+               alba_email AS albaEmail,
                alba_status AS albaStatus
         FROM alba
         WHERE store_id = #{storeId}
@@ -64,9 +91,18 @@
           AND is_active = b'1'
     </select>
 
-    <insert id="insertAlba" parameterType="com.jaegokeeper.alba.dto.AlbaRegisterRequest">
-        INSERT INTO alba (store_id, alba_name, alba_phone, alba_status, created_at, updated_at, is_active, image_id)
-        VALUES (#{storeId}, #{albaName}, #{albaPhone}, #{albaStatus}, NOW(), NOW(), b'1', #{imageId})
+    <select id="existsByAlbaEmail" resultType="int">
+        SELECT COUNT(*)
+        FROM alba
+        WHERE store_id = #{storeId}
+          AND alba_email = #{albaEmail}
+          AND is_active = b'1'
+    </select>
+
+    <insert id="insertAlba" parameterType="com.jaegokeeper.alba.dto.AlbaRegisterRequest"
+            useGeneratedKeys="true" keyProperty="albaId">
+        INSERT INTO alba (store_id, alba_name, alba_phone, alba_email, alba_status, created_at, updated_at, is_active, image_id)
+        VALUES (#{storeId}, #{albaName}, #{albaPhone}, #{albaEmail}, #{albaStatus}, NOW(), NOW(), b'1', #{imageId})
     </insert>
 
     <update id="updateAlba" parameterType="com.jaegokeeper.alba.dto.AlbaUpdateRequest">
@@ -75,6 +111,7 @@
             <if test="storeId != null">store_id = #{storeId},</if>
             <if test="albaName != null">alba_name = #{albaName},</if>
             <if test="albaPhone != null">alba_phone = #{albaPhone},</if>
+            <if test="albaEmail != null">alba_email = #{albaEmail},</if>
             <if test="albaStatus != null">alba_status = #{albaStatus},</if>
             updated_at = NOW()
         </set>

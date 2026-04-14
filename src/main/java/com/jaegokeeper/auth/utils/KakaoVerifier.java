@@ -2,16 +2,30 @@ package com.jaegokeeper.auth.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.*;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
+@Component
+@RequiredArgsConstructor
 public class KakaoVerifier implements SocialVerifier {
-    private final ObjectMapper om = new ObjectMapper();
+
+    private final RestTemplate restTemplate;
+    private final ObjectMapper om;
+
     @Override public String provider() { return "KAKAO"; }
 
     @Override
     public SocialProfile verify(String accessToken) throws Exception {
-        String json = HttpJson.get("https://kapi.kakao.com/v2/user/me", accessToken);
-        JsonNode n = om.readTree(json);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        ResponseEntity<String> res = restTemplate.exchange(
+                "https://kapi.kakao.com/v2/user/me",
+                HttpMethod.GET, new HttpEntity<>(headers), String.class
+        );
 
+        JsonNode n = om.readTree(res.getBody());
         String id = n.has("id") ? n.get("id").asText() : null;
         String nickname = null;
         String email = null;

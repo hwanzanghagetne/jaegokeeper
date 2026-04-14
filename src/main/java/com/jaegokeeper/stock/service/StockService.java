@@ -1,5 +1,6 @@
 package com.jaegokeeper.stock.service;
 
+import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.stock.dto.StockAdjustRequest;
 import com.jaegokeeper.stock.dto.StockAmountUpdateRequest;
@@ -25,7 +26,8 @@ public class StockService {
     private final BufferMapper bufferMapper;
 
     @Transactional
-    public void inStock(Integer storeId, Integer itemId, StockInOutRequest dto) {
+    public void inStock(LoginContext login, Integer storeId, Integer itemId, StockInOutRequest dto) {
+        validateStoreAccess(login, storeId);
         int updated = stockMapper.increaseQuantity(storeId, itemId, dto.getAmount());
         if (updated != 1) {
             throw new BusinessException(STOCK_NOT_FOUND);
@@ -37,7 +39,8 @@ public class StockService {
     }
 
     @Transactional
-    public void outStock(Integer storeId, Integer itemId, StockInOutRequest dto) {
+    public void outStock(LoginContext login, Integer storeId, Integer itemId, StockInOutRequest dto) {
+        validateStoreAccess(login, storeId);
         Integer existAmount = stockMapper.findStockAmountByItemId(storeId, itemId);
         if (existAmount == null) {
             throw new BusinessException(STOCK_NOT_FOUND);
@@ -53,7 +56,8 @@ public class StockService {
     }
 
     @Transactional
-    public void updateStockAmount(Integer storeId, Integer itemId, StockAmountUpdateRequest dto) {
+    public void updateStockAmount(LoginContext login, Integer storeId, Integer itemId, StockAmountUpdateRequest dto) {
+        validateStoreAccess(login, storeId);
         Integer existAmount = stockMapper.findStockAmountByItemId(storeId, itemId);
         if (existAmount == null) {
             throw new BusinessException(STOCK_NOT_FOUND);
@@ -72,7 +76,8 @@ public class StockService {
     }
 
     @Transactional
-    public void adjustStock(Integer storeId, Integer itemId, StockAdjustRequest dto) {
+    public void adjustStock(LoginContext login, Integer storeId, Integer itemId, StockAdjustRequest dto) {
+        validateStoreAccess(login, storeId);
         Integer newTargetAmount = dto.getTargetAmount();
         Integer newBufferAmount = dto.getBufferAmount();
 
@@ -118,11 +123,21 @@ public class StockService {
         }
     }
 
-    public StockDetailResponse getStockDetail(Integer storeId, Integer itemId) {
+    public StockDetailResponse getStockDetail(LoginContext login, Integer storeId, Integer itemId) {
+        validateStoreAccess(login, storeId);
         StockDetailResponse dto = stockMapper.findStockDetail(storeId, itemId);
         if (dto == null) {
             throw new BusinessException(STOCK_NOT_FOUND);
         }
         return dto;
+    }
+
+    private void validateStoreAccess(LoginContext login, Integer storeId) {
+        if (storeId == null) {
+            throw new BusinessException(BAD_REQUEST);
+        }
+        if (login.getStoreId() != storeId.intValue()) {
+            throw new BusinessException(FORBIDDEN);
+        }
     }
 }

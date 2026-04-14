@@ -1,6 +1,7 @@
 package com.jaegokeeper.request.service;
 
 import com.jaegokeeper.alba.mapper.AlbaMapper;
+import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.item.mapper.ItemMapper;
@@ -33,7 +34,8 @@ public class RequestService {
     private final AlbaMapper albaMapper;
 
     @Transactional
-    public int createRequest(Integer storeId, RequestCreateBatchRequest dto) {
+    public int createRequest(LoginContext login, Integer storeId, RequestCreateBatchRequest dto) {
+        validateStoreAccess(login, storeId);
         int createdCount = 0;
 
         for (RequestCreateRequest reqDto : dto.getRequests()) {
@@ -65,7 +67,8 @@ public class RequestService {
         return createdCount;
     }
 
-    public RequestDetailResponse getRequestDetail(Integer storeId, Integer requestId) {
+    public RequestDetailResponse getRequestDetail(LoginContext login, Integer storeId, Integer requestId) {
+        validateStoreAccess(login, storeId);
         RequestDetailResponse dto = requestMapper.findRequestDetail(storeId, requestId);
         if (dto == null) {
             throw new BusinessException(REQUEST_NOT_FOUND);
@@ -73,7 +76,8 @@ public class RequestService {
         return dto;
     }
 
-    public PageResponse<RequestListResponse> getRequestList(Integer storeId, RequestPageRequest dto) {
+    public PageResponse<RequestListResponse> getRequestList(LoginContext login, Integer storeId, RequestPageRequest dto) {
+        validateStoreAccess(login, storeId);
         int pageNum = dto.getPageValue();
         int pageSize = dto.getSizeValue();
         RequestType requestType = dto.getType();
@@ -87,7 +91,8 @@ public class RequestService {
     }
 
     @Transactional
-    public void softDeleteRequest(Integer storeId, Integer requestId) {
+    public void softDeleteRequest(LoginContext login, Integer storeId, Integer requestId) {
+        validateStoreAccess(login, storeId);
         int deleted = requestMapper.softDeleteRequest(storeId, requestId);
         if (deleted != 1) {
             throw new BusinessException(REQUEST_NOT_FOUND);
@@ -95,7 +100,8 @@ public class RequestService {
     }
 
     @Transactional
-    public void updateRequest(Integer storeId, Integer requestId, RequestUpdateRequest dto) {
+    public void updateRequest(LoginContext login, Integer storeId, Integer requestId, RequestUpdateRequest dto) {
+        validateStoreAccess(login, storeId);
         RequestStatus status = requestMapper.findRequestStatus(storeId, requestId);
         if (status == null) {
             throw new BusinessException(REQUEST_NOT_FOUND);
@@ -107,6 +113,10 @@ public class RequestService {
                 && dto.getRequestAmount() != null && dto.getRequestAmount() < 1) {
             throw new BusinessException(BAD_REQUEST);
         }
+        if (dto.getAlbaId() != null
+                && albaMapper.countByStoreIdAndAlbaId(storeId, dto.getAlbaId()) != 1) {
+            throw new BusinessException(ALBA_NOT_IN_STORE);
+        }
         int updated = requestMapper.updateRequest(storeId, requestId, dto);
         if (updated != 1) {
             throw new BusinessException(REQUEST_STATUS_NOT_WAIT);
@@ -114,7 +124,8 @@ public class RequestService {
     }
 
     @Transactional
-    public void updateRequestStatus(Integer storeId, Integer requestId, RequestStatusUpdateRequest dto) {
+    public void updateRequestStatus(LoginContext login, Integer storeId, Integer requestId, RequestStatusUpdateRequest dto) {
+        validateStoreAccess(login, storeId);
         RequestStatus status = requestMapper.findRequestStatus(storeId, requestId);
         if (status == null) {
             throw new BusinessException(REQUEST_NOT_FOUND);
@@ -122,6 +133,15 @@ public class RequestService {
         int updated = requestMapper.updateRequestStatus(storeId, requestId, status, dto.getRequestStatus());
         if (updated != 1) {
             throw new BusinessException(STATE_CONFLICT);
+        }
+    }
+
+    private void validateStoreAccess(LoginContext login, Integer storeId) {
+        if (storeId == null) {
+            throw new BusinessException(BAD_REQUEST);
+        }
+        if (login.getStoreId() != storeId.intValue()) {
+            throw new BusinessException(FORBIDDEN);
         }
     }
 }

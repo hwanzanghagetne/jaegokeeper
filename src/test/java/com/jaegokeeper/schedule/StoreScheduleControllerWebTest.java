@@ -2,7 +2,6 @@ package com.jaegokeeper.schedule;
 
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.auth.utils.SessionInterceptor;
-import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.exception.GlobalExceptionHandler;
 import com.jaegokeeper.schedule.controller.StoreScheduleController;
 import com.jaegokeeper.schedule.dto.ScheduleListResponse;
@@ -19,10 +18,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
-import static com.jaegokeeper.exception.ErrorCode.FORBIDDEN;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -59,9 +56,6 @@ public class StoreScheduleControllerWebTest {
     @Test
     public void 스토어스케줄조회_다른스토어_403() throws Exception {
         MockHttpSession session = loginSession(1);
-        doThrow(new BusinessException(FORBIDDEN))
-                .when(scheduleService)
-                .getScheduleListByDate(any(LoginContext.class), intThat(v -> v == 2), eq("2026-04-08"));
 
         mockMvc.perform(get("/stores/2/schedules")
                         .param("date", "2026-04-08")
@@ -104,10 +98,6 @@ public class StoreScheduleControllerWebTest {
     @Test
     public void 스토어스케줄수정_다른스토어_403() throws Exception {
         MockHttpSession session = loginSession(1);
-
-        doThrow(new BusinessException(FORBIDDEN))
-                .when(scheduleService)
-                .updateSchedule(any(LoginContext.class), intThat(v -> v == 2), any());
 
         mockMvc.perform(put("/stores/2/schedules/3")
                         .contentType(MediaType.APPLICATION_JSON)

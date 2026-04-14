@@ -12,5 +12,5 @@ public interface EmailAuthMapper {
     int verifyCode(@Param("email") String email,
                    @Param("code") String code);
 
-    int isVerified(@Param("email") String email);
+    Integer isVerified(@Param("email") String email);
 }

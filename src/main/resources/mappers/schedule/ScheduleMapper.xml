@@ -5,8 +5,7 @@
 
 <mapper namespace="com.jaegokeeper.schedule.mapper.ScheduleMapper">
 
-    <insert id="insertSchedule" parameterType="com.jaegokeeper.schedule.dto.ScheduleRegisterRequest"
-            useGeneratedKeys="true" keyProperty="scheduleId">
+    <insert id="insertSchedule" parameterType="com.jaegokeeper.schedule.dto.ScheduleRegisterRequest">
         INSERT INTO schedule (alba_id, schedule_time)
         VALUES (#{albaId}, #{scheduleTime})
     </insert>

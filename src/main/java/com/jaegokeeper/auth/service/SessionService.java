@@ -19,7 +19,7 @@ public class SessionService {
 
     private final UserAuthMapper userAuthMapper;
 
-    public SessionResponse createSession(int userId, String provider, String redirectUrl, HttpServletRequest request) {
+    public SessionResponse createSession(int userId, String provider, HttpServletRequest request) {
         // 1) 유저 조회 (storeId, provider 포함)
         LoginTarget target = userAuthMapper.findByUserIdForSession(userId);
         if (target == null) {
@@ -38,12 +38,7 @@ public class SessionService {
                 provider
         ));
 
-        if (redirectUrl == null || !redirectUrl.startsWith("/")) {
-            redirectUrl = "/";
-        }
-
         return SessionResponse.builder()
-                .redirectUrl(redirectUrl)
                 .userId(target.getUserId())
                 .storeId(target.getStoreId())
                 .userName(target.getUserName())

@@ -5,9 +5,7 @@ import com.jaegokeeper.alba.dto.AlbaListResponse;
 import com.jaegokeeper.alba.service.AlbaService;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.auth.utils.SessionInterceptor;
-import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.exception.GlobalExceptionHandler;
-import com.jaegokeeper.image.service.ImageService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,10 +18,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
-import static com.jaegokeeper.exception.ErrorCode.FORBIDDEN;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -38,14 +34,11 @@ public class StoreAlbaControllerWebTest {
     @Mock
     private AlbaService albaService;
 
-    @Mock
-    private ImageService imageService;
-
     private MockMvc mockMvc;
 
     @Before
     public void setUp() {
-        StoreAlbaController controller = new StoreAlbaController(albaService, imageService);
+        StoreAlbaController controller = new StoreAlbaController(albaService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .addInterceptors(new SessionInterceptor())
                 .setControllerAdvice(new GlobalExceptionHandler())
@@ -64,9 +57,6 @@ public class StoreAlbaControllerWebTest {
     @Test
     public void 스토어알바목록_다른스토어_403() throws Exception {
         MockHttpSession session = loginSession(1);
-        doThrow(new BusinessException(FORBIDDEN))
-                .when(albaService)
-                .getAllAlbaList(any(LoginContext.class), intThat(v -> v == 2));
 
         mockMvc.perform(get("/stores/2/albas").session(session))
                 .andExpect(status().isForbidden())
@@ -102,10 +92,6 @@ public class StoreAlbaControllerWebTest {
     @Test
     public void 스토어알바수정_다른스토어_403() throws Exception {
         MockHttpSession session = loginSession(1);
-
-        doThrow(new BusinessException(FORBIDDEN))
-                .when(albaService)
-                .updateAlba(any(LoginContext.class), intThat(v -> v == 2), any());
 
         mockMvc.perform(put("/stores/2/albas/11")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -1,5 +1,6 @@
 package com.jaegokeeper.item.service;
 
+import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.stock.dto.StockAdjustRequest;
@@ -35,33 +36,43 @@ public class ItemService {
     private final ImageService imgService;
 
     @Transactional
-    public Integer createItem(Integer storeId, ItemCreateRequest dto) {
+    public Integer createItem(LoginContext login, Integer storeId, ItemCreateRequest dto) {
+        validateStoreAccess(login, storeId);
         if (!storeMapper.existsById(storeId)) {
             throw new BusinessException(STORE_NOT_FOUND);
         }
 
-        Integer imageId = uploadImageIfPresent(dto);
-        Item item = Item.create(storeId, dto.getItemName(), imageId);
+        ImageInfoDTO uploadedImage = uploadImageDtoIfPresent(dto);
+        Integer imageId = (uploadedImage != null) ? uploadedImage.getImageId() : null;
+        try {
+            Item item = Item.create(storeId, dto.getItemName(), imageId);
 
-        int insertedItem = itemMapper.insertItem(item);
-        if (insertedItem != 1) {
+            int insertedItem = itemMapper.insertItem(item);
+            if (insertedItem != 1) {
+                throw new BusinessException(INTERNAL_ERROR);
+            }
+
+            stockService.initStock(item.getItemId(), dto.getStockAmount());
+
+            return item.getItemId();
+        } catch (Exception e) {
+            if (uploadedImage != null) imgService.deleteImageFile(uploadedImage.getImagePath());
+            if (e instanceof BusinessException) throw (BusinessException) e;
             throw new BusinessException(INTERNAL_ERROR);
         }
-
-        stockService.initStock(item.getItemId(), dto.getStockAmount());
-
-        return item.getItemId();
     }
 
     @Transactional
-    public void softDeleteItem(Integer storeId, Integer itemId) {
+    public void softDeleteItem(LoginContext login, Integer storeId, Integer itemId) {
+        validateStoreAccess(login, storeId);
         int updated = itemMapper.softDeleteItem(storeId, itemId);
         if (updated != 1) {
             throw new BusinessException(ITEM_NOT_FOUND);
         }
     }
 
-    public PageResponse<ItemListResponse> getItemList(Integer storeId, ItemPageRequest dto) {
+    public PageResponse<ItemListResponse> getItemList(LoginContext login, Integer storeId, ItemPageRequest dto) {
+        validateStoreAccess(login, storeId);
         int pageNum = dto.getPageValue();
         int pageSize = dto.getSizeValue();
         String keyword = dto.getKeywordValue();
@@ -75,7 +86,8 @@ public class ItemService {
         return PageResponse.of(content, pageNum, pageSize, totalElements);
     }
 
-    public ItemDetailResponse getItemDetail(Integer storeId, Integer itemId) {
+    public ItemDetailResponse getItemDetail(LoginContext login, Integer storeId, Integer itemId) {
+        validateStoreAccess(login, storeId);
         ItemDetailResponse dto = itemMapper.findItemDetail(storeId, itemId);
         if (dto == null) {
             throw new BusinessException(ITEM_NOT_FOUND);
@@ -84,7 +96,8 @@ public class ItemService {
     }
 
     @Transactional
-    public void updateItem(Integer storeId, Integer itemId, ItemUpdateRequest dto) {
+    public void updateItem(LoginContext login, Integer storeId, Integer itemId, ItemUpdateRequest dto) {
+        validateStoreAccess(login, storeId);
         boolean wantsRemove = Boolean.TRUE.equals(dto.getRemoveImage());
         Integer newImageId = resolveImageIdForUpdate(dto.getFile(), dto.getRemoveImage(), dto);
 
@@ -102,21 +115,24 @@ public class ItemService {
 
         if (dto.getTargetAmount() != null || dto.getBufferAmount() != null) {
             StockAdjustRequest stockAdjustRequest = new StockAdjustRequest(dto.getTargetAmount(), dto.getBufferAmount());
-            stockService.adjustStock(storeId, itemId, stockAdjustRequest);
+            stockService.adjustStock(login, storeId, itemId, stockAdjustRequest);
         }
     }
 
     @Transactional
-    public void toggleItemPin(Integer storeId, Integer itemId) {
+    public void toggleItemPin(LoginContext login, Integer storeId, Integer itemId) {
+        validateStoreAccess(login, storeId);
         int updated = itemMapper.togglePin(storeId, itemId);
         if (updated == 0) {
             throw new BusinessException(ITEM_NOT_FOUND);
         }
     }
 
-    private Integer uploadImageIfPresent(ImageInfoDTO dto) {
+    // 업로드 후 실패 시 파일 경로가 필요하므로 ImageInfoDTO 자체를 반환한다.
+    private ImageInfoDTO uploadImageDtoIfPresent(ImageInfoDTO dto) {
         if (dto.getFile() == null || dto.getFile().isEmpty()) return null;
-        return imgService.uploadImg(dto);
+        imgService.uploadImg(dto); // dto에 imagePath, imageId가 세팅됨
+        return dto;
     }
 
     private Integer resolveImageIdForUpdate(MultipartFile file, Boolean removeImage, ImageInfoDTO dto) {
@@ -127,5 +143,14 @@ public class ItemService {
         }
         if (!hasFile) return null;
         return imgService.uploadImg(dto);
+    }
+
+    private void validateStoreAccess(LoginContext login, Integer storeId) {
+        if (storeId == null) {
+            throw new BusinessException(BAD_REQUEST);
+        }
+        if (login.getStoreId() != storeId.intValue()) {
+            throw new BusinessException(FORBIDDEN);
+        }
     }
 }

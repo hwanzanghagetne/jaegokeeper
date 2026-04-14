@@ -41,8 +41,8 @@ public class EmailAuthService {
     }
 
     public void assertVerified(String email) {
-        int verified = emailAuthMapper.isVerified(email);
-        if (verified != 1) {
+        Integer verified = emailAuthMapper.isVerified(email);
+        if (verified == null || verified != 1) {
             throw new BusinessException(EMAIL_NOT_VERIFIED);
         }
     }

@@ -47,6 +47,17 @@
         <url-pattern>/</url-pattern>
     </servlet-mapping>
 
+    <!-- 세션 설정 -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+        <cookie-config>
+            <http-only>true</http-only>
+            <!-- secure는 HTTPS 구성 후 true로 변경 -->
+            <secure>false</secure>
+        </cookie-config>
+        <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
+
     <!-- welcome-file-list를 비워서 컨트롤러가 우선하도록 설정 -->
     <welcome-file-list>
     </welcome-file-list>

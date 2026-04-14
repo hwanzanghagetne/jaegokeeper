@@ -21,4 +21,9 @@ public interface UserAuthMapper {
 
     UserDTO findUserByEmail(@Param("email") String email);
 
+    UidDTO findAuthByUserAndProvider(
+            @Param("userId") int userId,
+            @Param("provider") String provider
+    );
+
 }

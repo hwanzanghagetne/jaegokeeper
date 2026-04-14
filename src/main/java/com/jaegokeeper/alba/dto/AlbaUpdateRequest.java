@@ -13,4 +13,5 @@ public class AlbaUpdateRequest {
     private String albaName;
     private String albaPhone;
     private String albaStatus;
+    private String albaEmail;
 }

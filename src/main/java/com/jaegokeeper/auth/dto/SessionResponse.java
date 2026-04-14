@@ -10,6 +10,5 @@ public class SessionResponse {
     private Integer userId;
     private Integer storeId;
     private String userName;
-    private String redirectUrl;
     private String provider;
 }

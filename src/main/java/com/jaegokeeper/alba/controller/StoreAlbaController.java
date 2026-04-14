@@ -7,8 +7,6 @@ import com.jaegokeeper.alba.dto.AlbaUpdateRequest;
 import com.jaegokeeper.alba.service.AlbaService;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.exception.BusinessException;
-import com.jaegokeeper.image.dto.ImageInfoDTO;
-import com.jaegokeeper.image.service.ImageService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +24,6 @@ import static com.jaegokeeper.exception.ErrorCode.LOGIN_REQUIRED;
 public class StoreAlbaController {
 
     private final AlbaService albaService;
-    private final ImageService imageService;
 
     @ApiOperation(value = "스토어별 알바 목록 조회")
     @GetMapping
@@ -45,12 +42,6 @@ public class StoreAlbaController {
             HttpSession session) {
         LoginContext login = requireLogin(session);
         req.setStoreId(storeId);
-        if (req.getFile() != null && !req.getFile().isEmpty()) {
-            ImageInfoDTO imageDto = new ImageInfoDTO();
-            imageDto.setFile(req.getFile());
-            int imageId = imageService.uploadImg(imageDto);
-            req.setImageId(imageId);
-        }
         albaService.saveAlbaRegister(login, storeId, req);
         return ResponseEntity.status(201).build();
     }

@@ -1,8 +1,10 @@
 package com.jaegokeeper.auth.utils;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("test")
 public class TestVerifier implements SocialVerifier {
     @Override public String provider() { return "TEST"; }
 

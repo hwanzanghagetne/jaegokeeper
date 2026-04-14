@@ -28,11 +28,10 @@ public class LocalController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SessionResponse> login(
             @Validated @RequestBody LoginRequest req,
-            @RequestParam(value = "redirectUrl", required = false) String redirectUrl,
             HttpServletRequest request
     ) {
         int userId = localService.login(req);
-        return ResponseEntity.ok(sessionService.createSession(userId, "LOCAL", redirectUrl, request));
+        return ResponseEntity.ok(sessionService.createSession(userId, "LOCAL", request));
     }
 
 }

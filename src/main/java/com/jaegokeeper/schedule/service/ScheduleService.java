@@ -18,6 +18,7 @@ import static com.jaegokeeper.exception.ErrorCode.*;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -82,6 +83,8 @@ public class ScheduleService {
 
     public void recordWorkIn(LoginContext login, int storeId, WorkInOutRequest req) {
         validateAlbaAccess(login, storeId, req.getAlbaId());
+        req.setWorkIn(LocalDateTime.now());
+        req.setWorkDate(LocalDate.now());
         scheduleMapper.insertWorkIn(req);
     }
 
@@ -91,6 +94,8 @@ public class ScheduleService {
 
     public void recordWorkOut(LoginContext login, int storeId, WorkInOutRequest req) {
         validateAlbaAccess(login, storeId, req.getAlbaId());
+        req.setWorkOut(LocalDateTime.now());
+        req.setWorkDate(LocalDate.now());
         int updated = scheduleMapper.updateWorkOut(req);
         if (updated == 0) {
             throw new BusinessException(STATE_CONFLICT);

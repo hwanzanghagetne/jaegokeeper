@@ -35,7 +35,7 @@ public class ImageController {
         ImageInfoDTO info = imageService.findImgById(imageId);
 
         try {
-            Path path = Paths.get(info.getImagePath());
+            Path path = imageService.resolveImagePath(info.getImagePath());
             if (!Files.exists(path)) {
                 return ResponseEntity.notFound().build();
             }
