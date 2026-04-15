@@ -19,6 +19,15 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Ensure Maven installed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v mvn >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y maven
+          fi
+
       - name: Build WAR
         run: |
           mvn -B clean package -DskipTests
