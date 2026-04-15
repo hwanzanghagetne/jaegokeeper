@@ -2,12 +2,13 @@ name: Deploy to EC2
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, ec2]
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
 
     steps:
       - uses: actions/checkout@v4
@@ -18,16 +19,43 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Set up SSH key
+      - name: Build WAR
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key.pem
-          chmod 600 ~/.ssh/deploy_key.pem
-          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+          mvn -B clean package -DskipTests
 
-      - name: Deploy
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_KEY: $HOME/.ssh/deploy_key.pem
-          SKIP_TESTS: "true"
-        run: bash scripts/deploy_ec2.sh
+      - name: Deploy to Tomcat
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TOMCAT_HOME="/home/ubuntu/apache-tomcat-9.0.98"
+          WAR_PATH="${GITHUB_WORKSPACE}/target/JaegoKeeper.war"
+          ROOT_WAR="${TOMCAT_HOME}/webapps/ROOT.war"
+          ROOT_DIR="${TOMCAT_HOME}/webapps/ROOT"
+          BACKUP_WAR="${TOMCAT_HOME}/webapps/ROOT.war.bak.$(date +%Y%m%d_%H%M%S)"
+          HEALTHCHECK_URL="http://127.0.0.1/"
+
+          test -f "${WAR_PATH}"
+
+          if [[ -f "${ROOT_WAR}" ]]; then
+            cp "${ROOT_WAR}" "${BACKUP_WAR}"
+          fi
+
+          "${TOMCAT_HOME}/bin/shutdown.sh" || true
+          sleep 3
+
+          rm -rf "${ROOT_DIR}"
+          cp "${WAR_PATH}" "${ROOT_WAR}"
+
+          "${TOMCAT_HOME}/bin/startup.sh"
+
+          for i in $(seq 1 40); do
+            if curl -fsS "${HEALTHCHECK_URL}" > /dev/null 2>&1; then
+              echo "Health check OK: ${HEALTHCHECK_URL}"
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Health check failed: ${HEALTHCHECK_URL}"
+          exit 1
