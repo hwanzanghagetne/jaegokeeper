@@ -101,21 +101,26 @@ public class ItemService {
         boolean wantsRemove = Boolean.TRUE.equals(dto.getRemoveImage());
         Integer newImageId = resolveImageIdForUpdate(dto.getFile(), dto.getRemoveImage(), dto);
 
-        ItemUpdateParamImg updateItem = new ItemUpdateParamImg(
-                dto.getItemName(),
-                dto.getIsPinned(),
-                newImageId,
-                wantsRemove ? true : null
-        );
+        try {
+            ItemUpdateParamImg updateItem = new ItemUpdateParamImg(
+                    dto.getItemName(),
+                    dto.getIsPinned(),
+                    newImageId,
+                    wantsRemove ? true : null
+            );
 
-        int itemUpdated = itemMapper.updateItem(storeId, itemId, updateItem);
-        if (itemUpdated != 1) {
-            throw new BusinessException(ITEM_NOT_FOUND);
-        }
+            int itemUpdated = itemMapper.updateItem(storeId, itemId, updateItem);
+            if (itemUpdated != 1) {
+                throw new BusinessException(ITEM_NOT_FOUND);
+            }
 
-        if (dto.getTargetAmount() != null || dto.getBufferAmount() != null) {
-            StockAdjustRequest stockAdjustRequest = new StockAdjustRequest(dto.getTargetAmount(), dto.getBufferAmount());
-            stockService.adjustStock(login, storeId, itemId, stockAdjustRequest);
+            if (dto.getTargetAmount() != null || dto.getBufferAmount() != null) {
+                StockAdjustRequest stockAdjustRequest = new StockAdjustRequest(dto.getTargetAmount(), dto.getBufferAmount());
+                stockService.adjustStock(login, storeId, itemId, stockAdjustRequest);
+            }
+        } catch (Exception e) {
+            if (newImageId != null) imgService.deleteImageFile(dto.getImagePath());
+            throw e;
         }
     }
 

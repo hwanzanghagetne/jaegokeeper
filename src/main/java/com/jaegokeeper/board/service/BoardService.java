@@ -96,17 +96,22 @@ public class BoardService {
         boolean wantsRemove = Boolean.TRUE.equals(dto.getRemoveImage());
         Integer newImageId = resolveImageIdForUpdate(dto.getFile(), dto.getRemoveImage(), dto);
 
-        BoardUpdateParamImg updateBoard = new BoardUpdateParamImg(
-                dto.getTitle(),
-                dto.getContent(),
-                writer,
-                newImageId,
-                wantsRemove ? true : null
-        );
+        try {
+            BoardUpdateParamImg updateBoard = new BoardUpdateParamImg(
+                    dto.getTitle(),
+                    dto.getContent(),
+                    writer,
+                    newImageId,
+                    wantsRemove ? true : null
+            );
 
-        int updatedBoard = boardMapper.updateBoardImg(storeId, boardId, updateBoard);
-        if (updatedBoard != 1) {
-            throw new BusinessException(BOARD_NOT_FOUND);
+            int updatedBoard = boardMapper.updateBoardImg(storeId, boardId, updateBoard);
+            if (updatedBoard != 1) {
+                throw new BusinessException(BOARD_NOT_FOUND);
+            }
+        } catch (Exception e) {
+            if (newImageId != null) imgService.deleteImageFile(dto.getImagePath());
+            throw e;
         }
     }
 

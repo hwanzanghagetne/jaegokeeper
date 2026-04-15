@@ -38,7 +38,7 @@
             alba.alba_email AS albaEmail,
             alba.alba_status AS albaStatus
         FROM alba
-        LEFT JOIN work ON alba.alba_id = work.alba_id
+        LEFT JOIN work ON alba.alba_id = work.alba_id AND DATE(work.work_date) = CURDATE()
         <where>
             <if test="storeId != null">
                 alba.store_id = #{storeId}
