@@ -34,6 +34,9 @@ jobs:
 
       - name: Deploy to Tomcat
         shell: bash
+        env:
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
         run: |
           set -euo pipefail
 
