@@ -59,7 +59,7 @@ jobs:
           rm -rf "${ROOT_DIR}"
           cp "${WAR_PATH}" "${ROOT_WAR}"
 
-          "${TOMCAT_HOME}/bin/startup.sh"
+          env -u RUNNER_TRACKING_ID "${TOMCAT_HOME}/bin/startup.sh"
 
           for i in $(seq 1 40); do
             if curl -fsS "${HEALTHCHECK_URL}" > /dev/null 2>&1; then
