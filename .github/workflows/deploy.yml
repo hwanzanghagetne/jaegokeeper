@@ -1,6 +1,14 @@
 name: Deploy to EC2
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - '.github/workflows/deploy.yml'
+      - 'scripts/**'
   workflow_dispatch:
 
 jobs:
@@ -27,6 +35,10 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y maven
           fi
+
+      - name: Test
+        run: |
+          mvn -B test
 
       - name: Build WAR
         run: |
