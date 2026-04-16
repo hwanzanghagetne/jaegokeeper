@@ -1,5 +1,6 @@
 package com.jaegokeeper.exception;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -90,6 +91,17 @@ public class GlobalExceptionHandler {
 
         log.warn("[BAD_REQUEST] (NotReadable) method={} uri={} param={}",
                 request.getMethod(), request.getRequestURI(), request.getParameterMap());
+
+        if (e.getCause() instanceof InvalidFormatException ife
+                && ife.getTargetType() != null
+                && ife.getTargetType().isEnum()) {
+            ErrorResponse response = new ErrorResponse(
+                    PROVIDER_INVALID.name(),
+                    PROVIDER_INVALID.getMessage(),
+                    null
+            );
+            return ResponseEntity.status(PROVIDER_INVALID.getStatus()).body(response);
+        }
 
         ErrorResponse response = new ErrorResponse(
                 BAD_REQUEST.name(),

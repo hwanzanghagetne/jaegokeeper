@@ -10,9 +10,11 @@ import javax.validation.constraints.*;
 @NoArgsConstructor
 public class OwnerSignUpRequest {
 
+    @NotNull(message = "account 정보는 필수입니다")
     @Valid
     private AccountInfo account;
 
+    @NotNull(message = "store 정보는 필수입니다")
     @Valid
     private StoreInfo store;
 

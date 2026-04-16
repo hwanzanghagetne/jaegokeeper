@@ -33,6 +33,7 @@ public class BoardService {
     private final BoardMapper boardMapper;
     private final AlbaMapper albaMapper2;
 
+    @Transactional(readOnly = true)
     public PageResponse<BoardListResponse> getBoardList(Integer storeId, BoardPageRequest dto) {
 
         int page = dto.getPageValue();
@@ -49,6 +50,7 @@ public class BoardService {
         return PageResponse.of(content, page, size, totalElements);
     }
 
+    @Transactional(readOnly = true)
     public BoardDetailResponse getBoardDetail(Integer storeId, Integer boardId) {
         BoardDetailResponse dto = boardMapper.getBoardDetail(storeId, boardId);
         if (dto == null) {
@@ -75,9 +77,14 @@ public class BoardService {
                 dto.getContent(),
                 writer,
                 imageId);
-        int insertedBoard = boardMapper.insertBoard(board);
-        if (insertedBoard != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
+        try {
+            int insertedBoard = boardMapper.insertBoard(board);
+            if (insertedBoard != 1) {
+                throw new BusinessException(INTERNAL_ERROR);
+            }
+        } catch (Exception e) {
+            if (imageId != null) imgService.deleteImageFile(dto.getImagePath());
+            throw e;
         }
         return board.getBoardId();
     }

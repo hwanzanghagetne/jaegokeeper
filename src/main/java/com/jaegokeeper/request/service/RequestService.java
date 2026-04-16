@@ -67,6 +67,7 @@ public class RequestService {
         return createdCount;
     }
 
+    @Transactional(readOnly = true)
     public RequestDetailResponse getRequestDetail(LoginContext login, Integer storeId, Integer requestId) {
         validateStoreAccess(login, storeId);
         RequestDetailResponse dto = requestMapper.findRequestDetail(storeId, requestId);
@@ -76,6 +77,7 @@ public class RequestService {
         return dto;
     }
 
+    @Transactional(readOnly = true)
     public PageResponse<RequestListResponse> getRequestList(LoginContext login, Integer storeId, RequestPageRequest dto) {
         validateStoreAccess(login, storeId);
         int pageNum = dto.getPageValue();

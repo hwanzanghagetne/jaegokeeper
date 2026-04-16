@@ -9,9 +9,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
@@ -20,7 +22,7 @@ public class UserController {
     @PutMapping("/{userId}")
     public ResponseEntity<Void> updateUser(
             @PathVariable int userId,
-            @RequestBody UserUpdateRequest userDto,
+            @Valid @RequestBody UserUpdateRequest userDto,
             @LoginUser LoginContext login) {
         userService.updateUser(login, userId, userDto);
         return ResponseEntity.noContent().build();

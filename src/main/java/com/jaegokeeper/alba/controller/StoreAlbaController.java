@@ -56,7 +56,7 @@ public class StoreAlbaController {
     public ResponseEntity<Void> updateAlba(
             @PathVariable int storeId,
             @PathVariable int albaId,
-            @RequestBody AlbaUpdateRequest req,
+            @Valid @RequestBody AlbaUpdateRequest req,
             @LoginUser LoginContext login) {
         req.setAlbaId(albaId);
         albaService.updateAlba(login, storeId, req);

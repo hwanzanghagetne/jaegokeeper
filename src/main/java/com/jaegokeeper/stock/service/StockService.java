@@ -41,10 +41,7 @@ public class StockService {
     @Transactional
     public void outStock(LoginContext login, Integer storeId, Integer itemId, StockInOutRequest dto) {
         validateStoreAccess(login, storeId);
-        Integer existAmount = stockMapper.findStockAmountByItemId(storeId, itemId);
-        if (existAmount == null) {
-            throw new BusinessException(STOCK_NOT_FOUND);
-        }
+        findStockAmountOrThrow(storeId, itemId);
         int updated = stockMapper.decreaseQuantity(storeId, itemId, dto.getAmount());
         if (updated != 1) {
             throw new BusinessException(STOCK_QUANTITY_NOT_ENOUGH);
@@ -58,10 +55,7 @@ public class StockService {
     @Transactional
     public void updateStockAmount(LoginContext login, Integer storeId, Integer itemId, StockAmountUpdateRequest dto) {
         validateStoreAccess(login, storeId);
-        Integer existAmount = stockMapper.findStockAmountByItemId(storeId, itemId);
-        if (existAmount == null) {
-            throw new BusinessException(STOCK_NOT_FOUND);
-        }
+        int existAmount = findStockAmountOrThrow(storeId, itemId);
         if (dto.getStockAmount().equals(existAmount)) {
             return;
         }
@@ -86,10 +80,7 @@ public class StockService {
         }
 
         if (newTargetAmount != null) {
-            Integer existAmount = stockMapper.findStockAmountByItemId(storeId, itemId);
-            if (existAmount == null) {
-                throw new BusinessException(STOCK_NOT_FOUND);
-            }
+            int existAmount = findStockAmountOrThrow(storeId, itemId);
             int updatedStock = stockMapper.updateStockAmount(storeId, itemId, newTargetAmount);
             if (updatedStock != 1) {
                 throw new BusinessException(STOCK_NOT_FOUND);
@@ -123,6 +114,7 @@ public class StockService {
         }
     }
 
+    @Transactional(readOnly = true)
     public StockDetailResponse getStockDetail(LoginContext login, Integer storeId, Integer itemId) {
         validateStoreAccess(login, storeId);
         StockDetailResponse dto = stockMapper.findStockDetail(storeId, itemId);
@@ -130,6 +122,14 @@ public class StockService {
             throw new BusinessException(STOCK_NOT_FOUND);
         }
         return dto;
+    }
+
+    private int findStockAmountOrThrow(Integer storeId, Integer itemId) {
+        Integer amount = stockMapper.findStockAmountByItemId(storeId, itemId);
+        if (amount == null) {
+            throw new BusinessException(STOCK_NOT_FOUND);
+        }
+        return amount;
     }
 
     private void validateStoreAccess(LoginContext login, Integer storeId) {

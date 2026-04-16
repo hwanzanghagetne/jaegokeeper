@@ -40,7 +40,7 @@ public class StoreScheduleController {
     public ResponseEntity<Void> updateSchedule(
             @PathVariable int storeId,
             @PathVariable int scheduleId,
-            @RequestBody ScheduleUpdateRequest req,
+            @Valid @RequestBody ScheduleUpdateRequest req,
             @LoginUser LoginContext login) {
         req.setScheduleId(scheduleId);
         scheduleService.updateSchedule(login, storeId, req);
@@ -70,7 +70,7 @@ public class StoreScheduleController {
     @PostMapping("/workin")
     public ResponseEntity<Void> recordWorkIn(
             @PathVariable int storeId,
-            @RequestBody WorkInOutRequest req,
+            @Valid @RequestBody WorkInOutRequest req,
             @LoginUser LoginContext login) {
         scheduleService.recordWorkIn(login, storeId, req);
         return ResponseEntity.ok().build();
@@ -80,7 +80,7 @@ public class StoreScheduleController {
     @PostMapping("/workout")
     public ResponseEntity<Void> recordWorkOut(
             @PathVariable int storeId,
-            @RequestBody WorkInOutRequest req,
+            @Valid @RequestBody WorkInOutRequest req,
             @LoginUser LoginContext login) {
         scheduleService.recordWorkOut(login, storeId, req);
         return ResponseEntity.ok().build();

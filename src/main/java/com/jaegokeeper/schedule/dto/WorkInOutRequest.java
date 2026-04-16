@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -13,7 +14,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class WorkInOutRequest {
 
+    @NotNull(message = "albaId는 필수입니다")
     private Integer albaId;
+
     private String workStatus;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

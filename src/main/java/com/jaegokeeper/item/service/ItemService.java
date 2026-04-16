@@ -71,6 +71,7 @@ public class ItemService {
         }
     }
 
+    @Transactional(readOnly = true)
     public PageResponse<ItemListResponse> getItemList(LoginContext login, Integer storeId, ItemPageRequest dto) {
         validateStoreAccess(login, storeId);
         int pageNum = dto.getPageValue();
@@ -86,6 +87,7 @@ public class ItemService {
         return PageResponse.of(content, pageNum, pageSize, totalElements);
     }
 
+    @Transactional(readOnly = true)
     public ItemDetailResponse getItemDetail(LoginContext login, Integer storeId, Integer itemId) {
         validateStoreAccess(login, storeId);
         ItemDetailResponse dto = itemMapper.findItemDetail(storeId, itemId);

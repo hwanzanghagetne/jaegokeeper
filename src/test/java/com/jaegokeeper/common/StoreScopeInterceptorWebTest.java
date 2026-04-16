@@ -1,6 +1,7 @@
 package com.jaegokeeper.common;
 
 import com.jaegokeeper.auth.dto.LoginContext;
+import com.jaegokeeper.auth.utils.LoginUserArgumentResolver;
 import com.jaegokeeper.auth.utils.SessionInterceptor;
 import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.exception.GlobalExceptionHandler;
@@ -41,6 +42,7 @@ public class StoreScopeInterceptorWebTest {
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .addInterceptors(new SessionInterceptor())
                 .setControllerAdvice(new GlobalExceptionHandler())
+                .setCustomArgumentResolvers(new LoginUserArgumentResolver())
                 .build();
     }
 

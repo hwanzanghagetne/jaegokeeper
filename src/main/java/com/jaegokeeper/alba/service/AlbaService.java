@@ -115,6 +115,7 @@ public class AlbaService {
         }
     }
 
+    @Transactional(readOnly = true)
     public AlbaDetailResponse getAlbaByStore(int storeId) {
         AlbaDetailResponse alba = albaMapper.getAlbaByStore(storeId);
         if (alba == null) {
@@ -123,10 +124,12 @@ public class AlbaService {
         return alba;
     }
 
+    @Transactional(readOnly = true)
     public AlbaDetailResponse getAlbaById(LoginContext login, int albaId) {
         return getAlbaById(login, login.getStoreId(), albaId);
     }
 
+    @Transactional(readOnly = true)
     public AlbaDetailResponse getAlbaById(LoginContext login, int storeId, int albaId) {
         validateAlbaAccess(login, storeId, albaId);
         AlbaDetailResponse alba = albaMapper.getAlbaById(albaId);
@@ -136,12 +139,14 @@ public class AlbaService {
         return alba;
     }
 
+    @Transactional(readOnly = true)
     public List<AlbaListResponse> getAllAlbaList(LoginContext login, Integer storeId) {
         int targetStoreId = (storeId != null) ? storeId : login.getStoreId();
         validateStoreAccess(login, targetStoreId);
         return albaMapper.selectAllAlba(targetStoreId);
     }
 
+    @Transactional(readOnly = true)
     public List<AlbaListResponse> getAllAlbaList(LoginContext login, int storeId) {
         return getAllAlbaList(login, Integer.valueOf(storeId));
     }

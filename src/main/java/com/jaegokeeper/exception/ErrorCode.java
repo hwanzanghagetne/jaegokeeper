@@ -6,6 +6,7 @@ public enum ErrorCode {
 
     // ==== 400 BAD_REQUEST ====
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "요청 값이 올바르지 않습니다."),
+    PROVIDER_INVALID(HttpStatus.BAD_REQUEST, "지원하지 않는 소셜 로그인 제공자입니다."),
     REGISTER_FAILED(HttpStatus.BAD_REQUEST, "회원가입 처리에 실패했습니다."),
     EMAIL_CODE_INVALID(HttpStatus.BAD_REQUEST, "인증번호가 올바르지 않거나 만료되었습니다."),
     INVALID_WRITER_INFO(HttpStatus.BAD_REQUEST, "writerType, writerId가 올바르지 않습니다."),
