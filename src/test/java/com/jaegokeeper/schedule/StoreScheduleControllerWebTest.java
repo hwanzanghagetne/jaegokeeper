@@ -1,6 +1,7 @@
 package com.jaegokeeper.schedule;
 
 import com.jaegokeeper.auth.dto.LoginContext;
+import com.jaegokeeper.auth.utils.LoginUserArgumentResolver;
 import com.jaegokeeper.auth.utils.SessionInterceptor;
 import com.jaegokeeper.exception.GlobalExceptionHandler;
 import com.jaegokeeper.schedule.controller.StoreScheduleController;
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,6 +43,7 @@ public class StoreScheduleControllerWebTest {
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .addInterceptors(new SessionInterceptor())
                 .setControllerAdvice(new GlobalExceptionHandler())
+                .setCustomArgumentResolvers(new LoginUserArgumentResolver())
                 .build();
     }
 
@@ -62,6 +65,8 @@ public class StoreScheduleControllerWebTest {
                         .session(session))
                 .andExpect(status().isForbidden())
                 .andExpect(content().string(containsString("\"code\":\"FORBIDDEN\"")));
+
+        verifyNoInteractions(scheduleService);
     }
 
     @Test
@@ -105,6 +110,22 @@ public class StoreScheduleControllerWebTest {
                         .session(session))
                 .andExpect(status().isForbidden())
                 .andExpect(content().string(containsString("\"code\":\"FORBIDDEN\"")));
+
+        verifyNoInteractions(scheduleService);
+    }
+
+    @Test
+    public void 출근기록_albaId누락_400() throws Exception {
+        MockHttpSession session = loginSession(1);
+
+        mockMvc.perform(post("/stores/1/schedules/workin")
+                        .session(session)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("\"code\":\"BAD_REQUEST\"")));
+
+        verifyNoInteractions(scheduleService);
     }
 
     private MockHttpSession loginSession(int storeId) {

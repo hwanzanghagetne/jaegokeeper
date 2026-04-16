@@ -4,6 +4,7 @@ import com.jaegokeeper.alba.controller.StoreAlbaController;
 import com.jaegokeeper.alba.dto.AlbaListResponse;
 import com.jaegokeeper.alba.service.AlbaService;
 import com.jaegokeeper.auth.dto.LoginContext;
+import com.jaegokeeper.auth.utils.LoginUserArgumentResolver;
 import com.jaegokeeper.auth.utils.SessionInterceptor;
 import com.jaegokeeper.exception.GlobalExceptionHandler;
 import org.junit.Before;
@@ -42,6 +43,7 @@ public class StoreAlbaControllerWebTest {
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .addInterceptors(new SessionInterceptor())
                 .setControllerAdvice(new GlobalExceptionHandler())
+                .setCustomArgumentResolvers(new LoginUserArgumentResolver())
                 .build();
     }
 
@@ -61,6 +63,8 @@ public class StoreAlbaControllerWebTest {
         mockMvc.perform(get("/stores/2/albas").session(session))
                 .andExpect(status().isForbidden())
                 .andExpect(content().string(containsString("\"code\":\"FORBIDDEN\"")));
+
+        verifyNoInteractions(albaService);
     }
 
     @Test
@@ -99,6 +103,23 @@ public class StoreAlbaControllerWebTest {
                         .session(session))
                 .andExpect(status().isForbidden())
                 .andExpect(content().string(containsString("\"code\":\"FORBIDDEN\"")));
+
+        verifyNoInteractions(albaService);
+    }
+
+    @Test
+    public void 스토어알바수정_이메일형식오류_400() throws Exception {
+        MockHttpSession session = loginSession(1);
+        String body = "{\"albaEmail\":\"not-an-email\"}";
+
+        mockMvc.perform(put("/stores/1/albas/11")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
+                        .session(session))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("\"code\":\"BAD_REQUEST\"")));
+
+        verifyNoInteractions(albaService);
     }
 
     private MockHttpSession loginSession(int storeId) {
