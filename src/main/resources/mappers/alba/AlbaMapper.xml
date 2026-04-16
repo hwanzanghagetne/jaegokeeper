@@ -42,6 +42,7 @@
         <where>
             <if test="storeId != null">
                 alba.store_id = #{storeId}
+                AND alba.is_active = b'1'
             </if>
         </where>
         ORDER BY alba.alba_id DESC
