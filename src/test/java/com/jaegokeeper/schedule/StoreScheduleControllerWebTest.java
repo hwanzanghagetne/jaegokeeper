@@ -2,6 +2,7 @@ package com.jaegokeeper.schedule;
 
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.auth.utils.LoginUserArgumentResolver;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jaegokeeper.auth.utils.SessionInterceptor;
 import com.jaegokeeper.exception.GlobalExceptionHandler;
 import com.jaegokeeper.schedule.controller.StoreScheduleController;
@@ -41,7 +42,7 @@ public class StoreScheduleControllerWebTest {
     public void setUp() {
         StoreScheduleController controller = new StoreScheduleController(scheduleService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
-                .addInterceptors(new SessionInterceptor())
+                .addInterceptors(new SessionInterceptor(new ObjectMapper()))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .setCustomArgumentResolvers(new LoginUserArgumentResolver())
                 .build();

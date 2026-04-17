@@ -5,6 +5,7 @@ import com.jaegokeeper.alba.dto.AlbaListResponse;
 import com.jaegokeeper.alba.service.AlbaService;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.auth.utils.LoginUserArgumentResolver;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jaegokeeper.auth.utils.SessionInterceptor;
 import com.jaegokeeper.exception.GlobalExceptionHandler;
 import org.junit.Before;
@@ -41,7 +42,7 @@ public class StoreAlbaControllerWebTest {
     public void setUp() {
         StoreAlbaController controller = new StoreAlbaController(albaService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
-                .addInterceptors(new SessionInterceptor())
+                .addInterceptors(new SessionInterceptor(new ObjectMapper()))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .setCustomArgumentResolvers(new LoginUserArgumentResolver())
                 .build();

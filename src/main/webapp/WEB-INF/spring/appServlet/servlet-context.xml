@@ -79,7 +79,9 @@
             <exclude-mapping path="/swagger-ui.html"/>
             <exclude-mapping path="/webjars/**"/>
 
-            <beans:bean class="com.jaegokeeper.auth.utils.SessionInterceptor"/>
+            <beans:bean class="com.jaegokeeper.auth.utils.SessionInterceptor">
+                <beans:constructor-arg ref="objectMapper"/>
+            </beans:bean>
         </interceptor>
     </interceptors>
 

@@ -18,7 +18,11 @@ public class SessionInterceptor implements HandlerInterceptor {
     // 세션 키는 AuthService/AuthController에서 쓰던 것과 동일해야 함
     public static final String SESSION_KEY = "login";
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
+
+    public SessionInterceptor(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {

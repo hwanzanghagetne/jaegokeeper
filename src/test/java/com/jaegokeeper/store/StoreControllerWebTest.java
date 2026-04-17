@@ -2,6 +2,7 @@ package com.jaegokeeper.store;
 
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.auth.utils.LoginUserArgumentResolver;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jaegokeeper.auth.utils.SessionInterceptor;
 import com.jaegokeeper.exception.GlobalExceptionHandler;
 import com.jaegokeeper.store.controller.StoreController;
@@ -37,7 +38,7 @@ public class StoreControllerWebTest {
     public void setUp() {
         StoreController controller = new StoreController(storeService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
-                .addInterceptors(new SessionInterceptor())
+                .addInterceptors(new SessionInterceptor(new ObjectMapper()))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .setCustomArgumentResolvers(new LoginUserArgumentResolver())
                 .build();

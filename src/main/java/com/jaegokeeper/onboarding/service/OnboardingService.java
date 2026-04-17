@@ -31,19 +31,44 @@ public class OnboardingService {
 
     @Transactional
     public OwnerSignUpResponse ownerSignUp(OwnerSignUpRequest req) {
-        AccountInfo account = req.getAccount();
-        StoreInfo store = req.getStore();
-        String email = account.getEmail().trim().toLowerCase();
+        String email = req.getAccount().getEmail().trim().toLowerCase();
 
-        // 1. 이메일 인증 완료 여부 확인
         emailAuthService.assertVerified(email);
 
-        // 2. 이메일 중복 확인
+        UserDTO user = createLocalUser(req.getAccount(), email);
+        StoreDto store = createOwnerStore(user.getUserId(), req.getStore());
+
+        return OwnerSignUpResponse.builder()
+                .userId(user.getUserId())
+                .storeId(store.getStoreId())
+                .userName(user.getUserName())
+                .storeName(store.getStoreName())
+                .build();
+    }
+
+    @Transactional
+    public int socialSignUp(String provider, SocialProfile profile) {
+        String email = profile.getEmail() != null ? profile.getEmail().trim().toLowerCase() : null;
+
+        if (email != null && !email.isEmpty() && profile.isEmailVerified()) {
+            UserDTO existing = userAuthMapper.findUserByEmail(email);
+            if (existing != null) {
+                return linkProviderToExistingUser(existing, provider, profile);
+            }
+        }
+
+        if (email == null || email.isEmpty()) {
+            throw new BusinessException(BAD_REQUEST);
+        }
+
+        return createNewSocialUser(provider, profile, email);
+    }
+
+    private UserDTO createLocalUser(AccountInfo account, String email) {
         if (userAuthMapper.findUserByEmail(email) != null) {
             throw new BusinessException(EMAIL_ALREADY_EXISTS);
         }
 
-        // 3. 유저 생성
         UserDTO user = UserDTO.builder()
                 .userMail(email)
                 .passHash(PasswordHasher.hash(account.getPassword()))
@@ -65,16 +90,18 @@ public class OnboardingService {
             throw new BusinessException(INTERNAL_ERROR);
         }
 
-        // 4. 로컬 로그인 수단 등록 (uid row 생성)
         UidDTO uid = new UidDTO();
         uid.setUserId(user.getUserId());
         uid.setProvider("LOCAL");
         uid.setProviderUid(email);
         userAuthMapper.insertAuth(uid);
 
-        // 5. 스토어 생성
+        return user;
+    }
+
+    private StoreDto createOwnerStore(int userId, StoreInfo store) {
         StoreDto storeDto = StoreDto.builder()
-                .userId(user.getUserId())
+                .userId(userId)
                 .storeName(store.getStoreName())
                 .storeTel(store.getStoreTel())
                 .storeAdd1(store.getStoreAdd1())
@@ -87,52 +114,36 @@ public class OnboardingService {
                 throw new BusinessException(INTERNAL_ERROR);
             }
         } catch (org.springframework.dao.DataAccessException e) {
-            log.error("[OWNER_SIGNUP] 스토어 생성 실패 userId={}", user.getUserId(), e);
+            log.error("[OWNER_SIGNUP] 스토어 생성 실패 userId={}", userId, e);
             throw new BusinessException(INTERNAL_ERROR);
         }
 
-        return OwnerSignUpResponse.builder()
-                .userId(user.getUserId())
-                .storeId(storeDto.getStoreId())
-                .userName(user.getUserName())
-                .storeName(storeDto.getStoreName())
-                .build();
+        return storeDto;
     }
 
-    @Transactional
-    public int socialSignUp(String provider, SocialProfile profile) {
-        String email = profile.getEmail() != null ? profile.getEmail().trim().toLowerCase() : null;
+    private int linkProviderToExistingUser(UserDTO existing, String provider, SocialProfile profile) {
+        if (!Boolean.TRUE.equals(existing.getIsActive())) {
+            throw new BusinessException(USER_NOT_ACTIVE);
+        }
 
-        // 정책: 이메일이 있고 provider에서 검증된 경우에만 기존 유저와 자동 연동
-        if (email != null && !email.isEmpty() && profile.isEmailVerified()) {
-            UserDTO existing = userAuthMapper.findUserByEmail(email);
-            if (existing != null) {
-                if (!Boolean.TRUE.equals(existing.getIsActive())) {
-                    throw new BusinessException(USER_NOT_ACTIVE);
-                }
+        UidDTO linked = new UidDTO();
+        linked.setUserId(existing.getUserId());
+        linked.setProvider(provider);
+        linked.setProviderUid(profile.getProviderUid());
 
-                UidDTO linked = new UidDTO();
-                linked.setUserId(existing.getUserId());
-                linked.setProvider(provider);
-                linked.setProviderUid(profile.getProviderUid());
-                try {
-                    userAuthMapper.insertAuth(linked);
-                } catch (org.springframework.dao.DuplicateKeyException e) {
-                    UidDTO existingAuth = userAuthMapper.findAuthByUserAndProvider(existing.getUserId(), provider);
-                    if (existingAuth == null || !profile.getProviderUid().equals(existingAuth.getProviderUid())) {
-                        // 같은 이메일이라도 provider 계정 연결 정보가 다르면 자동 연동하지 않음
-                        throw new BusinessException(FORBIDDEN);
-                    }
-                }
-                return existing.getUserId();
+        try {
+            userAuthMapper.insertAuth(linked);
+        } catch (org.springframework.dao.DuplicateKeyException e) {
+            UidDTO existingAuth = userAuthMapper.findAuthByUserAndProvider(existing.getUserId(), provider);
+            if (existingAuth == null || !profile.getProviderUid().equals(existingAuth.getProviderUid())) {
+                throw new BusinessException(FORBIDDEN);
             }
         }
 
-        if (email == null || email.isEmpty()) {
-            // user.user_mail NOT NULL 스키마와 정책을 맞춰 명시적으로 실패시킴
-            throw new BusinessException(BAD_REQUEST);
-        }
+        return existing.getUserId();
+    }
 
+    private int createNewSocialUser(String provider, SocialProfile profile, String email) {
         UserDTO user = new UserDTO();
         String displayName = profile.getDisplayName();
         user.setUserName(displayName != null && !displayName.trim().isEmpty() ? displayName.trim() : provider + "_USER");
@@ -152,33 +163,42 @@ public class OnboardingService {
             throw new BusinessException(INTERNAL_ERROR);
         }
 
+        createSocialStore(user.getUserId(), user.getUserName());
+        registerUid(user.getUserId(), provider, profile.getProviderUid());
+
+        return user.getUserId();
+    }
+
+    private void createSocialStore(int userId, String userName) {
         StoreDto store = new StoreDto();
-        store.setUserId(user.getUserId());
-        store.setStoreName(user.getUserName() + "의 스토어");
+        store.setUserId(userId);
+        store.setStoreName(userName + "의 스토어");
+
         try {
             int inserted = storeMapper.insertStore(store);
             if (inserted != 1 || store.getStoreId() == 0) {
                 throw new BusinessException(INTERNAL_ERROR);
             }
         } catch (org.springframework.dao.DataAccessException e) {
-            log.error("[SOCIAL_SIGNUP] 스토어 생성 실패 userId={}", user.getUserId(), e);
+            log.error("[SOCIAL_SIGNUP] 스토어 생성 실패 userId={}", userId, e);
             throw new BusinessException(INTERNAL_ERROR);
         }
+    }
 
+    private void registerUid(int userId, String provider, String providerUid) {
         UidDTO uid = new UidDTO();
-        uid.setUserId(user.getUserId());
+        uid.setUserId(userId);
         uid.setProvider(provider);
-        uid.setProviderUid(profile.getProviderUid());
+        uid.setProviderUid(providerUid);
+
         try {
             int inserted = userAuthMapper.insertAuth(uid);
             if (inserted != 1) {
                 throw new BusinessException(INTERNAL_ERROR);
             }
         } catch (org.springframework.dao.DataAccessException e) {
-            log.error("[SOCIAL_SIGNUP] uid 생성 실패 userId={}, provider={}", user.getUserId(), provider, e);
+            log.error("[SOCIAL_SIGNUP] uid 생성 실패 userId={}, provider={}", userId, provider, e);
             throw new BusinessException(INTERNAL_ERROR);
         }
-
-        return user.getUserId();
     }
 }
