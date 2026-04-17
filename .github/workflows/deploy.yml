@@ -81,5 +81,12 @@ jobs:
             sleep 2
           done
 
+          if [[ -f "${BACKUP_WAR}" ]]; then
+            echo "Rolling back to previous version..."
+            "${TOMCAT_HOME}/bin/shutdown.sh" || true
+            sleep 3
+            cp "${BACKUP_WAR}" "${ROOT_WAR}"
+            env -u RUNNER_TRACKING_ID "${TOMCAT_HOME}/bin/startup.sh"
+          fi
           echo "Health check failed: ${HEALTHCHECK_URL}"
           exit 1

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 
+import static com.jaegokeeper.auth.utils.SessionInterceptor.SESSION_KEY;
 import static com.jaegokeeper.exception.ErrorCode.LOGIN_REQUIRED;
 
 @RestController
@@ -30,7 +31,7 @@ public class SessionController {
     @ApiOperation(value = "유저정보", notes = "현재 등록된 세션 기준으로 유저 정보를 조회합니다. GET요청으로 바디X")
     @GetMapping(value="/me", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SessionResponse> me(HttpSession session) {
-        LoginContext login = (session != null) ? (LoginContext) session.getAttribute("login") : null;
+        LoginContext login = (session != null) ? (LoginContext) session.getAttribute(SESSION_KEY) : null;
         if (login == null) {
             throw new BusinessException(LOGIN_REQUIRED);
         }
