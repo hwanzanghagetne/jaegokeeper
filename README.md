@@ -1,7 +1,7 @@
 # 재고키퍼 (JaegoKeeper Backend)
 
 <p align="center">
-  <img src="https://dummyimage.com/1200x500/f3f4f6/111827&text=JaegoKeeper+Service+Image+(Replace+Later)" alt="jaegokeeper-main" width="900" />
+  <img src="./assets/images/jaegokeeper-service-hero.png" alt="jaegokeeper-main" width="900" />
 </p>
 
 > 점포 운영자가 재고, 알바, 스케줄, 요청을 한 곳에서 관리할 수 있도록 만든 Spring MVC 기반 백엔드 서비스
