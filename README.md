@@ -1,9 +1,5 @@
 # 재고키퍼 (JaegoKeeper Backend)
 
-<p align="center">
-  <img src="./assets/images/jaegokeeper-service-hero.png" alt="jaegokeeper-main" width="900" />
-</p>
-
 > 점포 운영자가 재고, 알바, 스케줄, 요청을 한 곳에서 관리할 수 있도록 만든 Spring MVC 기반 백엔드 서비스
 
 <br/>
@@ -12,21 +8,23 @@
 - [팀원](#팀원)
 - [기술 스택](#기술-스택)
 - [프로젝트 관련 주소](#프로젝트-관련-주소)
-- [배포 아키텍처](#배포-아키텍처)
+- [내 프로젝트 아키텍처 및 배포 아키텍처](#내-프로젝트-아키텍처-및-배포-아키텍처)
 - [ERD](#erd)
 - [서비스 소개](#서비스-소개)
-- [서비스의 필요성](#서비스의-필요성)
+- [프로젝트 배경](#프로젝트-배경)
 - [서비스 핵심 기능](#서비스-핵심-기능)
 - [프로젝트 구조](#프로젝트-구조)
+- [기술적 도전과 해결](#기술적-도전과-해결)
+- [트러블슈팅](#트러블슈팅)
 - [최근 개선 사항](#최근-개선-사항)
 
 ---
 
 ## 팀원
 
-<h3 align="center">Collaborators</h3>
 
-<h4 align="center">Backend (Jachodan/jachodan-spring)</h4>
+
+<h4 align="center">Backend</h4>
 
 <div align="center">
 
@@ -37,7 +35,7 @@
 
 </div>
 
-<h4 align="center">Frontend (Jachodan/jachodan-next)</h4>
+<h4 align="center">Frontend</h4>
 
 <div align="center">
 
@@ -87,62 +85,37 @@
 
 ---
 
-## 배포 아키텍처
+## 내 프로젝트 아키텍처 및 배포 아키텍처
 
 <p align="center">
-  <img src="https://dummyimage.com/1200x520/eef2ff/1f2937&text=Nginx(80/443)+%E2%86%92+Tomcat(8080)+%E2%86%92+Spring+MVC+%E2%86%92+MySQL" alt="deployment-architecture" width="900" />
+  <img src="./assets/images/jaegokeeper-deployment-architecture.png" alt="deployment-architecture" width="1000" />
 </p>
 
-- 외부 요청: `Nginx`
-- 애플리케이션: `Tomcat 9`에 `WAR` 배포
-- DB: `MySQL 8`
-- 인증: `HttpSession` + `SessionInterceptor` + 서비스 계층 점포 권한 검증
+- `Client`는 `Vercel`에 배포된 `Next.js(React)` 프론트엔드에 접속하고, API 요청은 백엔드로 전달됩니다.
+- 백엔드는 `EC2` 내부에서 `Nginx(Reverse Proxy)` -> `Tomcat(8080)` -> `Spring MVC` 흐름으로 동작합니다.
+- `Spring MVC`는 `MySQL`과 `Local Image Storage`를 사용하며, 배포는 `GitHub Actions` 기반으로 자동화했습니다.
 
 ---
 
 ## ERD
 
 <p align="center">
-  <img src="https://dummyimage.com/1200x520/fef3c7/1f2937&text=ERD+Image+(Replace+Later)" alt="jaegokeeper-erd" width="900" />
+  <img src="./assets/images/jaegokeeper-erd.png" alt="jaegokeeper-erd" width="1100" />
 </p>
-
-> TODO: 실제 ERD 이미지로 교체 예정
 
 ---
 
 ## 서비스 소개
 
 재고키퍼는 소상공인/매장 운영 환경에서 자주 발생하는 운영 관리 분산 문제를 해결하기 위한 서비스입니다.
-
-- 인증 후 본인 점포 데이터만 접근하도록 스코프를 강제
-- 재고, 입출고, 요청, 알바, 스케줄 업무를 통합 관리
-- 이미지/게시판 기능으로 운영 커뮤니케이션 보완
+인증된 사용자 기준으로 점포 범위를 강제하고, 상품/재고/요청/알바/스케줄 업무를 하나의 API 서버에서 통합 관리합니다.
 
 ---
 
-## 서비스의 필요성
+## 프로젝트 배경
 
-### 문제 1. 운영 데이터가 여러 채널에 흩어짐
-- 재고는 메모/엑셀, 근무는 메신저, 요청은 구두 전달로 관리되는 경우가 많아 누락이 발생합니다.
-
-### 해결
-- 점포 단일 시스템에서 재고/요청/알바/스케줄을 함께 관리하여 정보 단절을 줄입니다.
-
-<br/>
-
-### 문제 2. 점포 데이터 권한 경계가 쉽게 무너질 수 있음
-- 멀티 점포 구조에서 권한 검증이 일관되지 않으면 타 점포 데이터 노출 위험이 생깁니다.
-
-### 해결
-- 인터셉터 + 서비스 계층 이중 검증으로 `storeId` 접근 권한을 강제합니다.
-
-<br/>
-
-### 문제 3. 인증/회원가입 플로우와 실사용 플로우의 불일치
-- 소셜 로그인, 로컬 로그인, 이메일 인증이 분리되어 있으면 사용자 혼선과 운영 이슈가 커집니다.
-
-### 해결
-- 로컬/소셜/이메일 인증 흐름을 문서화하고 예외 응답을 일관화하여 운영 안정성을 높입니다.
+소규모 요식업 아르바이트를 하면서 매장 실재고 파악이 늦어 발주, 요청 처리, 근무 커뮤니케이션이 어긋나는 문제를 경험했습니다.
+이 경험을 바탕으로 점포 단위의 재고/요청/근무 데이터를 한곳에서 관리할 수 있는 백엔드 서비스를 기획했습니다.
 
 ---
 
@@ -206,6 +179,53 @@ src/main/resources/mappers
 ```
 
 </details>
+
+---
+
+## 기술적 도전과 해결
+
+### 1) 점포 권한 경계 일관화
+- 도전: 멀티 점포 구조에서 `storeId` 권한 검증이 누락되면 타 점포 데이터 접근 위험이 발생
+- 해결:
+  - `SessionInterceptor`에서 세션 로그인/경로 `storeId` 1차 검증
+  - `Item/Stock/Request/Alba` 서비스에서 `validateStoreAccess`로 2차 검증
+- 결과: 권한 불일치 요청을 인터셉터+서비스 이중 레이어에서 차단
+
+### 2) 파일 저장과 DB 트랜잭션 정합성
+- 도전: 이미지 업로드는 파일시스템, 비즈니스 데이터는 DB에 저장되어 실패 시 정합성 깨질 수 있음
+- 해결:
+  - `ImageService`에서 상대경로 저장, 경로 traversal 방어, MIME 재검증 적용
+  - `ItemService`, `AlbaService`에서 업로드 이후 예외 발생 시 파일 cleanup 처리
+- 결과: 실패 시 고아 파일 발생 가능성을 줄이고 업로드 안정성 개선
+
+### 3) 재고 감소 동시성 보호
+- 도전: 동시 요청에서 재고를 애플리케이션 로직으로만 차감하면 음수 재고 위험
+- 해결:
+  - SQL 레벨에서 `decreaseQuantity ... AND s.stock_amount >= #{amount}` 조건으로 원자적 차감
+  - 업데이트 행 수 기반으로 `STOCK_QUANTITY_NOT_ENOUGH` 예외 반환
+- 결과: 동시 출고 요청에서도 재고 하한을 DB 레벨에서 보장
+
+---
+
+## 트러블슈팅
+
+### 1) 알바 등록 500 (`keyProperty` 매핑 실패)
+- 증상: `POST /stores/{storeId}/albas` 호출 시 500
+- 원인: MyBatis `useGeneratedKeys="true" keyProperty="albaId"`인데 DTO에 setter 대상 필드 부재
+- 조치: `AlbaRegisterRequest`에 `albaId` 추가, generated key를 스케줄 등록 흐름에 연계
+- 확인: 신규 등록/중복 검증/스케줄 생성까지 WORKLOG 기준 검증 완료
+
+### 2) 소셜 로그인 400/500 연속 장애
+- 증상: 소셜 로그인 완료 API에서 400, 이후 500 전환
+- 원인: Verifier 빈 등록 누락 + 신규 DB 스키마(`uid` 등) 불일치
+- 조치: Verifier 컴포넌트 등록, 테스트 전용 Verifier 분리, 스키마/제약 조건 정리
+- 확인: 운영 로그 기준 소셜 로그인 정상화
+
+### 3) 수동 배포 반복으로 인한 운영 리스크
+- 증상: 수동 배포 과정에서 환경별 실패 포인트 다수 발생
+- 원인: 빌드/환경변수/프로세스 생명주기 관리가 수동 절차에 의존
+- 조치: self-hosted runner 기반 배포 절차 정리, Maven/환경변수/헬스체크 보완
+- 확인: WORKLOG에 배포 성공 이력과 검증 로그 기록
 
 ---
 
