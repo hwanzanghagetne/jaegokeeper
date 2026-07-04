@@ -38,7 +38,13 @@
             alba.alba_email AS albaEmail,
             alba.alba_status AS albaStatus
         FROM alba
-        LEFT JOIN work ON alba.alba_id = work.alba_id AND DATE(work.work_date) = CURDATE()
+        LEFT JOIN (
+            SELECT alba_id, MAX(work_id) AS max_work_id
+            FROM work
+            WHERE DATE(work_date) = CURDATE()
+            GROUP BY alba_id
+        ) latest_w ON latest_w.alba_id = alba.alba_id
+        LEFT JOIN work ON work.work_id = latest_w.max_work_id
         <where>
             <if test="storeId != null">
                 alba.store_id = #{storeId}
