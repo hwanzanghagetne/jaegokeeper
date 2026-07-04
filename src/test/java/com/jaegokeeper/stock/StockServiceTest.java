@@ -1,6 +1,7 @@
 package com.jaegokeeper.stock;
 
 import com.jaegokeeper.auth.dto.LoginContext;
+import com.jaegokeeper.auth.utils.StoreAccessValidator;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.exception.ErrorCode;
 import com.jaegokeeper.stock.dto.StockInOutRequest;
@@ -30,6 +31,9 @@ public class StockServiceTest {
 
     @Mock
     private BufferMapper bufferMapper;
+
+    @Mock
+    private StoreAccessValidator storeAccessValidator;
 
     private LoginContext login;
 

@@ -2,6 +2,7 @@ package com.jaegokeeper.request;
 
 import com.jaegokeeper.alba.mapper.AlbaMapper;
 import com.jaegokeeper.auth.dto.LoginContext;
+import com.jaegokeeper.auth.utils.StoreAccessValidator;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.exception.ErrorCode;
 import com.jaegokeeper.item.mapper.ItemMapper;
@@ -31,6 +32,9 @@ public class RequestServiceTest {
 
     @Mock
     private AlbaMapper albaMapper;
+
+    @Mock
+    private StoreAccessValidator storeAccessValidator;
 
     private LoginContext login;
 

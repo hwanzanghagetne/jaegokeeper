@@ -1,6 +1,5 @@
 package com.jaegokeeper.mail;
 
-import com.jaegokeeper.common.mail.GmailMailService;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mail.javamail.JavaMailSender;

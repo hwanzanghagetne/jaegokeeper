@@ -1,4 +1,4 @@
-package com.jaegokeeper.common.mail;
+package com.jaegokeeper.mail;
 
 import com.jaegokeeper.common.timer.Timer;
 import lombok.RequiredArgsConstructor;

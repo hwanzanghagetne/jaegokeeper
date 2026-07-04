@@ -132,7 +132,7 @@
         WHERE alba_id = #{albaId}
     </update>
 
-    <!-- board에서 사용 (AlbaMapper2 통합) -->
+    <!-- board 도메인(BoardService)에서도 작성자 검증용으로 사용 -->
     <select id="countByStoreIdAndAlbaId" resultType="int">
         SELECT COUNT(*)
         FROM alba a

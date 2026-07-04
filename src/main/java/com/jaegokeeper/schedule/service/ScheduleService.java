@@ -2,6 +2,7 @@ package com.jaegokeeper.schedule.service;
 
 import com.jaegokeeper.alba.mapper.AlbaMapper;
 import com.jaegokeeper.auth.dto.LoginContext;
+import com.jaegokeeper.auth.utils.StoreAccessValidator;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.schedule.dto.ScheduleDetailResponse;
 import com.jaegokeeper.schedule.dto.ScheduleListResponse;
@@ -27,6 +28,7 @@ public class ScheduleService {
 
     private final ScheduleMapper scheduleMapper;
     private final AlbaMapper albaMapper;
+    private final StoreAccessValidator storeAccessValidator;
 
     @Transactional
     public int saveScheduleRegister(LoginContext login, ScheduleRegisterRequest req) {
@@ -64,7 +66,7 @@ public class ScheduleService {
 
     public List<ScheduleListResponse> getScheduleListByDate(LoginContext login, int storeId, String date) {
         DayOfWeek dayOfWeek = LocalDate.parse(date).getDayOfWeek();
-        validateStoreAccess(login, storeId);
+        storeAccessValidator.validate(login, storeId);
         return scheduleMapper.selectSchedulesWithWorkByDate(storeId, date, dayOfWeek.toString());
     }
 
@@ -102,17 +104,8 @@ public class ScheduleService {
         }
     }
 
-    private void validateStoreAccess(LoginContext login, Integer storeId) {
-        if (storeId == null) {
-            throw new BusinessException(BAD_REQUEST);
-        }
-        if (login.getStoreId() != storeId.intValue()) {
-            throw new BusinessException(FORBIDDEN);
-        }
-    }
-
     private void validateAlbaAccess(LoginContext login, Integer storeId, Integer albaId) {
-        validateStoreAccess(login, storeId);
+        storeAccessValidator.validate(login, storeId);
         if (albaId == null) {
             throw new BusinessException(BAD_REQUEST);
         }
@@ -125,7 +118,7 @@ public class ScheduleService {
     }
 
     private void validateScheduleAccess(LoginContext login, Integer storeId, Integer scheduleId) {
-        validateStoreAccess(login, storeId);
+        storeAccessValidator.validate(login, storeId);
         if (scheduleId == null) {
             throw new BusinessException(BAD_REQUEST);
         }

@@ -1,6 +1,6 @@
 package com.jaegokeeper.email;
 
-import com.jaegokeeper.common.mail.MailService;
+import com.jaegokeeper.mail.MailService;
 import com.jaegokeeper.email.mapper.EmailAuthMapper;
 import com.jaegokeeper.email.service.EmailAuthService;
 import com.jaegokeeper.exception.BusinessException;

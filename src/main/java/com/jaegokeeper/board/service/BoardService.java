@@ -31,7 +31,7 @@ public class BoardService {
 
     private final ImageService imgService;
     private final BoardMapper boardMapper;
-    private final AlbaMapper albaMapper2;
+    private final AlbaMapper albaMapper;
 
     @Transactional(readOnly = true)
     public PageResponse<BoardListResponse> getBoardList(Integer storeId, BoardPageRequest dto) {
@@ -145,10 +145,10 @@ public class BoardService {
         if (writerId == null) {
             throw new BusinessException(INVALID_WRITER_INFO);
         }
-        if (albaMapper2.countByStoreIdAndAlbaId(storeId, writerId) != 1) {
+        if (albaMapper.countByStoreIdAndAlbaId(storeId, writerId) != 1) {
             throw new BusinessException(ALBA_NOT_IN_STORE);
         }
-        return albaMapper2.findAlbaNameByAlbaId(writerId);
+        return albaMapper.findAlbaNameByAlbaId(writerId);
     }
 
     private Integer uploadImageIfPresent(ImageInfoDTO dto) {

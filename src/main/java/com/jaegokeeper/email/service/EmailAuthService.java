@@ -1,7 +1,7 @@
 package com.jaegokeeper.email.service;
 
 import com.jaegokeeper.email.mapper.EmailAuthMapper;
-import com.jaegokeeper.common.mail.MailService;
+import com.jaegokeeper.mail.MailService;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;

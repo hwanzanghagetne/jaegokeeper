@@ -6,7 +6,8 @@ import com.jaegokeeper.alba.dto.AlbaRegisterRequest;
 import com.jaegokeeper.alba.dto.AlbaUpdateRequest;
 import com.jaegokeeper.alba.mapper.AlbaMapper;
 import com.jaegokeeper.auth.dto.LoginContext;
-import com.jaegokeeper.common.mail.MailService;
+import com.jaegokeeper.auth.utils.StoreAccessValidator;
+import com.jaegokeeper.mail.MailService;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.image.dto.ImageInfoDTO;
 import com.jaegokeeper.image.service.ImageService;
@@ -34,6 +35,7 @@ public class AlbaService {
     private final ScheduleMapper scheduleMapper;
     private final ImageService imageService;
     private final MailService mailService;
+    private final StoreAccessValidator storeAccessValidator;
 
     @Transactional
     public int saveAlbaRegister(LoginContext login, AlbaRegisterRequest req) {
@@ -42,7 +44,7 @@ public class AlbaService {
 
     @Transactional
     public int saveAlbaRegister(LoginContext login, int storeId, AlbaRegisterRequest req) {
-        validateStoreAccess(login, storeId);
+        storeAccessValidator.validate(login, storeId);
         req.setStoreId(storeId);
         req.setAlbaEmail(normalizeOptionalEmail(req.getAlbaEmail()));
         if (!albaMapper.existsByStoreId(storeId)) {
@@ -148,7 +150,7 @@ public class AlbaService {
     @Transactional(readOnly = true)
     public List<AlbaListResponse> getAllAlbaList(LoginContext login, Integer storeId) {
         int targetStoreId = (storeId != null) ? storeId : login.getStoreId();
-        validateStoreAccess(login, targetStoreId);
+        storeAccessValidator.validate(login, targetStoreId);
         return albaMapper.selectAllAlba(targetStoreId);
     }
 
@@ -157,17 +159,8 @@ public class AlbaService {
         return getAllAlbaList(login, Integer.valueOf(storeId));
     }
 
-    private void validateStoreAccess(LoginContext login, Integer storeId) {
-        if (storeId == null) {
-            throw new BusinessException(BAD_REQUEST);
-        }
-        if (login.getStoreId() != storeId.intValue()) {
-            throw new BusinessException(FORBIDDEN);
-        }
-    }
-
     private void validateAlbaAccess(LoginContext login, int storeId, int albaId) {
-        validateStoreAccess(login, storeId);
+        storeAccessValidator.validate(login, storeId);
         if (!albaMapper.existsAlbaById(albaId)) {
             throw new BusinessException(ALBA_NOT_FOUND);
         }

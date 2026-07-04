@@ -1,6 +1,7 @@
 package com.jaegokeeper.item.service;
 
 import com.jaegokeeper.auth.dto.LoginContext;
+import com.jaegokeeper.auth.utils.StoreAccessValidator;
 import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.stock.dto.StockAdjustRequest;
@@ -18,6 +19,7 @@ import com.jaegokeeper.item.enums.ItemFilter;
 import com.jaegokeeper.item.mapper.ItemMapper;
 import com.jaegokeeper.store.mapper.StoreMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +28,7 @@ import java.util.List;
 
 import static com.jaegokeeper.exception.ErrorCode.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ItemService {
@@ -34,10 +37,11 @@ public class ItemService {
     private final StoreMapper storeMapper;
     private final StockService stockService;
     private final ImageService imgService;
+    private final StoreAccessValidator storeAccessValidator;
 
     @Transactional
     public Integer createItem(LoginContext login, Integer storeId, ItemCreateRequest dto) {
-        validateStoreAccess(login, storeId);
+        storeAccessValidator.validate(login, storeId);
         if (!storeMapper.existsById(storeId)) {
             throw new BusinessException(STORE_NOT_FOUND);
         }
@@ -58,13 +62,14 @@ public class ItemService {
         } catch (Exception e) {
             if (uploadedImage != null) imgService.deleteImageFile(uploadedImage.getImagePath());
             if (e instanceof BusinessException) throw (BusinessException) e;
+            log.error("[ITEM_CREATE] 아이템 생성 실패 storeId={}", storeId, e);
             throw new BusinessException(INTERNAL_ERROR, e);
         }
     }
 
     @Transactional
     public void softDeleteItem(LoginContext login, Integer storeId, Integer itemId) {
-        validateStoreAccess(login, storeId);
+        storeAccessValidator.validate(login, storeId);
         int updated = itemMapper.softDeleteItem(storeId, itemId);
         if (updated != 1) {
             throw new BusinessException(ITEM_NOT_FOUND);
@@ -73,7 +78,7 @@ public class ItemService {
 
     @Transactional(readOnly = true)
     public PageResponse<ItemListResponse> getItemList(LoginContext login, Integer storeId, ItemPageRequest dto) {
-        validateStoreAccess(login, storeId);
+        storeAccessValidator.validate(login, storeId);
         int pageNum = dto.getPageValue();
         int pageSize = dto.getSizeValue();
         String keyword = dto.getKeywordValue();
@@ -89,7 +94,7 @@ public class ItemService {
 
     @Transactional(readOnly = true)
     public ItemDetailResponse getItemDetail(LoginContext login, Integer storeId, Integer itemId) {
-        validateStoreAccess(login, storeId);
+        storeAccessValidator.validate(login, storeId);
         ItemDetailResponse dto = itemMapper.findItemDetail(storeId, itemId);
         if (dto == null) {
             throw new BusinessException(ITEM_NOT_FOUND);
@@ -99,7 +104,7 @@ public class ItemService {
 
     @Transactional
     public void updateItem(LoginContext login, Integer storeId, Integer itemId, ItemUpdateRequest dto) {
-        validateStoreAccess(login, storeId);
+        storeAccessValidator.validate(login, storeId);
         boolean wantsRemove = Boolean.TRUE.equals(dto.getRemoveImage());
         Integer newImageId = resolveImageIdForUpdate(dto.getFile(), dto.getRemoveImage(), dto);
 
@@ -128,7 +133,7 @@ public class ItemService {
 
     @Transactional
     public void toggleItemPin(LoginContext login, Integer storeId, Integer itemId) {
-        validateStoreAccess(login, storeId);
+        storeAccessValidator.validate(login, storeId);
         int updated = itemMapper.togglePin(storeId, itemId);
         if (updated == 0) {
             throw new BusinessException(ITEM_NOT_FOUND);
@@ -152,12 +157,4 @@ public class ItemService {
         return imgService.uploadImg(dto);
     }
 
-    private void validateStoreAccess(LoginContext login, Integer storeId) {
-        if (storeId == null) {
-            throw new BusinessException(BAD_REQUEST);
-        }
-        if (login.getStoreId() != storeId.intValue()) {
-            throw new BusinessException(FORBIDDEN);
-        }
-    }
 }

@@ -6,7 +6,8 @@ import com.jaegokeeper.alba.mapper.AlbaMapper;
 import com.jaegokeeper.alba.mapper.WorkMapper;
 import com.jaegokeeper.alba.service.AlbaService;
 import com.jaegokeeper.auth.dto.LoginContext;
-import com.jaegokeeper.common.mail.MailService;
+import com.jaegokeeper.auth.utils.StoreAccessValidator;
+import com.jaegokeeper.mail.MailService;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.exception.ErrorCode;
 import com.jaegokeeper.image.service.ImageService;
@@ -44,6 +45,9 @@ public class AlbaServiceTest {
 
     @Mock
     private MailService mailService;
+
+    @Mock
+    private StoreAccessValidator storeAccessValidator;
 
     @Before
     public void setUp() {
