@@ -6,6 +6,8 @@ import com.jaegokeeper.auth.dto.UserDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 @Mapper
 public interface UserAuthMapper {
 
@@ -25,5 +27,7 @@ public interface UserAuthMapper {
             @Param("userId") int userId,
             @Param("provider") String provider
     );
+
+    List<String> findProvidersByUserId(@Param("userId") int userId);
 
 }

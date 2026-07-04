@@ -39,4 +39,15 @@
         WHERE store_id = #{storeId}
     </update>
 
+    <select id="findStoreDetail" resultType="com.jaegokeeper.store.dto.StoreDetailResponse">
+        SELECT
+            store_id   AS storeId,
+            store_name AS storeName,
+            store_add1 AS storeAdd1,
+            store_add2 AS storeAdd2,
+            store_tel  AS storeTel
+        FROM store
+        WHERE store_id = #{storeId}
+    </select>
+
 </mapper>

@@ -2,6 +2,7 @@ package com.jaegokeeper.store.service;
 
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.exception.BusinessException;
+import com.jaegokeeper.store.dto.StoreDetailResponse;
 import com.jaegokeeper.store.dto.StoreUpdateRequest;
 import com.jaegokeeper.store.mapper.StoreMapper;
 import lombok.RequiredArgsConstructor;
@@ -29,5 +30,17 @@ public class StoreService {
         if (updated == 0) {
             throw new BusinessException(STATE_CONFLICT);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public StoreDetailResponse getStoreDetail(LoginContext login, int storeId) {
+        if (login.getStoreId() != storeId) {
+            throw new BusinessException(FORBIDDEN);
+        }
+        StoreDetailResponse detail = storeMapper.findStoreDetail(storeId);
+        if (detail == null) {
+            throw new BusinessException(STORE_NOT_FOUND);
+        }
+        return detail;
     }
 }

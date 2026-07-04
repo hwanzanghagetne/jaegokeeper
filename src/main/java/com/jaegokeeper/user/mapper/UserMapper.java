@@ -1,5 +1,6 @@
 package com.jaegokeeper.user.mapper;
 
+import com.jaegokeeper.user.dto.UserDetailResponse;
 import com.jaegokeeper.user.dto.UserUpdateRequest;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -12,4 +13,6 @@ public interface UserMapper {
     int countByEmail(@Param("email") String email);
 
     boolean existsById(@Param("userId") int userId);
+
+    UserDetailResponse findUserDetail(@Param("userId") int userId);
 }

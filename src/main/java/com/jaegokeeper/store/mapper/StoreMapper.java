@@ -1,5 +1,6 @@
 package com.jaegokeeper.store.mapper;
 
+import com.jaegokeeper.store.dto.StoreDetailResponse;
 import com.jaegokeeper.store.dto.StoreDto;
 import com.jaegokeeper.store.dto.StoreUpdateRequest;
 import org.apache.ibatis.annotations.Mapper;
@@ -11,4 +12,6 @@ public interface StoreMapper {
     int insertStore(StoreDto storeDto);
 
     int updateStore(StoreUpdateRequest req);
+
+    StoreDetailResponse findStoreDetail(int storeId);
 }
