@@ -74,6 +74,36 @@ public class RequestServiceTest {
     }
 
     @Test
+    public void 요청상태변경_이미완료된요청_예외() {
+        when(requestMapper.findRequestStatus(1, 1)).thenReturn(RequestStatus.DONE);
+
+        RequestStatusUpdateRequest req = new RequestStatusUpdateRequest();
+        req.setRequestStatus(RequestStatus.CONFIRM);
+
+        try {
+            requestService.updateRequestStatus(login, 1, 1, req);
+            fail("BusinessException이 발생해야 합니다");
+        } catch (BusinessException e) {
+            assertEquals(ErrorCode.REQUEST_ALREADY_CLOSED, e.getErrorCode());
+        }
+    }
+
+    @Test
+    public void 요청상태변경_이미취소된요청_예외() {
+        when(requestMapper.findRequestStatus(1, 1)).thenReturn(RequestStatus.CANCEL);
+
+        RequestStatusUpdateRequest req = new RequestStatusUpdateRequest();
+        req.setRequestStatus(RequestStatus.WAIT);
+
+        try {
+            requestService.updateRequestStatus(login, 1, 1, req);
+            fail("BusinessException이 발생해야 합니다");
+        } catch (BusinessException e) {
+            assertEquals(ErrorCode.REQUEST_ALREADY_CLOSED, e.getErrorCode());
+        }
+    }
+
+    @Test
     public void 요청상태변경_성공() {
         when(requestMapper.findRequestStatus(1, 1)).thenReturn(RequestStatus.WAIT);
         when(requestMapper.updateRequestStatus(1, 1, RequestStatus.WAIT, RequestStatus.CONFIRM)).thenReturn(1);

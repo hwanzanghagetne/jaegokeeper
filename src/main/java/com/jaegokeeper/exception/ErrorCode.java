@@ -42,6 +42,7 @@ public enum ErrorCode {
     SCHEDULE_TIME_DUPLICATE(HttpStatus.CONFLICT, "이미 등록된 스케줄 시간입니다."),
     STATE_CONFLICT(HttpStatus.CONFLICT, "현재 상태에서는 처리할 수 없습니다."),
     REQUEST_STATUS_NOT_WAIT(HttpStatus.CONFLICT, "대기 상태(WAIT)인 요청만 수정할 수 있습니다."),
+    REQUEST_ALREADY_CLOSED(HttpStatus.CONFLICT, "이미 완료되었거나 취소된 요청은 상태를 변경할 수 없습니다."),
     STOCK_QUANTITY_NOT_ENOUGH(HttpStatus.CONFLICT, "출고 수량이 현재 재고보다 많습니다."),
 
 

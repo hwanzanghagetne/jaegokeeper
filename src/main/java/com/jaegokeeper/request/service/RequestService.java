@@ -132,6 +132,9 @@ public class RequestService {
         if (status == null) {
             throw new BusinessException(REQUEST_NOT_FOUND);
         }
+        if (status == RequestStatus.DONE || status == RequestStatus.CANCEL) {
+            throw new BusinessException(REQUEST_ALREADY_CLOSED);
+        }
         int updated = requestMapper.updateRequestStatus(storeId, requestId, status, dto.getRequestStatus());
         if (updated != 1) {
             throw new BusinessException(STATE_CONFLICT);
