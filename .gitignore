@@ -36,6 +36,11 @@ build/
 ### VS Code ###
 .vscode/
 
+### Local environment variables ###
+.env
+.env.local
+.env.*.local
+
 ### Mac OS ###
 .DS_Store
 
@@ -52,3 +57,4 @@ tools/
 
 # Local DB scripts (not for version control)
 db/
+

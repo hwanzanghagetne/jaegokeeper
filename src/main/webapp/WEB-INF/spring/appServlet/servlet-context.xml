@@ -11,6 +11,9 @@
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context.xsd">
 
+    <!-- CORS 등 이 컨텍스트에서 사용하는 ${...} 환경변수 플레이스홀더 해석용 -->
+    <context:property-placeholder/>
+
     <!-- 어노테이션 기반 MVC 활성화(UTF-8 설정 포함) -->
     <annotation-driven>
         <argument-resolvers>
@@ -29,7 +32,7 @@
 
     <cors>
         <mapping path="/**"
-                 allowed-origins="http://localhost:3000"
+                 allowed-origins="${CORS_ALLOWED_ORIGINS}"
                  allowed-methods="GET,POST,PUT, PATCH, DELETE,OPTIONS"
                  allowed-headers="*"
                  allow-credentials="true"
