@@ -2,6 +2,7 @@ package com.jaegokeeper.onboarding.controller;
 
 import com.jaegokeeper.onboarding.dto.OwnerSignUpRequest;
 import com.jaegokeeper.onboarding.dto.OwnerSignUpResponse;
+import com.jaegokeeper.onboarding.dto.SocialOwnerSignUpRequest;
 import com.jaegokeeper.onboarding.service.OnboardingService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -24,5 +25,14 @@ public class OnboardingController {
     public ResponseEntity<OwnerSignUpResponse> ownerSignUp(
             @Validated @RequestBody OwnerSignUpRequest req) {
         return ResponseEntity.ok(onboardingService.ownerSignUp(req));
+    }
+
+    @ApiOperation(value = "소셜 점주 추가정보 가입", notes = "소셜 인증 완료 후 발급된 signupToken으로 점주/점포 정보를 등록합니다.")
+    @PostMapping(value = "/social-owner-signup",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<OwnerSignUpResponse> socialOwnerSignUp(
+            @Validated @RequestBody SocialOwnerSignUpRequest req) {
+        return ResponseEntity.ok(onboardingService.socialOwnerSignUp(req));
     }
 }

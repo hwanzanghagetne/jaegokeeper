@@ -17,6 +17,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.dao.DuplicateKeyException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -39,15 +40,12 @@ public class OnboardingServiceTest {
     private StoreMapper storeMapper;
 
     @Test
-    public void 소셜가입_이메일없음_예외() {
+    public void 소셜연동_이메일없으면_null반환() {
         SocialProfile profile = new SocialProfile("provider-uid", "tester", null, false);
 
-        try {
-            onboardingService.socialSignUp("GOOGLE", profile);
-            fail("BusinessException이 발생해야 합니다");
-        } catch (BusinessException e) {
-            assertEquals(ErrorCode.BAD_REQUEST, e.getErrorCode());
-        }
+        Integer userId = onboardingService.linkExistingUserByVerifiedEmail("GOOGLE", profile);
+
+        assertNull(userId);
     }
 
     @Test
@@ -71,7 +69,7 @@ public class OnboardingServiceTest {
         when(userAuthMapper.findAuthByUserAndProvider(1, provider)).thenReturn(linked);
 
         try {
-            onboardingService.socialSignUp(provider, profile);
+            onboardingService.linkExistingUserByVerifiedEmail(provider, profile);
             fail("BusinessException이 발생해야 합니다");
         } catch (BusinessException e) {
             assertEquals(ErrorCode.FORBIDDEN, e.getErrorCode());
@@ -98,7 +96,7 @@ public class OnboardingServiceTest {
         linked.setProviderUid("same-uid");
         when(userAuthMapper.findAuthByUserAndProvider(1, provider)).thenReturn(linked);
 
-        int userId = onboardingService.socialSignUp(provider, profile);
-        assertEquals(1, userId);
+        Integer userId = onboardingService.linkExistingUserByVerifiedEmail(provider, profile);
+        assertEquals(Integer.valueOf(1), userId);
     }
 }

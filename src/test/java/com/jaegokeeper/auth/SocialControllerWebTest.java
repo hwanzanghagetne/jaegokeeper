@@ -2,6 +2,7 @@ package com.jaegokeeper.auth;
 
 import com.jaegokeeper.auth.controller.SocialController;
 import com.jaegokeeper.auth.dto.SessionResponse;
+import com.jaegokeeper.auth.dto.SocialCompleteResponse;
 import com.jaegokeeper.auth.service.SessionService;
 import com.jaegokeeper.auth.service.SocialService;
 import com.jaegokeeper.exception.GlobalExceptionHandler;
@@ -94,7 +95,7 @@ public class SocialControllerWebTest {
                 .provider("KAKAO")
                 .build();
 
-        when(socialService.complete(eq("KAKAO"), eq("token-1"))).thenReturn(25);
+        when(socialService.complete(eq("KAKAO"), eq("token-1"))).thenReturn(SocialCompleteResponse.login(25));
         when(sessionService.createSession(eq(25), eq("KAKAO"), any(HttpServletRequest.class)))
                 .thenReturn(response);
 

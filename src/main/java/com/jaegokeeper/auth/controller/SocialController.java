@@ -5,6 +5,7 @@ import com.jaegokeeper.auth.service.SessionService;
 import com.jaegokeeper.auth.service.SocialService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -20,18 +21,22 @@ public class SocialController {
     private final SocialService socialService;
     private final SessionService sessionService;
 
-    // 소셜 로그인
-    @ApiOperation(value = "소셜 로그인", notes = "자초단 서비스에 로그인하고, 토큰 발급받아 세션에 등록합니다. JSON을 요구합니다. provider, accessToken 받습니다.")
+    @ApiOperation(value = "소셜 로그인", notes = "소셜 accessToken을 검증합니다. 기존 계정은 세션을 생성하고, 신규 계정은 추가정보 입력용 토큰을 반환합니다.")
     @PostMapping(value = "/complete",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SessionResponse> complete(
+    public ResponseEntity<?> complete(
             @Validated @RequestBody SocialRequest req,
             HttpServletRequest request
     ) {
         String provider = req.getProvider().name();
-        int userId = socialService.complete(provider, req.getAccessToken());
-        return ResponseEntity.ok(sessionService.createSession(userId, provider, request));
+        SocialCompleteResponse result = socialService.complete(provider, req.getAccessToken());
+
+        if (result.isSignupRequired()) {
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(result);
+        }
+
+        return ResponseEntity.ok(sessionService.createSession(result.getUserId(), provider, request));
     }
 
 }

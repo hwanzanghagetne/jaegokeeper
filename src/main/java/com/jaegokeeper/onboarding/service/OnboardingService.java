@@ -1,8 +1,10 @@
 package com.jaegokeeper.onboarding.service;
 
+import com.jaegokeeper.auth.dto.PendingSocialSignup;
 import com.jaegokeeper.auth.dto.UidDTO;
 import com.jaegokeeper.auth.dto.UserDTO;
 import com.jaegokeeper.auth.mapper.UserAuthMapper;
+import com.jaegokeeper.auth.service.PendingSocialSignupService;
 import com.jaegokeeper.auth.utils.PasswordHasher;
 import com.jaegokeeper.auth.utils.SocialProfile;
 import com.jaegokeeper.email.service.EmailAuthService;
@@ -11,6 +13,7 @@ import com.jaegokeeper.onboarding.dto.OwnerSignUpRequest;
 import com.jaegokeeper.onboarding.dto.OwnerSignUpRequest.AccountInfo;
 import com.jaegokeeper.onboarding.dto.OwnerSignUpRequest.StoreInfo;
 import com.jaegokeeper.onboarding.dto.OwnerSignUpResponse;
+import com.jaegokeeper.onboarding.dto.SocialOwnerSignUpRequest;
 import com.jaegokeeper.store.dto.StoreDto;
 import com.jaegokeeper.store.mapper.StoreMapper;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,7 @@ public class OnboardingService {
     private final EmailAuthService emailAuthService;
     private final UserAuthMapper userAuthMapper;
     private final StoreMapper storeMapper;
+    private final PendingSocialSignupService pendingSocialSignupService;
 
     @Transactional
     public OwnerSignUpResponse ownerSignUp(OwnerSignUpRequest req) {
@@ -47,21 +51,47 @@ public class OnboardingService {
     }
 
     @Transactional
-    public int socialSignUp(String provider, SocialProfile profile) {
+    public OwnerSignUpResponse socialOwnerSignUp(SocialOwnerSignUpRequest req) {
+        PendingSocialSignup pending = pendingSocialSignupService.consume(req.getSignupToken());
+        String email = normalizeVerifiedSocialEmail(pending);
+
+        UserDTO existing = userAuthMapper.findUserByEmail(email);
+        if (existing != null) {
+            int userId = linkProviderToExistingUser(existing, pending.getProvider(), pending.getProviderUid());
+            StoreDto store = createOwnerStoreIfMissing(userId, req.getStore());
+            return OwnerSignUpResponse.builder()
+                    .userId(userId)
+                    .storeId(store.getStoreId())
+                    .userName(existing.getUserName())
+                    .storeName(store.getStoreName())
+                    .build();
+        }
+
+        UserDTO user = createSocialUser(pending, req.getAccount(), email);
+        StoreDto store = createSocialOwnerStore(user.getUserId(), req.getStore());
+
+        return OwnerSignUpResponse.builder()
+                .userId(user.getUserId())
+                .storeId(store.getStoreId())
+                .userName(user.getUserName())
+                .storeName(store.getStoreName())
+                .build();
+    }
+
+    @Transactional
+    public Integer linkExistingUserByVerifiedEmail(String provider, SocialProfile profile) {
         String email = profile.getEmail() != null ? profile.getEmail().trim().toLowerCase() : null;
 
-        if (email != null && !email.isEmpty() && profile.isEmailVerified()) {
-            UserDTO existing = userAuthMapper.findUserByEmail(email);
-            if (existing != null) {
-                return linkProviderToExistingUser(existing, provider, profile);
-            }
+        if (email == null || email.isEmpty() || !profile.isEmailVerified()) {
+            return null;
         }
 
-        if (email == null || email.isEmpty()) {
-            throw new BusinessException(BAD_REQUEST);
+        UserDTO existing = userAuthMapper.findUserByEmail(email);
+        if (existing == null) {
+            return null;
         }
 
-        return createNewSocialUser(provider, profile, email);
+        return linkProviderToExistingUser(existing, provider, profile.getProviderUid());
     }
 
     private UserDTO createLocalUser(AccountInfo account, String email) {
@@ -87,7 +117,7 @@ public class OnboardingService {
             throw new BusinessException(EMAIL_ALREADY_EXISTS);
         } catch (org.springframework.dao.DataAccessException e) {
             log.error("[OWNER_SIGNUP] 유저 생성 실패", e);
-            throw new BusinessException(INTERNAL_ERROR);
+            throw new BusinessException(INTERNAL_ERROR, e);
         }
 
         UidDTO uid = new UidDTO();
@@ -96,6 +126,36 @@ public class OnboardingService {
         uid.setProviderUid(email);
         userAuthMapper.insertAuth(uid);
 
+        return user;
+    }
+
+    private UserDTO createSocialUser(
+            PendingSocialSignup pending,
+            SocialOwnerSignUpRequest.AccountInfo account,
+            String email
+    ) {
+        UserDTO user = UserDTO.builder()
+                .userMail(email)
+                .passHash(null)
+                .userName(account.getUserName())
+                .userPhone(account.getUserPhone())
+                .isActive(true)
+                .emailVerified(true)
+                .build();
+
+        try {
+            int inserted = userAuthMapper.insertUser(user);
+            if (inserted != 1 || user.getUserId() == null) {
+                throw new BusinessException(REGISTER_FAILED);
+            }
+        } catch (org.springframework.dao.DuplicateKeyException e) {
+            throw new BusinessException(EMAIL_ALREADY_EXISTS);
+        } catch (org.springframework.dao.DataAccessException e) {
+            log.error("[SOCIAL_OWNER_SIGNUP] 유저 생성 실패 provider={}", pending.getProvider(), e);
+            throw new BusinessException(INTERNAL_ERROR, e);
+        }
+
+        registerUid(user.getUserId(), pending.getProvider(), pending.getProviderUid());
         return user;
     }
 
@@ -108,20 +168,48 @@ public class OnboardingService {
                 .storeAdd2(store.getStoreAdd2())
                 .build();
 
+        return insertStore(userId, storeDto, "OWNER_SIGNUP");
+    }
+
+    private StoreDto createSocialOwnerStore(int userId, SocialOwnerSignUpRequest.StoreInfo store) {
+        StoreDto storeDto = StoreDto.builder()
+                .userId(userId)
+                .storeName(store.getStoreName())
+                .storeTel(store.getStoreTel())
+                .storeAdd1(store.getStoreAdd1())
+                .storeAdd2(store.getStoreAdd2())
+                .build();
+
+        return insertStore(userId, storeDto, "SOCIAL_OWNER_SIGNUP");
+    }
+
+    private StoreDto createOwnerStoreIfMissing(int userId, SocialOwnerSignUpRequest.StoreInfo store) {
+        StoreDto storeDto = StoreDto.builder()
+                .userId(userId)
+                .storeName(store.getStoreName())
+                .storeTel(store.getStoreTel())
+                .storeAdd1(store.getStoreAdd1())
+                .storeAdd2(store.getStoreAdd2())
+                .build();
+
+        return insertStore(userId, storeDto, "SOCIAL_OWNER_SIGNUP_LINKED");
+    }
+
+    private StoreDto insertStore(int userId, StoreDto storeDto, String logPrefix) {
         try {
             int inserted = storeMapper.insertStore(storeDto);
             if (inserted != 1 || storeDto.getStoreId() == 0) {
                 throw new BusinessException(INTERNAL_ERROR);
             }
         } catch (org.springframework.dao.DataAccessException e) {
-            log.error("[OWNER_SIGNUP] 스토어 생성 실패 userId={}", userId, e);
-            throw new BusinessException(INTERNAL_ERROR);
+            log.error("[{}] 스토어 생성 실패 userId={}", logPrefix, userId, e);
+            throw new BusinessException(INTERNAL_ERROR, e);
         }
 
         return storeDto;
     }
 
-    private int linkProviderToExistingUser(UserDTO existing, String provider, SocialProfile profile) {
+    private int linkProviderToExistingUser(UserDTO existing, String provider, String providerUid) {
         if (!Boolean.TRUE.equals(existing.getIsActive())) {
             throw new BusinessException(USER_NOT_ACTIVE);
         }
@@ -129,13 +217,13 @@ public class OnboardingService {
         UidDTO linked = new UidDTO();
         linked.setUserId(existing.getUserId());
         linked.setProvider(provider);
-        linked.setProviderUid(profile.getProviderUid());
+        linked.setProviderUid(providerUid);
 
         try {
             userAuthMapper.insertAuth(linked);
         } catch (org.springframework.dao.DuplicateKeyException e) {
             UidDTO existingAuth = userAuthMapper.findAuthByUserAndProvider(existing.getUserId(), provider);
-            if (existingAuth == null || !profile.getProviderUid().equals(existingAuth.getProviderUid())) {
+            if (existingAuth == null || !providerUid.equals(existingAuth.getProviderUid())) {
                 throw new BusinessException(FORBIDDEN);
             }
         }
@@ -143,46 +231,12 @@ public class OnboardingService {
         return existing.getUserId();
     }
 
-    private int createNewSocialUser(String provider, SocialProfile profile, String email) {
-        UserDTO user = new UserDTO();
-        String displayName = profile.getDisplayName();
-        user.setUserName(displayName != null && !displayName.trim().isEmpty() ? displayName.trim() : provider + "_USER");
-        user.setUserMail(email);
-        user.setIsActive(true);
-        user.setEmailVerified(profile.isEmailVerified());
-
-        try {
-            int inserted = userAuthMapper.insertUser(user);
-            if (inserted != 1 || user.getUserId() == null) {
-                throw new BusinessException(REGISTER_FAILED);
-            }
-        } catch (org.springframework.dao.DuplicateKeyException e) {
-            throw new BusinessException(EMAIL_ALREADY_EXISTS);
-        } catch (org.springframework.dao.DataAccessException e) {
-            log.error("[SOCIAL_SIGNUP] 유저 생성 실패 provider={}", provider, e);
-            throw new BusinessException(INTERNAL_ERROR);
+    private String normalizeVerifiedSocialEmail(PendingSocialSignup pending) {
+        String email = pending.getEmail() != null ? pending.getEmail().trim().toLowerCase() : null;
+        if (email == null || email.isEmpty() || !pending.isEmailVerified()) {
+            throw new BusinessException(EMAIL_NOT_VERIFIED);
         }
-
-        createSocialStore(user.getUserId(), user.getUserName());
-        registerUid(user.getUserId(), provider, profile.getProviderUid());
-
-        return user.getUserId();
-    }
-
-    private void createSocialStore(int userId, String userName) {
-        StoreDto store = new StoreDto();
-        store.setUserId(userId);
-        store.setStoreName(userName + "의 스토어");
-
-        try {
-            int inserted = storeMapper.insertStore(store);
-            if (inserted != 1 || store.getStoreId() == 0) {
-                throw new BusinessException(INTERNAL_ERROR);
-            }
-        } catch (org.springframework.dao.DataAccessException e) {
-            log.error("[SOCIAL_SIGNUP] 스토어 생성 실패 userId={}", userId, e);
-            throw new BusinessException(INTERNAL_ERROR);
-        }
+        return email;
     }
 
     private void registerUid(int userId, String provider, String providerUid) {
@@ -198,7 +252,7 @@ public class OnboardingService {
             }
         } catch (org.springframework.dao.DataAccessException e) {
             log.error("[SOCIAL_SIGNUP] uid 생성 실패 userId={}, provider={}", userId, provider, e);
-            throw new BusinessException(INTERNAL_ERROR);
+            throw new BusinessException(INTERNAL_ERROR, e);
         }
     }
 }

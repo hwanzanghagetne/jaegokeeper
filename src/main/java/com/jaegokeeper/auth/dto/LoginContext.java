@@ -9,7 +9,7 @@ public class LoginContext {
     private final int userId;
     private final int storeId;
     private final String userName;
-    private final String provider; // LOCAL/GOOGLE/KAKAO/NAVER
+    private final String provider; // LOCAL/GOOGLE/KAKAO
 
     public LoginContext(int userId, int storeId, String userName, String provider) {
         this.userId = userId;
