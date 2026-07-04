@@ -6,6 +6,7 @@ import com.jaegokeeper.alba.dto.AlbaRegisterRequest;
 import com.jaegokeeper.alba.dto.AlbaUpdateRequest;
 import com.jaegokeeper.alba.mapper.AlbaMapper;
 import com.jaegokeeper.auth.dto.LoginContext;
+import com.jaegokeeper.common.mail.MailService;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.image.dto.ImageInfoDTO;
 import com.jaegokeeper.image.service.ImageService;
@@ -32,6 +33,7 @@ public class AlbaService {
     private final AlbaMapper albaMapper;
     private final ScheduleMapper scheduleMapper;
     private final ImageService imageService;
+    private final MailService mailService;
 
     @Transactional
     public int saveAlbaRegister(LoginContext login, AlbaRegisterRequest req) {
@@ -72,6 +74,10 @@ public class AlbaService {
                 scheduleReq.setAlbaId(req.getAlbaId());
                 scheduleReq.setScheduleTime(scheduleTime);
                 scheduleMapper.insertSchedule(scheduleReq);
+            }
+
+            if (req.getAlbaEmail() != null) {
+                mailService.sendWelcome(req.getAlbaEmail(), req.getAlbaName());
             }
 
             return req.getAlbaId();
