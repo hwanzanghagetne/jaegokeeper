@@ -14,6 +14,7 @@
 - [프로젝트 배경](#프로젝트-배경)
 - [서비스 핵심 기능](#서비스-핵심-기능)
 - [프로젝트 구조](#프로젝트-구조)
+- [환경변수](#환경변수)
 - [기술적 도전과 해결](#기술적-도전과-해결)
 - [트러블슈팅](#트러블슈팅)
 
@@ -121,7 +122,8 @@
 ## 서비스 핵심 기능
 
 ### 1) 인증/회원
-- 로컬 로그인, 소셜 로그인(Google/Kakao/Naver)
+- 로컬 로그인(이메일/비밀번호), 소셜 로그인(Google/Kakao)
+- 신규 소셜 유저는 자동 가입 대신 추가정보(점주/매장) 입력 후 가입 완료, 동일 verified email 존재 시 기존 계정에 연동
 - 이메일 인증 기반 회원가입(Onboarding)
 - 세션 기반 인증 + 로그인 상태 검증 API
 
@@ -153,8 +155,10 @@
 | `board` | 공지/게시글 등록·수정·조회 |
 | `image` | 이미지 업로드, 경로 검증, 파일 조회/정리 |
 | `store` / `user` / `email` | 점포/사용자 정보 수정, 이메일 인증 코드 발송/검증 |
+| `mail` | 실제 메일 발송 인프라(Gmail SMTP, 비동기, 재시도) — `email`(인증코드 검증 로직)과 역할 분리 |
+| `common` | 공용 DTO(페이징), AOP(`@Timer`), 헬스체크 |
 | `exception` | 공통 에러코드 정의 및 전역 예외 응답 처리 |
-| `config` | 비동기, Swagger, Mail 등 인프라 설정 |
+| `config` | 비동기, Swagger, Jackson, Mail 템플릿 등 인프라 설정 |
 | `mappers` | MyBatis SQL 매퍼 XML |
 
 </div>
@@ -173,6 +177,7 @@ src/main/java/com/jaegokeeper
 ├─ exception
 ├─ image
 ├─ item
+├─ mail
 ├─ onboarding
 ├─ request
 ├─ schedule
@@ -197,6 +202,18 @@ src/main/resources/mappers
 
 ---
 
+## 환경변수
+
+이 프로젝트는 DB, 메일 계정, 이미지 저장 경로, CORS 허용 출처를 환경변수로 주입합니다.
+
+필수 환경변수: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `CORS_ALLOWED_ORIGINS`
+
+선택 환경변수: `IMAGE_BASE_DIR`
+
+로컬 실행 시 IntelliJ EnvFile 플러그인으로 `.env.local`을 실행 설정에 연결할 수 있으며, 실제 값은 Git에 포함하지 않습니다. 예시는 `.env.local.example`, `.env.prod.example`를 참고합니다.
+
+---
+
 ## 기술적 도전과 해결
 
 ### 1) 재고 출고 동시성 문제를 DB 원자 연산으로 해결
@@ -206,13 +223,14 @@ src/main/resources/mappers
 - 선택 이유: 동시성 제어를 애플리케이션이 아닌 DB 조건식에서 처리해야 경쟁 상태를 줄일 수 있기 때문
 - 결과: 업데이트 성공 행 수로 출고 성공/실패를 판별하고, 부족 시 `STOCK_QUANTITY_NOT_ENOUGH`를 반환
 
-### 2) 점포 권한 경계 일관화
-- 도전: 멀티 점포 구조에서 `storeId` 권한 검증이 누락되면 타 점포 데이터 접근 위험이 발생
-- 해결:
-  - `SessionInterceptor`에서 세션 로그인/경로 `storeId` 1차 검증
-  - `Item/Stock/Request/Alba` 서비스에서 `validateStoreAccess`로 2차 검증
-- 선택 이유: 인터셉터는 공통 URL 패턴 기반의 1차 방어를 담당하고, 서비스는 비즈니스 로직 실행 직전 최종 권한 검증을 담당하도록 분리
-- 결과: 권한 불일치 요청을 인터셉터+서비스 이중 레이어에서 차단
+### 2) 점포 권한 경계를 3단계로 방어
+- 도전: 멀티 점포 구조에서 `storeId` 권한 검증이 한 곳에서만 이뤄지면, 그 지점의 설정 실수(인터셉터 매핑 누락, path variable 이름 변경 등) 하나로 타 점포 데이터 접근을 막을 방법이 사라짐
+- 해결: 서로 다른 실패 지점을 가정한 3단계로 구성
+  1. `SessionInterceptor` — URL 패턴(`/stores/**`)과 path variable 이름(`storeId`)에 의존하는 1차 방어. 빠르게 차단하지만 URL 구조가 바뀌면 조용히 우회될 수 있음
+  2. `StoreAccessValidator`(공용 컴포넌트) — 컨트롤러가 실제로 바인딩한 `storeId` 값을 직접 비교. URL 구조와 무관하게 항상 동작하는 신뢰 지점. `Alba/Item/Request/Schedule/Stock` 서비스에 중복 구현돼 있던 걸 하나로 통합
+  3. MyBatis 쿼리의 `WHERE store_id = #{storeId}` — 앞의 두 단계가 모두 뚫려도 남는 최종 방어선. 애초에 다른 점포의 row 자체를 조회/수정 대상에서 제외
+- 현재는 계정 1개당 점포 1개 구조라 2단계의 검증이 항상 참인 조건이 되지만, 추후 한 계정이 여러 점포를 관리하는 구조로 확장할 경우를 대비해 URL 기반 검증 구조를 유지함(그 시점엔 "세션 storeId와 같은가"가 아니라 "세션이 접근 가능한 점포 목록에 있는가"로 검증 로직만 바뀌면 되고, API 구조는 그대로 재사용 가능)
+- 결과: 세 지점 중 하나가 우회돼도 나머지가 막는 구조. 중복되던 검증 로직은 `StoreAccessValidator` 하나로 통합해 서비스 추가 시 검증 누락 위험을 줄임
 
 ### 3) 파일 저장과 DB 트랜잭션 정합성
 - 도전: 이미지 업로드는 파일시스템, 비즈니스 데이터는 DB에 저장되어 실패 시 정합성 깨질 수 있음
@@ -247,3 +265,5 @@ src/main/resources/mappers
 - 배운 점: 인증 장애는 앱 코드와 DB 스키마를 분리해서 단계적으로 검증해야 원인을 빠르게 특정할 수 있음
 
 ---
+
+
