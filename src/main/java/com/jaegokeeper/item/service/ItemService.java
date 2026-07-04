@@ -58,7 +58,7 @@ public class ItemService {
         } catch (Exception e) {
             if (uploadedImage != null) imgService.deleteImageFile(uploadedImage.getImagePath());
             if (e instanceof BusinessException) throw (BusinessException) e;
-            throw new BusinessException(INTERNAL_ERROR);
+            throw new BusinessException(INTERNAL_ERROR, e);
         }
     }
 

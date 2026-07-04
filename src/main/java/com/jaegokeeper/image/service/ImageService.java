@@ -99,7 +99,7 @@ public class ImageService {
             throw e;
         } catch (Exception e) {
             deleteQuietly(savedPath);
-            throw new BusinessException(INTERNAL_ERROR);
+            throw new BusinessException(INTERNAL_ERROR, e);
         }
     }
 

@@ -50,7 +50,7 @@ public class ImageController {
                     .contentType(MediaType.parseMediaType(contentType))
                     .body(resource);
         } catch (Exception e) {
-            throw new BusinessException(INTERNAL_ERROR);
+            throw new BusinessException(INTERNAL_ERROR, e);
         }
     }
 }
