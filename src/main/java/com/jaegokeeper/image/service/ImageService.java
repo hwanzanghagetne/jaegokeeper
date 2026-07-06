@@ -4,12 +4,23 @@ import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.image.dto.ImageInfoDTO;
 import com.jaegokeeper.image.mapper.ImageMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Set;
 import java.util.UUID;
 
@@ -19,18 +30,17 @@ import static com.jaegokeeper.exception.ErrorCode.*;
 @RequiredArgsConstructor
 public class ImageService {
 
-    private static final String ENV_IMAGE_BASE_DIR = "IMAGE_BASE_DIR";
     private static final Set<String> ALLOWED_EXT = Set.of("jpg", "jpeg", "png", "webp");
+    private static final Duration PRESIGN_DURATION = Duration.ofMinutes(10);
+    // 서버(EC2) OS 타임존이 UTC라 LocalDate.now()가 서버 로컬시간과 어긋날 수 있어 명시적으로 지정
+    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     private final ImageMapper imageMapper;
+    private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
 
-    private Path getBaseDirPath() {
-        String configured = System.getenv(ENV_IMAGE_BASE_DIR);
-        if (configured != null && !configured.isBlank()) {
-            return Paths.get(configured);
-        }
-        return Paths.get(System.getProperty("user.home"), "jaegokeeper", "upload", "img");
-    }
+    @Value("${S3_BUCKET_NAME}")
+    private String bucketName;
 
     private String sanitizeFileName(String name) {
         if (name == null) return "unknown";
@@ -50,7 +60,6 @@ public class ImageService {
     @Transactional
     public int uploadImg(ImageInfoDTO dto) {
         MultipartFile file = dto.getFile();
-        Path savedPath = null;
 
         if (file == null || file.isEmpty()) {
             throw new BusinessException(BAD_REQUEST);
@@ -62,44 +71,48 @@ public class ImageService {
             throw new BusinessException(IMAGE_INVALID_FORMAT);
         }
 
+        Path tempPath = null;
+        String key = null;
+
         try {
-            Path baseDirPath = getBaseDirPath().toAbsolutePath().normalize();
-            LocalDate d = LocalDate.now();
-            String relDir = String.format("%04d/%02d/%02d", d.getYear(), d.getMonthValue(), d.getDayOfMonth());
-            Path dirPath = baseDirPath.resolve(relDir).normalize();
-            if (!dirPath.startsWith(baseDirPath)) {
-                throw new BusinessException(BAD_REQUEST);
-            }
-            Files.createDirectories(dirPath);
+            // 확장자만으로는 위조 가능하니, 임시 파일로 받아 실제 콘텐츠 타입을 확인한 뒤 S3에 올린다.
+            tempPath = Files.createTempFile("img-upload-", "." + ext);
+            file.transferTo(tempPath);
 
-            String storedName = UUID.randomUUID().toString().replace("-", "") + "." + ext;
-            String relPath = relDir + "/" + storedName;
-            savedPath = dirPath.resolve(storedName).normalize();
-            if (!savedPath.startsWith(baseDirPath)) {
-                throw new BusinessException(BAD_REQUEST);
-            }
-
-            file.transferTo(savedPath);
-
-            String mimeType = Files.probeContentType(savedPath);
+            String mimeType = Files.probeContentType(tempPath);
             if (mimeType == null || !mimeType.startsWith("image/")) {
-                Files.deleteIfExists(savedPath);
                 throw new BusinessException(IMAGE_INVALID_FORMAT);
             }
 
+            LocalDate d = LocalDate.now(KST);
+            String relDir = String.format("%04d/%02d/%02d", d.getYear(), d.getMonthValue(), d.getDayOfMonth());
+            String storedName = UUID.randomUUID().toString().replace("-", "") + "." + ext;
+            key = relDir + "/" + storedName;
+
+            s3Client.putObject(
+                    PutObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(key)
+                            .contentType(mimeType)
+                            .build(),
+                    RequestBody.fromFile(tempPath)
+            );
+
             dto.setOriginName(originalName);
-            // DB에는 상대 경로만 저장하고, 실제 절대 경로는 조회 시 base dir로 resolve한다.
-            dto.setImagePath(relPath);
+            // DB에는 S3 객체 키만 저장하고, 실제 접근 URL은 조회 시 presigned URL로 발급한다.
+            dto.setImagePath(key);
 
             imageMapper.insertImgInfo(dto);
 
             return dto.getImageId();
         } catch (BusinessException e) {
-            deleteQuietly(savedPath);
+            deleteFromS3Quietly(key);
             throw e;
         } catch (Exception e) {
-            deleteQuietly(savedPath);
+            deleteFromS3Quietly(key);
             throw new BusinessException(INTERNAL_ERROR, e);
+        } finally {
+            deleteTempQuietly(tempPath);
         }
     }
 
@@ -113,39 +126,40 @@ public class ImageService {
     }
 
     @Transactional(readOnly = true)
-    public Path resolveImagePath(String storedPath) {
-        if (storedPath == null || storedPath.isBlank()) {
+    public String generatePresignedUrl(String key) {
+        if (key == null || key.isBlank()) {
             throw new BusinessException(IMAGE_NOT_FOUND);
         }
 
-        Path rawPath = Paths.get(storedPath);
-        if (rawPath.isAbsolute()) {
-            // 하위 호환: 과거 절대경로 저장 데이터도 그대로 조회 가능하게 유지
-            return rawPath.normalize();
-        }
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
 
-        Path baseDirPath = getBaseDirPath().toAbsolutePath().normalize();
-        Path resolved = baseDirPath.resolve(storedPath).normalize();
-        if (!resolved.startsWith(baseDirPath)) {
-            throw new BusinessException(BAD_REQUEST);
-        }
-        return resolved;
+        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(PRESIGN_DURATION)
+                .getObjectRequest(getObjectRequest)
+                .build();
+
+        return s3Presigner.presignGetObject(presignRequest).url().toString();
     }
 
-    // 파일만 삭제 — DB 레코드는 트랜잭션 롤백이 처리하므로 건드리지 않는다.
-    public void deleteImageFile(String relPath) {
-        if (relPath == null || relPath.isBlank()) return;
+    // DB 레코드는 트랜잭션 롤백이 처리하므로 건드리지 않고, S3 객체만 삭제한다.
+    public void deleteImageFile(String key) {
+        deleteFromS3Quietly(key);
+    }
+
+    private void deleteFromS3Quietly(String key) {
+        if (key == null || key.isBlank()) return;
         try {
-            deleteQuietly(resolveImagePath(relPath));
+            s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucketName).key(key).build());
         } catch (Exception ignored) {
-            // 경로 resolve 실패 시에도 원인 예외를 덮지 않는다.
+            // cleanup 실패는 원인 예외를 덮지 않는다.
         }
     }
 
-    private void deleteQuietly(Path path) {
-        if (path == null) {
-            return;
-        }
+    private void deleteTempQuietly(Path path) {
+        if (path == null) return;
         try {
             Files.deleteIfExists(path);
         } catch (Exception ignored) {

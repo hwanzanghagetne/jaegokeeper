@@ -11,6 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -24,6 +26,12 @@ public class ImageServiceTest {
 
     @Mock
     private ImageMapper imageMapper;
+
+    @Mock
+    private S3Client s3Client;
+
+    @Mock
+    private S3Presigner s3Presigner;
 
     @Before
     public void setUp() {
@@ -96,27 +104,19 @@ public class ImageServiceTest {
     }
 
     @Test
-    public void 경로resolve_빈경로_예외() {
+    public void presignedUrl_빈키_예외() {
         BusinessException e = assertThrows(BusinessException.class,
-                () -> imageService.resolveImagePath(""));
+                () -> imageService.generatePresignedUrl(""));
 
         assertEquals(ErrorCode.IMAGE_NOT_FOUND, e.getErrorCode());
     }
 
     @Test
-    public void 경로resolve_널경로_예외() {
+    public void presignedUrl_널키_예외() {
         BusinessException e = assertThrows(BusinessException.class,
-                () -> imageService.resolveImagePath(null));
+                () -> imageService.generatePresignedUrl(null));
 
         assertEquals(ErrorCode.IMAGE_NOT_FOUND, e.getErrorCode());
-    }
-
-    @Test
-    public void 경로resolve_상위경로탈출시도_예외() {
-        BusinessException e = assertThrows(BusinessException.class,
-                () -> imageService.resolveImagePath("../../etc/passwd"));
-
-        assertEquals(ErrorCode.BAD_REQUEST, e.getErrorCode());
     }
 
     @Test
