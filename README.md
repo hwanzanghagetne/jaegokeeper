@@ -14,7 +14,6 @@
 - [프로젝트 배경](#프로젝트-배경)
 - [서비스 핵심 기능](#서비스-핵심-기능)
 - [프로젝트 구조](#프로젝트-구조)
-- [환경변수](#환경변수)
 - [기술적 도전과 해결](#기술적-도전과-해결)
 - [트러블슈팅](#트러블슈팅)
 
@@ -52,10 +51,10 @@
 
 ### Backend
 ![java 17](https://img.shields.io/badge/-Java%2017-ED8B00?style=flat-square&logo=java&logoColor=white)
-![spring mvc 5.3](https://img.shields.io/badge/Spring%20MVC%205.3-6DB33F?style=flat-square&logo=spring&logoColor=white)
+![spring 6.2](https://img.shields.io/badge/Spring%206.2%20(Jakarta)-6DB33F?style=flat-square&logo=spring&logoColor=white)
 ![mybatis 3.5](https://img.shields.io/badge/MyBatis%203.5-BE1E2D?style=flat-square&logoColor=white)
 ![mysql 8.0](https://img.shields.io/badge/MySQL%208.0-005C84?style=flat-square&logo=mysql&logoColor=white)
-![swagger](https://img.shields.io/badge/Swagger%202.9.2-85EA2D?style=flat-square&logo=swagger&logoColor=black)
+![springdoc openapi](https://img.shields.io/badge/springdoc--openapi%202.8-85EA2D?style=flat-square&logo=swagger&logoColor=black)
 
 ### Frontend
 ![react](https://img.shields.io/badge/React%2019-61DAFB?style=flat-square&logo=react&logoColor=black)
@@ -65,8 +64,12 @@
 
 ### Infra / Deploy
 ![nginx](https://img.shields.io/badge/Nginx-009639?style=flat-square&logo=nginx&logoColor=white)
-![tomcat 9](https://img.shields.io/badge/Tomcat%209-F8DC75?style=flat-square&logo=apachetomcat&logoColor=black)
+![tomcat 10](https://img.shields.io/badge/Tomcat%2010-F8DC75?style=flat-square&logo=apachetomcat&logoColor=black)
 ![aws ec2](https://img.shields.io/badge/AWS%20EC2-FF9900?style=flat-square&logo=amazonec2&logoColor=white)
+![aws rds](https://img.shields.io/badge/AWS%20RDS%20(MySQL)-527FFF?style=flat-square&logo=amazonrds&logoColor=white)
+![aws s3](https://img.shields.io/badge/AWS%20S3-569A31?style=flat-square&logo=amazons3&logoColor=white)
+![lets encrypt](https://img.shields.io/badge/Let's%20Encrypt-003A70?style=flat-square&logo=letsencrypt&logoColor=white)
+![github actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
 ![maven](https://img.shields.io/badge/Maven-1C1C1C?style=flat-square&logo=apachemaven&logoColor=white)
 
 ---
@@ -78,6 +81,8 @@
 | 문서 |
 |:---:|
 | [프론트엔드 배포 주소](https://jaegokeeper-blush.vercel.app/) |
+| [백엔드 배포 주소](https://jaegokeeper.store) |
+| [API 문서 (Swagger UI)](https://jaegokeeper.store/swagger-ui/index.html) |
 | [프론트엔드 GitHub](https://github.com/Jachodan/jachodan-next) |
 | [백엔드 GitHub](https://github.com/hwanzanghagetne/jaegokeeper) |
 | [프로젝트 노션](https://www.notion.so/Jachodan-228b76bc91b880c2b4e6c54facfd6395) |
@@ -89,12 +94,14 @@
 ## 시스템 아키텍처 및 배포 구조
 
 <p align="center">
-  <img src="./assets/images/jaegokeeper-deployment-architecture.png" alt="재고키퍼 배포 아키텍처: Client -> Vercel(Next.js/React) -> EC2(Nginx -> Tomcat -> Spring MVC) -> MySQL/Local Image Storage" width="1000" />
+  <img src="./assets/images/jaegokeeper-deployment-architecture.png" alt="재고키퍼 배포 아키텍처: Browser -> Vercel(Next.js/React) -> HTTPS(jaegokeeper.store) -> EC2(Nginx -> Tomcat 10 -> Spring MVC) -> AWS RDS(MySQL) / AWS S3(presigned URL). 배포 파이프라인: GitHub Actions -> SSH Deploy -> EC2/Tomcat -> Health Check(실패 시 Rollback)" width="1000" />
 </p>
 
-- `Client`는 `Vercel`에 배포된 `Next.js(React)` 프론트엔드에 접속하고, API 요청은 백엔드로 전달됩니다.
-- 백엔드는 `EC2` 내부에서 `Nginx(Reverse Proxy)` -> `Tomcat(8080)` -> `Spring MVC` 흐름으로 동작합니다.
-- `Spring MVC`는 `MySQL`과 `Local Image Storage`를 사용하며, 배포는 `GitHub Actions` 기반으로 자동화했습니다.
+- `Client`는 `Vercel`에 배포된 `Next.js(React)` 프론트엔드(`https://jaegokeeper-blush.vercel.app`)에 접속하고, API 요청은 자체 도메인(`https://jaegokeeper.store`)의 백엔드로 전달됩니다.
+- 백엔드는 `EC2` 위에서 `Nginx(Reverse Proxy, Let's Encrypt HTTPS)` -> `Tomcat 10(8080, Jakarta EE)` -> `Spring MVC` 흐름으로 동작합니다.
+- DB(`MySQL`)는 `EC2`와 분리된 `AWS RDS`를 사용하며, RDS는 EC2 보안 그룹에서만 접근 가능하도록 제한하고 퍼블릭 액세스를 차단했습니다.
+- 이미지는 로컬 파일시스템 대신 `AWS S3`에 저장하고, 조회 시 presigned URL로 리다이렉트합니다. EC2에 부여한 IAM 역할로 인증하며 별도 액세스 키는 관리하지 않습니다.
+- 배포는 `GitHub Actions`(GitHub 호스티드 러너에서 빌드 → SSH로 EC2에 WAR 전달 → Tomcat 재기동)로 자동화했고, 헬스체크 실패 시 이전 버전으로 자동 롤백합니다.
 
 ---
 
@@ -199,18 +206,6 @@ src/main/resources/mappers
 ```
 
 </details>
-
----
-
-## 환경변수
-
-이 프로젝트는 DB, 메일 계정, 이미지 저장 경로, CORS 허용 출처를 환경변수로 주입합니다.
-
-필수 환경변수: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `CORS_ALLOWED_ORIGINS`
-
-선택 환경변수: `IMAGE_BASE_DIR`
-
-로컬 실행 시 IntelliJ EnvFile 플러그인으로 `.env.local`을 실행 설정에 연결할 수 있으며, 실제 값은 Git에 포함하지 않습니다. 예시는 `.env.local.example`, `.env.prod.example`를 참고합니다.
 
 ---
 
