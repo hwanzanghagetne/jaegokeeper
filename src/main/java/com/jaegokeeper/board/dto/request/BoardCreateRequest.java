@@ -2,12 +2,12 @@ package com.jaegokeeper.board.dto.request;
 
 import com.jaegokeeper.board.enums.BoardWriterType;
 import com.jaegokeeper.image.dto.ImageInfoDTO;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 
 @Getter
@@ -23,16 +23,6 @@ public class BoardCreateRequest extends ImageInfoDTO {
 
     private BoardWriterType writerType;
 
-    @ApiModelProperty(
-            value = """
-        작성자 ID  
-        - writerType = ALBA -> 필수  
-        - writerType = ANONYMOUS -> null
-        """
-    )
+    @Schema(description = "작성자 ID - writerType = ALBA -> 필수, writerType = ANONYMOUS -> null")
     private Integer writerId;
-
-
-
-
 }

@@ -1,12 +1,12 @@
 package com.jaegokeeper.common.dto;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 @Getter
 @Setter
@@ -20,12 +20,12 @@ public abstract class PageRequest {
     @Max(value = 50, message = "size는 50 이하입니다.")
     private Integer size;
 
-    @ApiModelProperty(hidden = true)
+    @Schema(hidden = true)
     public int getPageValue() {
         return page == null ? 1 : page;
     }
 
-    @ApiModelProperty(hidden = true)
+    @Schema(hidden = true)
     public int getSizeValue() {
         return size == null ? 10 : size;
     }

@@ -20,6 +20,9 @@
             <beans:bean class="com.jaegokeeper.auth.utils.LoginUserArgumentResolver"/>
         </argument-resolvers>
         <message-converters>
+            <!-- byte[] 응답(springdoc의 /v3/api-docs 등)이 Jackson에 의해 base64 문자열로
+                 감싸이지 않도록 Jackson보다 먼저 등록 -->
+            <beans:bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter"/>
             <beans:bean class="org.springframework.http.converter.StringHttpMessageConverter">
                 <beans:constructor-arg value="UTF-8"/>
             </beans:bean>
@@ -29,6 +32,9 @@
             </beans:bean>
         </message-converters>
     </annotation-driven>
+
+    <!-- springdoc이 이름으로 찾는 conversion service (annotation-driven 내부용과 별개로 명시 등록) -->
+    <beans:bean id="mvcConversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean"/>
 
     <cors>
         <mapping path="/**"
@@ -43,9 +49,23 @@
     <!-- 정적 리소스 처리 -->
     <resources mapping="/resources/**" location="/resources/" />
 
-    <!-- Swagger UI 리소스 -->
-    <resources mapping="swagger-ui.html" location="classpath:/META-INF/resources/" />
+    <!-- Swagger UI 리소스 (springdoc). webjar 내부 경로가 버전 하위 폴더라 버전 고정 매핑
+         (swagger-ui 버전 올릴 때 이 경로도 같이 갱신 필요).
+         swagger-override를 먼저 찾아서, webjar 기본값(데모 Petstore API 주소)이 박힌
+         swagger-initializer.js 대신 우리 /v3/api-docs를 가리키는 버전으로 덮어씀 -->
+    <resources mapping="/swagger-ui/**"
+               location="classpath:/swagger-override/,classpath:/META-INF/resources/webjars/swagger-ui/5.32.2/" />
     <resources mapping="/webjars/**" location="classpath:/META-INF/resources/webjars/" />
+
+    <!-- springdoc-openapi 2.x (non-Boot이라 자동설정이 없어 수동 등록) -->
+    <beans:bean class="org.springdoc.core.properties.SpringDocConfigProperties"/>
+    <beans:bean class="org.springdoc.core.properties.SwaggerUiConfigProperties"/>
+    <beans:bean class="org.springdoc.core.properties.SwaggerUiOAuthProperties"/>
+    <beans:bean class="org.springdoc.core.configuration.SpringDocConfiguration"/>
+    <beans:bean class="org.springdoc.webmvc.core.configuration.SpringDocWebMvcConfiguration"/>
+    <beans:bean class="org.springdoc.webmvc.ui.SwaggerConfig"/>
+    <beans:bean class="org.springframework.boot.autoconfigure.web.WebProperties"/>
+    <beans:bean class="org.springframework.boot.autoconfigure.web.servlet.WebMvcProperties"/>
 
     <!-- 컴포넌트 스캔: 컨트롤러 계층만 -->
     <context:component-scan base-package="com.jaegokeeper" use-default-filters="false">
@@ -76,9 +96,9 @@
             <mapping path="/users/**"/>
             <mapping path="/img/**"/>
 
-            <!-- swagger/springfox -->
-            <exclude-mapping path="/v2/api-docs"/>
-            <exclude-mapping path="/swagger-resources/**"/>
+            <!-- swagger/springdoc -->
+            <exclude-mapping path="/v3/api-docs/**"/>
+            <exclude-mapping path="/swagger-ui/**"/>
             <exclude-mapping path="/swagger-ui.html"/>
             <exclude-mapping path="/webjars/**"/>
 

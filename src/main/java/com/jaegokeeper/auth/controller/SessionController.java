@@ -3,13 +3,13 @@ package com.jaegokeeper.auth.controller;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.auth.dto.SessionResponse;
 import com.jaegokeeper.exception.BusinessException;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 import static com.jaegokeeper.auth.utils.SessionInterceptor.SESSION_KEY;
 import static com.jaegokeeper.exception.ErrorCode.LOGIN_REQUIRED;
@@ -19,16 +19,14 @@ import static com.jaegokeeper.exception.ErrorCode.LOGIN_REQUIRED;
 @RequestMapping("/auth/session")
 public class SessionController {
 
-    // 로그아웃
-    @ApiOperation(value = "로그아웃", notes = "로그인된 세션을 클린업합니다. POST요청으로 바디X")
+    @Operation(summary = "로그아웃", description = "로그인된 세션을 클린업합니다. POST요청으로 바디X")
     @PostMapping(value="/logout")
     public ResponseEntity<Void> logout(HttpSession session) {
         if (session != null) session.invalidate();
         return ResponseEntity.noContent().build();
     }
 
-    // 로그인
-    @ApiOperation(value = "유저정보", notes = "현재 등록된 세션 기준으로 유저 정보를 조회합니다. GET요청으로 바디X")
+    @Operation(summary = "유저정보", description = "현재 등록된 세션 기준으로 유저 정보를 조회합니다. GET요청으로 바디X")
     @GetMapping(value="/me", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SessionResponse> me(HttpSession session) {
         LoginContext login = (session != null) ? (LoginContext) session.getAttribute(SESSION_KEY) : null;

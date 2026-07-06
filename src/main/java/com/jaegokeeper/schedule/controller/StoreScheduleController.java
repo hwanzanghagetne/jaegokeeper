@@ -8,13 +8,13 @@ import com.jaegokeeper.schedule.dto.ScheduleUpdateRequest;
 import com.jaegokeeper.schedule.dto.WorkInOutRequest;
 import com.jaegokeeper.schedule.dto.WorkTimeResponse;
 import com.jaegokeeper.schedule.service.ScheduleService;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class StoreScheduleController {
 
     private final ScheduleService scheduleService;
 
-    @ApiOperation(value = "스토어별 알바 근무 스케줄 등록")
+    @Operation(summary = "스토어별 알바 근무 스케줄 등록")
     @PostMapping
     public ResponseEntity<Void> createSchedule(
             @PathVariable int storeId,
@@ -35,7 +35,7 @@ public class StoreScheduleController {
         return ResponseEntity.status(201).build();
     }
 
-    @ApiOperation(value = "스토어별 알바 근무 스케줄 수정")
+    @Operation(summary = "스토어별 알바 근무 스케줄 수정")
     @PutMapping("/{scheduleId}")
     public ResponseEntity<Void> updateSchedule(
             @PathVariable int storeId,
@@ -47,7 +47,7 @@ public class StoreScheduleController {
         return ResponseEntity.noContent().build();
     }
 
-    @ApiOperation(value = "스토어별 특정 날짜 스케줄 조회")
+    @Operation(summary = "스토어별 특정 날짜 스케줄 조회")
     @GetMapping
     public ResponseEntity<List<ScheduleListResponse>> getSchedulesByDate(
             @PathVariable int storeId,
@@ -56,7 +56,7 @@ public class StoreScheduleController {
         return ResponseEntity.ok(scheduleService.getScheduleListByDate(login, storeId, date));
     }
 
-    @ApiOperation(value = "스토어별 알바 출/퇴근 시간 조회")
+    @Operation(summary = "스토어별 알바 출/퇴근 시간 조회")
     @GetMapping("/worktime")
     public ResponseEntity<List<WorkTimeResponse>> getWorkTime(
             @PathVariable int storeId,
@@ -66,7 +66,7 @@ public class StoreScheduleController {
         return ResponseEntity.ok(scheduleService.selectWorkTime(login, storeId, albaId, date));
     }
 
-    @ApiOperation(value = "스토어별 출근 기록")
+    @Operation(summary = "스토어별 출근 기록")
     @PostMapping("/workin")
     public ResponseEntity<Void> recordWorkIn(
             @PathVariable int storeId,
@@ -76,7 +76,7 @@ public class StoreScheduleController {
         return ResponseEntity.ok().build();
     }
 
-    @ApiOperation(value = "스토어별 퇴근 기록")
+    @Operation(summary = "스토어별 퇴근 기록")
     @PostMapping("/workout")
     public ResponseEntity<Void> recordWorkOut(
             @PathVariable int storeId,

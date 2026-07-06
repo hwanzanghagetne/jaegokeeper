@@ -10,15 +10,15 @@ import com.jaegokeeper.request.dto.request.RequestUpdateRequest;
 import com.jaegokeeper.request.dto.response.RequestDetailResponse;
 import com.jaegokeeper.request.dto.response.RequestListResponse;
 import com.jaegokeeper.request.service.RequestService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
-@Api(tags = "Request")
+@Tag(name = "Request")
 @RestController
 @RequestMapping("/stores/{storeId}/requests")
 @RequiredArgsConstructor
@@ -26,7 +26,7 @@ public class RequestController {
 
     private final RequestService requestService;
 
-    @ApiOperation(value = "요청 목록 조회")
+    @Operation(summary = "요청 목록 조회")
     @GetMapping
     public ResponseEntity<PageResponse<RequestListResponse>> getRequests(
             @PathVariable Integer storeId,
@@ -35,7 +35,7 @@ public class RequestController {
         return ResponseEntity.ok(requestService.getRequestList(login, storeId, dto));
     }
 
-    @ApiOperation(value = "요청 상세 조회")
+    @Operation(summary = "요청 상세 조회")
     @GetMapping("/{requestId}")
     public ResponseEntity<RequestDetailResponse> getRequestDetail(
             @PathVariable Integer storeId,
@@ -44,7 +44,7 @@ public class RequestController {
         return ResponseEntity.ok(requestService.getRequestDetail(login, storeId, requestId));
     }
 
-    @ApiOperation(value = "요청 생성")
+    @Operation(summary = "요청 생성")
     @PostMapping
     public ResponseEntity<Integer> createRequests(
             @PathVariable Integer storeId,
@@ -54,7 +54,7 @@ public class RequestController {
         return ResponseEntity.status(201).body(createdCount);
     }
 
-    @ApiOperation(value = "요청 삭제")
+    @Operation(summary = "요청 삭제")
     @DeleteMapping("/{requestId}")
     public ResponseEntity<Void> deleteRequest(
             @PathVariable Integer storeId,
@@ -64,7 +64,7 @@ public class RequestController {
         return ResponseEntity.noContent().build();
     }
 
-    @ApiOperation(value = "요청 수정")
+    @Operation(summary = "요청 수정")
     @PutMapping("/{requestId}")
     public ResponseEntity<Void> updateRequest(
             @PathVariable Integer storeId,
@@ -75,7 +75,7 @@ public class RequestController {
         return ResponseEntity.noContent().build();
     }
 
-    @ApiOperation(value = "요청 상태 수정")
+    @Operation(summary = "요청 상태 수정")
     @PatchMapping("/{requestId}/status")
     public ResponseEntity<Void> updateRequestStatus(
             @PathVariable Integer storeId,

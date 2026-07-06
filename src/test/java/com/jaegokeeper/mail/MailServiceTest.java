@@ -3,10 +3,10 @@ package com.jaegokeeper.mail;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.thymeleaf.spring5.SpringTemplateEngine;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
-import javax.mail.Session;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
 import java.util.Properties;
 
 import static org.mockito.ArgumentMatchers.any;

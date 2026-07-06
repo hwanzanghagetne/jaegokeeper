@@ -2,7 +2,7 @@ package com.jaegokeeper.auth.dto;
 
 import lombok.*;
 
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 
 @Getter @Setter
 @NoArgsConstructor

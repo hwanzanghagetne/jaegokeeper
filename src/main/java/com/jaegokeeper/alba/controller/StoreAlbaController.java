@@ -8,12 +8,12 @@ import com.jaegokeeper.alba.dto.AlbaUpdateRequest;
 import com.jaegokeeper.alba.service.AlbaService;
 import com.jaegokeeper.auth.annotation.LoginUser;
 import com.jaegokeeper.auth.dto.LoginContext;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -23,7 +23,7 @@ public class StoreAlbaController {
 
     private final AlbaService albaService;
 
-    @ApiOperation(value = "스토어별 알바 목록 조회")
+    @Operation(summary = "스토어별 알바 목록 조회")
     @GetMapping
     public ResponseEntity<List<AlbaListResponse>> getAlbas(
             @PathVariable int storeId,
@@ -31,7 +31,7 @@ public class StoreAlbaController {
         return ResponseEntity.ok(albaService.getAllAlbaList(login, storeId));
     }
 
-    @ApiOperation(value = "스토어별 알바 등록")
+    @Operation(summary = "스토어별 알바 등록")
     @PostMapping
     public ResponseEntity<AlbaCreateResponse> createAlba(
             @PathVariable int storeId,
@@ -42,7 +42,7 @@ public class StoreAlbaController {
         return ResponseEntity.status(201).body(new AlbaCreateResponse(albaId));
     }
 
-    @ApiOperation(value = "스토어별 알바 상세 조회")
+    @Operation(summary = "스토어별 알바 상세 조회")
     @GetMapping("/{albaId}")
     public ResponseEntity<AlbaDetailResponse> getAlba(
             @PathVariable int storeId,
@@ -51,7 +51,7 @@ public class StoreAlbaController {
         return ResponseEntity.ok(albaService.getAlbaById(login, storeId, albaId));
     }
 
-    @ApiOperation(value = "스토어별 알바 수정")
+    @Operation(summary = "스토어별 알바 수정")
     @PutMapping("/{albaId}")
     public ResponseEntity<Void> updateAlba(
             @PathVariable int storeId,
@@ -63,7 +63,7 @@ public class StoreAlbaController {
         return ResponseEntity.noContent().build();
     }
 
-    @ApiOperation(value = "스토어별 알바 삭제")
+    @Operation(summary = "스토어별 알바 삭제")
     @DeleteMapping("/{albaId}")
     public ResponseEntity<Void> deleteAlba(
             @PathVariable int storeId,

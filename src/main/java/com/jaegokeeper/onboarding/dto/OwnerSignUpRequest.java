@@ -3,8 +3,8 @@ package com.jaegokeeper.onboarding.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.validation.Valid;
-import javax.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
 @Getter
 @NoArgsConstructor

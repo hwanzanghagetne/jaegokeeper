@@ -6,15 +6,15 @@ import com.jaegokeeper.stock.dto.StockAmountUpdateRequest;
 import com.jaegokeeper.stock.dto.StockDetailResponse;
 import com.jaegokeeper.stock.dto.StockInOutRequest;
 import com.jaegokeeper.stock.service.StockService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
-@Api(tags = "Stock")
+@Tag(name = "Stock")
 @RestController
 @RequestMapping("/stores/{storeId}/items/{itemId}/stock")
 @RequiredArgsConstructor
@@ -22,7 +22,7 @@ public class StockController {
 
     private final StockService stockService;
 
-    @ApiOperation(value = "재고 상세 조회")
+    @Operation(summary = "재고 상세 조회")
     @GetMapping
     public ResponseEntity<StockDetailResponse> getStockDetail(
             @PathVariable Integer storeId,
@@ -31,7 +31,7 @@ public class StockController {
         return ResponseEntity.ok(stockService.getStockDetail(login, storeId, itemId));
     }
 
-    @ApiOperation(value = "재고 입고 처리")
+    @Operation(summary = "재고 입고 처리")
     @PostMapping("/in")
     public ResponseEntity<Void> inStock(
             @PathVariable Integer storeId,
@@ -42,7 +42,7 @@ public class StockController {
         return ResponseEntity.noContent().build();
     }
 
-    @ApiOperation(value = "재고 출고 처리")
+    @Operation(summary = "재고 출고 처리")
     @PostMapping("/out")
     public ResponseEntity<Void> outStock(
             @PathVariable Integer storeId,
@@ -53,7 +53,7 @@ public class StockController {
         return ResponseEntity.noContent().build();
     }
 
-    @ApiOperation(value = "재고 직접 조정")
+    @Operation(summary = "재고 직접 조정")
     @PostMapping("/adjust")
     public ResponseEntity<Void> adjustStock(
             @PathVariable Integer storeId,
