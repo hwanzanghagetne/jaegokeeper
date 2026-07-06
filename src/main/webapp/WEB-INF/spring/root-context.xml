@@ -57,6 +57,44 @@
     <!-- mail properties -->
     <context:property-placeholder location="classpath:mail.properties" />
 
+    <!-- CORS 설정 (mvc:cors 네임스페이스는 ${...} 플레이스홀더를 치환하지 않아 Filter 방식으로 대체) -->
+    <bean id="corsConfigurationSource" class="org.springframework.web.cors.UrlBasedCorsConfigurationSource">
+        <property name="corsConfigurations">
+            <util:map>
+                <entry key="/**">
+                    <bean class="org.springframework.web.cors.CorsConfiguration">
+                        <property name="allowedOrigins">
+                            <list>
+                                <value>${CORS_ALLOWED_ORIGINS}</value>
+                            </list>
+                        </property>
+                        <property name="allowedMethods">
+                            <list>
+                                <value>GET</value>
+                                <value>POST</value>
+                                <value>PUT</value>
+                                <value>PATCH</value>
+                                <value>DELETE</value>
+                                <value>OPTIONS</value>
+                            </list>
+                        </property>
+                        <property name="allowedHeaders">
+                            <list>
+                                <value>*</value>
+                            </list>
+                        </property>
+                        <property name="allowCredentials" value="true"/>
+                        <property name="maxAge" value="3600"/>
+                    </bean>
+                </entry>
+            </util:map>
+        </property>
+    </bean>
+
+    <bean id="corsFilter" class="org.springframework.web.filter.CorsFilter">
+        <constructor-arg ref="corsConfigurationSource"/>
+    </bean>
+
     <!-- JavaMailSender -->
     <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
         <property name="host" value="${mail.host}"/>
