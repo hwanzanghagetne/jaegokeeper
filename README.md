@@ -98,7 +98,7 @@
 </p>
 
 - `Client`는 `Vercel`에 배포된 `Next.js(React)` 프론트엔드(`https://jaegokeeper-blush.vercel.app`)에 접속하고, API 요청은 자체 도메인(`https://jaegokeeper.store`)의 백엔드로 전달됩니다.
-- 백엔드는 `EC2` 위에서 `Nginx(Reverse Proxy, Let's Encrypt HTTPS)` -> `Tomcat 10(8080, Jakarta EE)` -> `Spring MVC` 흐름으로 동작합니다.
+- 백엔드는 `EC2` 위에서 `Nginx` -> `Tomcat 10(8080)` -> `Spring MVC` 흐름으로 동작합니다.
 - DB(`MySQL`)는 `EC2`와 분리된 `AWS RDS`를 사용하며, RDS는 EC2 보안 그룹에서만 접근 가능하도록 제한하고 퍼블릭 액세스를 차단했습니다.
 - 이미지는 로컬 파일시스템 대신 `AWS S3`에 저장하고, 조회 시 presigned URL로 리다이렉트합니다. EC2에 부여한 IAM 역할로 인증하며 별도 액세스 키는 관리하지 않습니다.
 - 배포는 `GitHub Actions`(GitHub 호스티드 러너에서 빌드 → SSH로 EC2에 WAR 전달 → Tomcat 재기동)로 자동화했고, 헬스체크 실패 시 이전 버전으로 자동 롤백합니다.
