@@ -77,7 +77,7 @@
 
 | 문서 |
 |:---:|
-| [프론트엔드 배포 주소](https://jaegokeeper.vercel.app/) |
+| [프론트엔드 배포 주소](https://jaegokeeper-blush.vercel.app/) |
 | [프론트엔드 GitHub](https://github.com/Jachodan/jachodan-next) |
 | [백엔드 GitHub](https://github.com/hwanzanghagetne/jaegokeeper) |
 | [프로젝트 노션](https://www.notion.so/Jachodan-228b76bc91b880c2b4e6c54facfd6395) |
