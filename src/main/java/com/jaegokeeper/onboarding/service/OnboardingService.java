@@ -5,6 +5,7 @@ import com.jaegokeeper.auth.dto.UidDTO;
 import com.jaegokeeper.auth.dto.UserDTO;
 import com.jaegokeeper.auth.mapper.UserAuthMapper;
 import com.jaegokeeper.auth.service.PendingSocialSignupService;
+import com.jaegokeeper.auth.service.SessionService;
 import com.jaegokeeper.auth.utils.PasswordHasher;
 import com.jaegokeeper.auth.utils.SocialProfile;
 import com.jaegokeeper.email.service.EmailAuthService;
@@ -16,6 +17,7 @@ import com.jaegokeeper.onboarding.dto.OwnerSignUpResponse;
 import com.jaegokeeper.onboarding.dto.SocialOwnerSignUpRequest;
 import com.jaegokeeper.store.dto.StoreDto;
 import com.jaegokeeper.store.mapper.StoreMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,7 @@ public class OnboardingService {
     private final UserAuthMapper userAuthMapper;
     private final StoreMapper storeMapper;
     private final PendingSocialSignupService pendingSocialSignupService;
+    private final SessionService sessionService;
 
     @Transactional
     public OwnerSignUpResponse ownerSignUp(OwnerSignUpRequest req) {
@@ -51,7 +54,7 @@ public class OnboardingService {
     }
 
     @Transactional
-    public OwnerSignUpResponse socialOwnerSignUp(SocialOwnerSignUpRequest req) {
+    public OwnerSignUpResponse socialOwnerSignUp(SocialOwnerSignUpRequest req, HttpServletRequest request) {
         PendingSocialSignup pending = pendingSocialSignupService.consume(req.getSignupToken());
         String email = normalizeVerifiedSocialEmail(pending);
 
@@ -59,6 +62,7 @@ public class OnboardingService {
         if (existing != null) {
             int userId = linkProviderToExistingUser(existing, pending.getProvider(), pending.getProviderUid());
             StoreDto store = createOwnerStoreIfMissing(userId, req.getStore());
+            sessionService.createSession(userId, pending.getProvider(), request);
             return OwnerSignUpResponse.builder()
                     .userId(userId)
                     .storeId(store.getStoreId())
@@ -69,6 +73,7 @@ public class OnboardingService {
 
         UserDTO user = createSocialUser(pending, req.getAccount(), email);
         StoreDto store = createSocialOwnerStore(user.getUserId(), req.getStore());
+        sessionService.createSession(user.getUserId(), pending.getProvider(), request);
 
         return OwnerSignUpResponse.builder()
                 .userId(user.getUserId())
