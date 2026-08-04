@@ -2,6 +2,7 @@ package com.jaegokeeper.auth.controller;
 
 import com.jaegokeeper.auth.dto.LoginRequest;
 import com.jaegokeeper.auth.dto.SessionResponse;
+import com.jaegokeeper.auth.enums.Provider;
 import com.jaegokeeper.auth.service.LocalService;
 import com.jaegokeeper.auth.service.SessionService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,7 +31,7 @@ public class LocalController {
             HttpServletRequest request
     ) {
         int userId = localService.login(req);
-        return ResponseEntity.ok(sessionService.createSession(userId, "LOCAL", request));
+        return ResponseEntity.ok(sessionService.createSession(userId, Provider.LOCAL.name(), request));
     }
 
 }

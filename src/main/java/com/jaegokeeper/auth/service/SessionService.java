@@ -4,6 +4,7 @@ import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.auth.dto.LoginTarget;
 import com.jaegokeeper.auth.dto.SessionResponse;
 import com.jaegokeeper.auth.mapper.UserAuthMapper;
+import com.jaegokeeper.auth.utils.SessionInterceptor;
 import com.jaegokeeper.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ public class SessionService {
         if (old != null) old.invalidate();
         HttpSession session = request.getSession(true);
 
-        session.setAttribute("login", new LoginContext(
+        session.setAttribute(SessionInterceptor.SESSION_KEY, new LoginContext(
                 target.getUserId(),
                 target.getStoreId(),
                 target.getUserName(),

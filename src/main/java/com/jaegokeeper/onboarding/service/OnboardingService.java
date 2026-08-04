@@ -3,6 +3,7 @@ package com.jaegokeeper.onboarding.service;
 import com.jaegokeeper.auth.dto.PendingSocialSignup;
 import com.jaegokeeper.auth.dto.UidDTO;
 import com.jaegokeeper.auth.dto.UserDTO;
+import com.jaegokeeper.auth.enums.Provider;
 import com.jaegokeeper.auth.mapper.UserAuthMapper;
 import com.jaegokeeper.auth.service.PendingSocialSignupService;
 import com.jaegokeeper.auth.service.SessionService;
@@ -127,7 +128,7 @@ public class OnboardingService {
 
         UidDTO uid = new UidDTO();
         uid.setUserId(user.getUserId());
-        uid.setProvider("LOCAL");
+        uid.setProvider(Provider.LOCAL.name());
         uid.setProviderUid(email);
         userAuthMapper.insertAuth(uid);
 
