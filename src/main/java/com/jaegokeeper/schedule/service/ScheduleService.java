@@ -3,6 +3,7 @@ package com.jaegokeeper.schedule.service;
 import com.jaegokeeper.alba.mapper.AlbaMapper;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.auth.utils.StoreAccessValidator;
+import com.jaegokeeper.common.DateTimeConstants;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.schedule.dto.ScheduleDetailResponse;
 import com.jaegokeeper.schedule.dto.ScheduleListResponse;
@@ -20,15 +21,11 @@ import static com.jaegokeeper.exception.ErrorCode.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ScheduleService {
-
-    // 서버(EC2) OS 타임존이 UTC라 LocalDateTime.now()가 서버 로컬시간과 어긋날 수 있어 명시적으로 지정
-    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     private final ScheduleMapper scheduleMapper;
     private final AlbaMapper albaMapper;
@@ -89,8 +86,8 @@ public class ScheduleService {
 
     public void recordWorkIn(LoginContext login, int storeId, WorkInOutRequest req) {
         validateAlbaAccess(login, storeId, req.getAlbaId());
-        req.setWorkIn(LocalDateTime.now(KST));
-        req.setWorkDate(LocalDate.now(KST));
+        req.setWorkIn(LocalDateTime.now(DateTimeConstants.KST));
+        req.setWorkDate(LocalDate.now(DateTimeConstants.KST));
         scheduleMapper.insertWorkIn(req);
     }
 
@@ -100,8 +97,8 @@ public class ScheduleService {
 
     public void recordWorkOut(LoginContext login, int storeId, WorkInOutRequest req) {
         validateAlbaAccess(login, storeId, req.getAlbaId());
-        req.setWorkOut(LocalDateTime.now(KST));
-        req.setWorkDate(LocalDate.now(KST));
+        req.setWorkOut(LocalDateTime.now(DateTimeConstants.KST));
+        req.setWorkDate(LocalDate.now(DateTimeConstants.KST));
         int updated = scheduleMapper.updateWorkOut(req);
         if (updated == 0) {
             throw new BusinessException(STATE_CONFLICT);

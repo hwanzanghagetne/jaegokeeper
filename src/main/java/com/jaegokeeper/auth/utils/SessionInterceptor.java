@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class SessionInterceptor implements HandlerInterceptor {
 
-    // 세션 키는 AuthService/AuthController에서 쓰던 것과 동일해야 함
+    // 세션에 로그인 정보를 저장하는 다른 곳(SessionService 등)에서도 이 상수를 참조해야 함
     public static final String SESSION_KEY = "login";
 
     private final ObjectMapper objectMapper;

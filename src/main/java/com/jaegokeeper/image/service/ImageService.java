@@ -1,5 +1,6 @@
 package com.jaegokeeper.image.service;
 
+import com.jaegokeeper.common.DateTimeConstants;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.image.dto.ImageInfoDTO;
 import com.jaegokeeper.image.mapper.ImageMapper;
@@ -20,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Set;
 import java.util.UUID;
 
@@ -32,8 +32,6 @@ public class ImageService {
 
     private static final Set<String> ALLOWED_EXT = Set.of("jpg", "jpeg", "png", "webp");
     private static final Duration PRESIGN_DURATION = Duration.ofMinutes(10);
-    // 서버(EC2) OS 타임존이 UTC라 LocalDate.now()가 서버 로컬시간과 어긋날 수 있어 명시적으로 지정
-    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     private final ImageMapper imageMapper;
     private final S3Client s3Client;
@@ -84,7 +82,7 @@ public class ImageService {
                 throw new BusinessException(IMAGE_INVALID_FORMAT);
             }
 
-            LocalDate d = LocalDate.now(KST);
+            LocalDate d = LocalDate.now(DateTimeConstants.KST);
             String relDir = String.format("%04d/%02d/%02d", d.getYear(), d.getMonthValue(), d.getDayOfMonth());
             String storedName = UUID.randomUUID().toString().replace("-", "") + "." + ext;
             key = relDir + "/" + storedName;
