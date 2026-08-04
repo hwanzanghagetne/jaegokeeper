@@ -165,7 +165,7 @@
 | `mail` | 실제 메일 발송 인프라(Gmail SMTP, 비동기, 재시도) — `email`(인증코드 검증 로직)과 역할 분리 |
 | `common` | 공용 DTO(페이징), AOP(`@Timer`), 헬스체크 |
 | `exception` | 공통 에러코드 정의 및 전역 예외 응답 처리 |
-| `config` | 비동기, Swagger, Jackson, Mail 템플릿 등 인프라 설정 |
+| `config` | 비동기, springdoc(OpenAPI), Jackson, Mail 템플릿, S3 클라이언트 등 인프라 설정 |
 | `mappers` | MyBatis SQL 매퍼 XML |
 
 </div>
@@ -237,7 +237,7 @@ src/main/resources/mappers
 
 ### 4) 수동 배포 리스크를 자동 배포로 전환
 - 도전: 수동 배포 과정에서 빌드/환경변수/프로세스 재시작 단계가 반복되며 운영 실수 가능성이 높았음
-- 해결: self-hosted runner 기반 `GitHub Actions` 배포 파이프라인 구성, 헬스체크 단계 추가
+- 해결: `GitHub Actions`(GitHub 호스티드 러너에서 빌드 → SSH로 EC2에 WAR 전달 → Tomcat 재기동) 배포 파이프라인 구성, 헬스체크 실패 시 자동 롤백 추가
 - 선택 이유: 반복 가능한 절차를 코드화해야 환경 의존성과 휴먼 에러를 줄일 수 있기 때문
 - 결과: 배포 과정을 표준화하고 실패 원인을 로그 기준으로 빠르게 추적할 수 있는 구조로 개선
 
