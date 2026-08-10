@@ -2,6 +2,7 @@ package com.jaegokeeper.auth.service;
 
 import com.jaegokeeper.auth.dto.PendingSocialSignup;
 import com.jaegokeeper.auth.utils.SocialProfile;
+import com.jaegokeeper.common.DateTimeConstants;
 import com.jaegokeeper.exception.BusinessException;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +27,7 @@ public class PendingSocialSignupService {
                 token,
                 provider,
                 profile,
-                LocalDateTime.now().plusMinutes(EXPIRE_MINUTES)
+                LocalDateTime.now(DateTimeConstants.KST).plusMinutes(EXPIRE_MINUTES)
         );
         pendingSignups.put(token, pending);
         return pending;

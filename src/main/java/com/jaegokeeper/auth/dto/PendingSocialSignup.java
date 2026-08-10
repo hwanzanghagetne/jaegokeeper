@@ -1,6 +1,7 @@
 package com.jaegokeeper.auth.dto;
 
 import com.jaegokeeper.auth.utils.SocialProfile;
+import com.jaegokeeper.common.DateTimeConstants;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -26,6 +27,6 @@ public class PendingSocialSignup {
     }
 
     public boolean isExpired() {
-        return LocalDateTime.now().isAfter(expiresAt);
+        return LocalDateTime.now(DateTimeConstants.KST).isAfter(expiresAt);
     }
 }
