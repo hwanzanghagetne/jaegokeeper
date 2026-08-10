@@ -64,13 +64,12 @@ jobs:
               cp "${ROOT_WAR}" "${BACKUP_WAR}"
             fi
 
-            "${TOMCAT_HOME}/bin/shutdown.sh" || true
-            sleep 3
+            sudo systemctl stop tomcat10
 
             rm -rf "${ROOT_DIR}"
             cp "${WAR_PATH}" "${ROOT_WAR}"
 
-            "${TOMCAT_HOME}/bin/startup.sh"
+            sudo systemctl start tomcat10
 
             for i in $(seq 1 40); do
               if curl -fsS "${HEALTHCHECK_URL}" > /dev/null 2>&1; then
@@ -82,9 +81,8 @@ jobs:
 
             echo "Health check failed, rolling back..."
             if [[ -f "${BACKUP_WAR}" ]]; then
-              "${TOMCAT_HOME}/bin/shutdown.sh" || true
-              sleep 3
+              sudo systemctl stop tomcat10
               cp "${BACKUP_WAR}" "${ROOT_WAR}"
-              "${TOMCAT_HOME}/bin/startup.sh"
+              sudo systemctl start tomcat10
             fi
             exit 1
