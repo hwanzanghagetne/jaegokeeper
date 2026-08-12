@@ -49,29 +49,24 @@ if [[ -z "$STORE_ID" ]]; then
   echo "failed to parse storeId from /auth/session/me" >&2
   exit 1
 fi
-OTHER_STORE_ID=$((STORE_ID + 1))
 
-echo "[4] same store items"
-SAME_ITEMS_STATUS="$(curl -sS -o "$TMPDIR/same_items.json" -w "%{http_code}" -b "$COOKIE_FILE" "$BASE_URL/stores/$STORE_ID/items")"
-echo "same_items_status=$SAME_ITEMS_STATUS"
+# storeId를 URL에서 제거하고 세션(login.getStoreId())만 신뢰하도록 리팩터링한 뒤로는,
+# "다른 storeId를 URL에 넣어 요청 -> 403"이라는 시나리오 자체를 구성할 수 없다
+# (URL에 storeId가 없으니 다른 점포를 지목할 방법이 없다 — 검증이 빠진 게 아니라
+# 그 공격 표면 자체가 사라진 것). 그래서 이 스크립트는 "내 세션으로 내 점포 리소스에
+# 정상 접근되는지"만 확인한다.
+
+echo "[4] my items (session-scoped, no storeId in URL)"
+SAME_ITEMS_STATUS="$(curl -sS -o "$TMPDIR/same_items.json" -w "%{http_code}" -b "$COOKIE_FILE" "$BASE_URL/stores/items")"
+echo "my_items_status=$SAME_ITEMS_STATUS"
 head -c 200 "$TMPDIR/same_items.json"; echo
 
-echo "[5] other store items"
-OTHER_ITEMS_STATUS="$(curl -sS -o "$TMPDIR/other_items.json" -w "%{http_code}" -b "$COOKIE_FILE" "$BASE_URL/stores/$OTHER_STORE_ID/items")"
-echo "other_items_status=$OTHER_ITEMS_STATUS"
-cat "$TMPDIR/other_items.json"; echo
-
-echo "[6] same store requests"
-SAME_REQ_STATUS="$(curl -sS -o "$TMPDIR/same_req.json" -w "%{http_code}" -b "$COOKIE_FILE" "$BASE_URL/stores/$STORE_ID/requests")"
-echo "same_requests_status=$SAME_REQ_STATUS"
+echo "[5] my requests (session-scoped, no storeId in URL)"
+SAME_REQ_STATUS="$(curl -sS -o "$TMPDIR/same_req.json" -w "%{http_code}" -b "$COOKIE_FILE" "$BASE_URL/stores/requests")"
+echo "my_requests_status=$SAME_REQ_STATUS"
 head -c 200 "$TMPDIR/same_req.json"; echo
 
-echo "[7] other store requests"
-OTHER_REQ_STATUS="$(curl -sS -o "$TMPDIR/other_req.json" -w "%{http_code}" -b "$COOKIE_FILE" "$BASE_URL/stores/$OTHER_STORE_ID/requests")"
-echo "other_requests_status=$OTHER_REQ_STATUS"
-cat "$TMPDIR/other_req.json"; echo
-
-if [[ "$SAME_ITEMS_STATUS" != "200" || "$OTHER_ITEMS_STATUS" != "403" || "$SAME_REQ_STATUS" != "200" || "$OTHER_REQ_STATUS" != "403" ]]; then
+if [[ "$SAME_ITEMS_STATUS" != "200" || "$SAME_REQ_STATUS" != "200" ]]; then
   echo "auth scope regression detected" >&2
   exit 1
 fi

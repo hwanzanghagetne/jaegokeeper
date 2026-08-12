@@ -5,13 +5,11 @@ import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.exception.ErrorCode;
 import com.jaegokeeper.exception.ErrorResponse;
 import org.springframework.http.MediaType;
-import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 
 public class SessionInterceptor implements HandlerInterceptor {
 
@@ -44,28 +42,8 @@ public class SessionInterceptor implements HandlerInterceptor {
             return writeError(response, ErrorCode.LOGIN_REQUIRED);
         }
 
-        // 3) storeId path variable이 있으면 로그인 세션의 storeId와 일치해야 함
-        LoginContext login = (LoginContext) loginObj;
-        @SuppressWarnings("unchecked")
-        Map<String, String> uriTemplateVars =
-                (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-
-        if (uriTemplateVars != null) {
-            String pathStoreId = uriTemplateVars.get("storeId");
-            if (pathStoreId != null) {
-                int requestedStoreId;
-                try {
-                    requestedStoreId = Integer.parseInt(pathStoreId);
-                } catch (NumberFormatException e) {
-                    return writeError(response, ErrorCode.BAD_REQUEST);
-                }
-
-                if (requestedStoreId != login.getStoreId()) {
-                    return writeError(response, ErrorCode.FORBIDDEN);
-                }
-            }
-        }
-
+        // storeId는 더 이상 URL로 받지 않는다. 로그인 세션(LoginContext.storeId)이
+        // 유일한 출처이므로, 여기서는 "로그인된 세션이 있는가"만 확인하면 충분하다.
         return true;
     }
 

@@ -20,7 +20,7 @@ import jakarta.validation.Valid;
 
 @Tag(name = "Request")
 @RestController
-@RequestMapping("/stores/{storeId}/requests")
+@RequestMapping("/stores/requests")
 @RequiredArgsConstructor
 public class RequestController {
 
@@ -29,60 +29,54 @@ public class RequestController {
     @Operation(summary = "요청 목록 조회")
     @GetMapping
     public ResponseEntity<PageResponse<RequestListResponse>> getRequests(
-            @PathVariable Integer storeId,
             @Valid @ModelAttribute RequestPageRequest dto,
             @LoginUser LoginContext login) {
-        return ResponseEntity.ok(requestService.getRequestList(login, storeId, dto));
+        return ResponseEntity.ok(requestService.getRequestList(login, dto));
     }
 
     @Operation(summary = "요청 상세 조회")
     @GetMapping("/{requestId}")
     public ResponseEntity<RequestDetailResponse> getRequestDetail(
-            @PathVariable Integer storeId,
             @PathVariable Integer requestId,
             @LoginUser LoginContext login) {
-        return ResponseEntity.ok(requestService.getRequestDetail(login, storeId, requestId));
+        return ResponseEntity.ok(requestService.getRequestDetail(login, requestId));
     }
 
     @Operation(summary = "요청 생성")
     @PostMapping
     public ResponseEntity<Integer> createRequests(
-            @PathVariable Integer storeId,
             @Valid @RequestBody RequestCreateBatchRequest dto,
             @LoginUser LoginContext login) {
-        int createdCount = requestService.createRequest(login, storeId, dto);
+        int createdCount = requestService.createRequest(login, dto);
         return ResponseEntity.status(201).body(createdCount);
     }
 
     @Operation(summary = "요청 삭제")
     @DeleteMapping("/{requestId}")
     public ResponseEntity<Void> deleteRequest(
-            @PathVariable Integer storeId,
             @PathVariable Integer requestId,
             @LoginUser LoginContext login) {
-        requestService.softDeleteRequest(login, storeId, requestId);
+        requestService.softDeleteRequest(login, requestId);
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "요청 수정")
     @PutMapping("/{requestId}")
     public ResponseEntity<Void> updateRequest(
-            @PathVariable Integer storeId,
             @PathVariable Integer requestId,
             @Valid @RequestBody RequestUpdateRequest dto,
             @LoginUser LoginContext login) {
-        requestService.updateRequest(login, storeId, requestId, dto);
+        requestService.updateRequest(login, requestId, dto);
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "요청 상태 수정")
     @PatchMapping("/{requestId}/status")
     public ResponseEntity<Void> updateRequestStatus(
-            @PathVariable Integer storeId,
             @PathVariable Integer requestId,
             @Valid @RequestBody RequestStatusUpdateRequest dto,
             @LoginUser LoginContext login) {
-        requestService.updateRequestStatus(login, storeId, requestId, dto);
+        requestService.updateRequestStatus(login, requestId, dto);
         return ResponseEntity.noContent().build();
     }
 }

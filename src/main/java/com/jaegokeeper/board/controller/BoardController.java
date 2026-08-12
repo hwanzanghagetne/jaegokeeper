@@ -1,5 +1,7 @@
 package com.jaegokeeper.board.controller;
 
+import com.jaegokeeper.auth.annotation.LoginUser;
+import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.board.dto.request.BoardCreateRequest;
 import com.jaegokeeper.board.dto.request.BoardPageRequest;
 import com.jaegokeeper.board.dto.request.BoardUpdateRequest;
@@ -20,7 +22,7 @@ import jakarta.validation.Valid;
 
 @Tag(name = "Board")
 @RestController
-@RequestMapping("/stores/{storeId}/boards")
+@RequestMapping("/stores/boards")
 @RequiredArgsConstructor
 public class BoardController {
 
@@ -29,51 +31,51 @@ public class BoardController {
     @Operation(summary = "게시글 등록", description = "type(게시판 타입)을 받아 게시글을 등록합니다.")
     @PostMapping
     public ResponseEntity<BoardCreateResponse> createBoard(
-            @PathVariable Integer storeId,
             @RequestParam BoardType type,
-            @Valid @ModelAttribute BoardCreateRequest dto
+            @Valid @ModelAttribute BoardCreateRequest dto,
+            @LoginUser LoginContext login
     ) {
-        Integer boardId = boardService.createBoard(storeId, type, dto);
+        Integer boardId = boardService.createBoard(login, type, dto);
         return ResponseEntity.status(201).body(new BoardCreateResponse(boardId));
     }
 
-    @Operation(summary = "게시글 목록 조회", description = "매장(storeId)의 게시글 목록을 타입/페이지 조건으로 조회합니다.")
+    @Operation(summary = "게시글 목록 조회", description = "매장의 게시글 목록을 타입/페이지 조건으로 조회합니다.")
     @GetMapping
     public ResponseEntity<PageResponse<BoardListResponse>> getBoards(
-            @PathVariable Integer storeId,
-            @Valid @ModelAttribute BoardPageRequest dto
+            @Valid @ModelAttribute BoardPageRequest dto,
+            @LoginUser LoginContext login
     ) {
-        return ResponseEntity.ok(boardService.getBoardList(storeId, dto));
+        return ResponseEntity.ok(boardService.getBoardList(login, dto));
     }
 
     @Operation(summary = "게시글 상세 조회", description = "boardId로 게시글을 상세 조회합니다.")
     @GetMapping("/{boardId}")
     public ResponseEntity<BoardDetailResponse> getBoardDetail(
-            @PathVariable Integer storeId,
-            @PathVariable Integer boardId
+            @PathVariable Integer boardId,
+            @LoginUser LoginContext login
     ) {
-        return ResponseEntity.ok(boardService.getBoardDetail(storeId, boardId));
+        return ResponseEntity.ok(boardService.getBoardDetail(login, boardId));
     }
 
     @Operation(summary = "게시글 수정", description = "boardId의 게시글을 수정합니다.")
     @PutMapping(value = "/{boardId}")
     public ResponseEntity<Void> updateBoard(
-            @PathVariable Integer storeId,
             @PathVariable Integer boardId,
-            @Valid @ModelAttribute BoardUpdateRequest dto
+            @Valid @ModelAttribute BoardUpdateRequest dto,
+            @LoginUser LoginContext login
     ) {
-        boardService.updateBoard(storeId, boardId, dto);
+        boardService.updateBoard(login, boardId, dto);
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "게시글 삭제", description = "boardId의 게시글을 삭제합니다.")
     @DeleteMapping("/{boardId}")
     public ResponseEntity<Void> deleteBoard(
-            @PathVariable Integer storeId,
-            @PathVariable Integer boardId
+            @PathVariable Integer boardId,
+            @LoginUser LoginContext login
     ) {
-        boardService.softDeleteBoard(storeId, boardId);
+        boardService.softDeleteBoard(login, boardId);
         return ResponseEntity.noContent().build();
     }
 
-    }
+}

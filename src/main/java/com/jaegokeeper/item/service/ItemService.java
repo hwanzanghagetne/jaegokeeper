@@ -1,7 +1,6 @@
 package com.jaegokeeper.item.service;
 
 import com.jaegokeeper.auth.dto.LoginContext;
-import com.jaegokeeper.auth.utils.StoreAccessValidator;
 import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.stock.dto.StockAdjustRequest;
@@ -37,11 +36,10 @@ public class ItemService {
     private final StoreMapper storeMapper;
     private final StockService stockService;
     private final ImageService imgService;
-    private final StoreAccessValidator storeAccessValidator;
 
     @Transactional
-    public Integer createItem(LoginContext login, Integer storeId, ItemCreateRequest dto) {
-        storeAccessValidator.validate(login, storeId);
+    public Integer createItem(LoginContext login, ItemCreateRequest dto) {
+        int storeId = login.getStoreId();
         if (!storeMapper.existsById(storeId)) {
             throw new BusinessException(STORE_NOT_FOUND);
         }
@@ -68,17 +66,16 @@ public class ItemService {
     }
 
     @Transactional
-    public void softDeleteItem(LoginContext login, Integer storeId, Integer itemId) {
-        storeAccessValidator.validate(login, storeId);
-        int updated = itemMapper.softDeleteItem(storeId, itemId);
+    public void softDeleteItem(LoginContext login, Integer itemId) {
+        int updated = itemMapper.softDeleteItem(login.getStoreId(), itemId);
         if (updated != 1) {
             throw new BusinessException(ITEM_NOT_FOUND);
         }
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<ItemListResponse> getItemList(LoginContext login, Integer storeId, ItemPageRequest dto) {
-        storeAccessValidator.validate(login, storeId);
+    public PageResponse<ItemListResponse> getItemList(LoginContext login, ItemPageRequest dto) {
+        int storeId = login.getStoreId();
         int pageNum = dto.getPageValue();
         int pageSize = dto.getSizeValue();
         String keyword = dto.getKeywordValue();
@@ -93,9 +90,8 @@ public class ItemService {
     }
 
     @Transactional(readOnly = true)
-    public ItemDetailResponse getItemDetail(LoginContext login, Integer storeId, Integer itemId) {
-        storeAccessValidator.validate(login, storeId);
-        ItemDetailResponse dto = itemMapper.findItemDetail(storeId, itemId);
+    public ItemDetailResponse getItemDetail(LoginContext login, Integer itemId) {
+        ItemDetailResponse dto = itemMapper.findItemDetail(login.getStoreId(), itemId);
         if (dto == null) {
             throw new BusinessException(ITEM_NOT_FOUND);
         }
@@ -103,8 +99,8 @@ public class ItemService {
     }
 
     @Transactional
-    public void updateItem(LoginContext login, Integer storeId, Integer itemId, ItemUpdateRequest dto) {
-        storeAccessValidator.validate(login, storeId);
+    public void updateItem(LoginContext login, Integer itemId, ItemUpdateRequest dto) {
+        int storeId = login.getStoreId();
         boolean wantsRemove = Boolean.TRUE.equals(dto.getRemoveImage());
         Integer newImageId = resolveImageIdForUpdate(dto.getFile(), dto.getRemoveImage(), dto);
 
@@ -123,7 +119,7 @@ public class ItemService {
 
             if (dto.getTargetAmount() != null || dto.getBufferAmount() != null) {
                 StockAdjustRequest stockAdjustRequest = new StockAdjustRequest(dto.getTargetAmount(), dto.getBufferAmount());
-                stockService.adjustStock(login, storeId, itemId, stockAdjustRequest);
+                stockService.adjustStock(login, itemId, stockAdjustRequest);
             }
         } catch (Exception e) {
             if (newImageId != null) imgService.deleteImageFile(dto.getImagePath());
@@ -132,9 +128,8 @@ public class ItemService {
     }
 
     @Transactional
-    public void toggleItemPin(LoginContext login, Integer storeId, Integer itemId) {
-        storeAccessValidator.validate(login, storeId);
-        int updated = itemMapper.togglePin(storeId, itemId);
+    public void toggleItemPin(LoginContext login, Integer itemId) {
+        int updated = itemMapper.togglePin(login.getStoreId(), itemId);
         if (updated == 0) {
             throw new BusinessException(ITEM_NOT_FOUND);
         }

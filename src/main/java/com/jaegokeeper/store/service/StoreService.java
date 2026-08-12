@@ -18,10 +18,8 @@ public class StoreService {
     private final StoreMapper storeMapper;
 
     @Transactional
-    public void updateStore(LoginContext login, int storeId, StoreUpdateRequest req) {
-        if (login.getStoreId() != storeId) {
-            throw new BusinessException(FORBIDDEN);
-        }
+    public void updateStore(LoginContext login, StoreUpdateRequest req) {
+        int storeId = login.getStoreId();
         if (!storeMapper.existsById(storeId)) {
             throw new BusinessException(STORE_NOT_FOUND);
         }
@@ -33,11 +31,8 @@ public class StoreService {
     }
 
     @Transactional(readOnly = true)
-    public StoreDetailResponse getStoreDetail(LoginContext login, int storeId) {
-        if (login.getStoreId() != storeId) {
-            throw new BusinessException(FORBIDDEN);
-        }
-        StoreDetailResponse detail = storeMapper.findStoreDetail(storeId);
+    public StoreDetailResponse getStoreDetail(LoginContext login) {
+        StoreDetailResponse detail = storeMapper.findStoreDetail(login.getStoreId());
         if (detail == null) {
             throw new BusinessException(STORE_NOT_FOUND);
         }

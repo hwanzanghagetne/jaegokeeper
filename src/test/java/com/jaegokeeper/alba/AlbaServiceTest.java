@@ -6,7 +6,6 @@ import com.jaegokeeper.alba.mapper.AlbaMapper;
 import com.jaegokeeper.alba.mapper.WorkMapper;
 import com.jaegokeeper.alba.service.AlbaService;
 import com.jaegokeeper.auth.dto.LoginContext;
-import com.jaegokeeper.auth.utils.StoreAccessValidator;
 import com.jaegokeeper.mail.MailService;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.exception.ErrorCode;
@@ -46,9 +45,6 @@ public class AlbaServiceTest {
     @Mock
     private MailService mailService;
 
-    @Mock
-    private StoreAccessValidator storeAccessValidator;
-
     @Before
     public void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -65,7 +61,7 @@ public class AlbaServiceTest {
         when(albaMapper.updateAlba(any(AlbaUpdateRequest.class))).thenReturn(0);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> albaService.updateAlba(login, 1, req));
+                () -> albaService.updateAlba(login, req));
 
         assertEquals(ErrorCode.STATE_CONFLICT, e.getErrorCode());
     }
@@ -87,7 +83,7 @@ public class AlbaServiceTest {
             return 1;
         }).when(albaMapper).insertAlba(any(AlbaRegisterRequest.class));
 
-        albaService.saveAlbaRegister(login, 1, req);
+        albaService.saveAlbaRegister(login, req);
 
         verify(mailService).sendWelcome("alba@example.com", "홍길동");
     }
@@ -107,7 +103,7 @@ public class AlbaServiceTest {
             return 1;
         }).when(albaMapper).insertAlba(any(AlbaRegisterRequest.class));
 
-        albaService.saveAlbaRegister(login, 1, req);
+        albaService.saveAlbaRegister(login, req);
 
         verify(mailService, never()).sendWelcome(any(), any());
     }

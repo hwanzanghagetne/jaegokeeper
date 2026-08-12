@@ -2,7 +2,6 @@ package com.jaegokeeper.request.service;
 
 import com.jaegokeeper.alba.mapper.AlbaMapper;
 import com.jaegokeeper.auth.dto.LoginContext;
-import com.jaegokeeper.auth.utils.StoreAccessValidator;
 import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.item.mapper.ItemMapper;
@@ -33,11 +32,10 @@ public class RequestService {
     private final RequestMapper requestMapper;
     private final ItemMapper itemMapper;
     private final AlbaMapper albaMapper;
-    private final StoreAccessValidator storeAccessValidator;
 
     @Transactional
-    public int createRequest(LoginContext login, Integer storeId, RequestCreateBatchRequest dto) {
-        storeAccessValidator.validate(login, storeId);
+    public int createRequest(LoginContext login, RequestCreateBatchRequest dto) {
+        int storeId = login.getStoreId();
         int createdCount = 0;
 
         for (RequestCreateRequest reqDto : dto.getRequests()) {
@@ -70,9 +68,8 @@ public class RequestService {
     }
 
     @Transactional(readOnly = true)
-    public RequestDetailResponse getRequestDetail(LoginContext login, Integer storeId, Integer requestId) {
-        storeAccessValidator.validate(login, storeId);
-        RequestDetailResponse dto = requestMapper.findRequestDetail(storeId, requestId);
+    public RequestDetailResponse getRequestDetail(LoginContext login, Integer requestId) {
+        RequestDetailResponse dto = requestMapper.findRequestDetail(login.getStoreId(), requestId);
         if (dto == null) {
             throw new BusinessException(REQUEST_NOT_FOUND);
         }
@@ -80,8 +77,8 @@ public class RequestService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<RequestListResponse> getRequestList(LoginContext login, Integer storeId, RequestPageRequest dto) {
-        storeAccessValidator.validate(login, storeId);
+    public PageResponse<RequestListResponse> getRequestList(LoginContext login, RequestPageRequest dto) {
+        int storeId = login.getStoreId();
         int pageNum = dto.getPageValue();
         int pageSize = dto.getSizeValue();
         RequestType requestType = dto.getType();
@@ -95,17 +92,16 @@ public class RequestService {
     }
 
     @Transactional
-    public void softDeleteRequest(LoginContext login, Integer storeId, Integer requestId) {
-        storeAccessValidator.validate(login, storeId);
-        int deleted = requestMapper.softDeleteRequest(storeId, requestId);
+    public void softDeleteRequest(LoginContext login, Integer requestId) {
+        int deleted = requestMapper.softDeleteRequest(login.getStoreId(), requestId);
         if (deleted != 1) {
             throw new BusinessException(REQUEST_NOT_FOUND);
         }
     }
 
     @Transactional
-    public void updateRequest(LoginContext login, Integer storeId, Integer requestId, RequestUpdateRequest dto) {
-        storeAccessValidator.validate(login, storeId);
+    public void updateRequest(LoginContext login, Integer requestId, RequestUpdateRequest dto) {
+        int storeId = login.getStoreId();
         RequestStatus status = requestMapper.findRequestStatus(storeId, requestId);
         if (status == null) {
             throw new BusinessException(REQUEST_NOT_FOUND);
@@ -128,8 +124,8 @@ public class RequestService {
     }
 
     @Transactional
-    public void updateRequestStatus(LoginContext login, Integer storeId, Integer requestId, RequestStatusUpdateRequest dto) {
-        storeAccessValidator.validate(login, storeId);
+    public void updateRequestStatus(LoginContext login, Integer requestId, RequestStatusUpdateRequest dto) {
+        int storeId = login.getStoreId();
         RequestStatus status = requestMapper.findRequestStatus(storeId, requestId);
         if (status == null) {
             throw new BusinessException(REQUEST_NOT_FOUND);

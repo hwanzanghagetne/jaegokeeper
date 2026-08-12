@@ -40,7 +40,7 @@ public class StoreServiceTest {
         when(storeMapper.updateStore(any(StoreUpdateRequest.class))).thenReturn(0);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> storeService.updateStore(login, 1, req));
+                () -> storeService.updateStore(login, req));
 
         assertEquals(ErrorCode.STATE_CONFLICT, e.getErrorCode());
     }
@@ -54,20 +54,13 @@ public class StoreServiceTest {
 
         when(storeMapper.findStoreDetail(1)).thenReturn(detail);
 
-        StoreDetailResponse result = storeService.getStoreDetail(login, 1);
+        StoreDetailResponse result = storeService.getStoreDetail(login);
 
         assertEquals("테스트 매장", result.getStoreName());
     }
 
-    @Test
-    public void 점포조회_본인매장아님_예외() {
-        LoginContext login = new LoginContext(10, 1, "tester", "LOCAL");
-
-        BusinessException e = assertThrows(BusinessException.class,
-                () -> storeService.getStoreDetail(login, 99));
-
-        assertEquals(ErrorCode.FORBIDDEN, e.getErrorCode());
-    }
+    // storeId가 더 이상 파라미터로 넘어오지 않으므로 "본인 매장이 아닌 storeId로 조회"
+    // 시나리오는 구성할 수 없어 삭제했다 — login.getStoreId()가 유일한 출처다.
 
     @Test
     public void 점포조회_대상없음_예외() {
@@ -76,7 +69,7 @@ public class StoreServiceTest {
         when(storeMapper.findStoreDetail(1)).thenReturn(null);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> storeService.getStoreDetail(login, 1));
+                () -> storeService.getStoreDetail(login));
 
         assertEquals(ErrorCode.STORE_NOT_FOUND, e.getErrorCode());
     }

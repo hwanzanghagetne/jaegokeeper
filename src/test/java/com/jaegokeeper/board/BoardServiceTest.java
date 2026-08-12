@@ -1,6 +1,7 @@
 package com.jaegokeeper.board;
 
 import com.jaegokeeper.alba.mapper.AlbaMapper;
+import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.board.dto.request.BoardCreateRequest;
 import com.jaegokeeper.board.dto.request.BoardUpdateRequest;
 import com.jaegokeeper.board.enums.BoardType;
@@ -37,9 +38,12 @@ public class BoardServiceTest {
     @Mock
     private AlbaMapper albaMapper;
 
+    private LoginContext login;
+
     @Before
     public void setUp() {
         MockitoAnnotations.openMocks(this);
+        login = new LoginContext(10, 1, "tester", "LOCAL");
     }
 
     @Test
@@ -49,7 +53,7 @@ public class BoardServiceTest {
         req.setContent("내용");
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> boardService.createBoard(1, BoardType.NOTICE, req));
+                () -> boardService.createBoard(login, BoardType.NOTICE, req));
 
         assertEquals(ErrorCode.INVALID_WRITER_INFO, e.getErrorCode());
     }
@@ -63,7 +67,7 @@ public class BoardServiceTest {
         req.setWriterId(5);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> boardService.createBoard(1, BoardType.NOTICE, req));
+                () -> boardService.createBoard(login, BoardType.NOTICE, req));
 
         assertEquals(ErrorCode.INVALID_WRITER_INFO, e.getErrorCode());
     }
@@ -76,7 +80,7 @@ public class BoardServiceTest {
         req.setWriterType(BoardWriterType.ALBA);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> boardService.createBoard(1, BoardType.NOTICE, req));
+                () -> boardService.createBoard(login, BoardType.NOTICE, req));
 
         assertEquals(ErrorCode.INVALID_WRITER_INFO, e.getErrorCode());
     }
@@ -92,7 +96,7 @@ public class BoardServiceTest {
         when(albaMapper.countByStoreIdAndAlbaId(1, 5)).thenReturn(0);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> boardService.createBoard(1, BoardType.NOTICE, req));
+                () -> boardService.createBoard(login, BoardType.NOTICE, req));
 
         assertEquals(ErrorCode.ALBA_NOT_IN_STORE, e.getErrorCode());
     }
@@ -110,7 +114,7 @@ public class BoardServiceTest {
             return 1;
         }).when(boardMapper).insertBoard(any(Board.class));
 
-        Integer boardId = boardService.createBoard(1, BoardType.NOTICE, req);
+        Integer boardId = boardService.createBoard(login, BoardType.NOTICE, req);
 
         assertEquals(Integer.valueOf(200), boardId);
     }
@@ -123,7 +127,7 @@ public class BoardServiceTest {
         when(boardMapper.countActiveByStoreIdAndBoardId(1, 5)).thenReturn(0);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> boardService.updateBoard(1, 5, req));
+                () -> boardService.updateBoard(login, 5, req));
 
         assertEquals(ErrorCode.BOARD_NOT_FOUND, e.getErrorCode());
     }
@@ -133,7 +137,7 @@ public class BoardServiceTest {
         when(boardMapper.countActiveByStoreIdAndBoardId(1, 5)).thenReturn(0);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> boardService.softDeleteBoard(1, 5));
+                () -> boardService.softDeleteBoard(login, 5));
 
         assertEquals(ErrorCode.BOARD_NOT_FOUND, e.getErrorCode());
     }
@@ -143,7 +147,7 @@ public class BoardServiceTest {
         when(boardMapper.getBoardDetail(1, 5)).thenReturn(null);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> boardService.getBoardDetail(1, 5));
+                () -> boardService.getBoardDetail(login, 5));
 
         assertEquals(ErrorCode.BOARD_NOT_FOUND, e.getErrorCode());
     }

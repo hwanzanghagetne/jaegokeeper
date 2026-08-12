@@ -6,7 +6,6 @@ import com.jaegokeeper.alba.dto.AlbaRegisterRequest;
 import com.jaegokeeper.alba.dto.AlbaUpdateRequest;
 import com.jaegokeeper.alba.mapper.AlbaMapper;
 import com.jaegokeeper.auth.dto.LoginContext;
-import com.jaegokeeper.auth.utils.StoreAccessValidator;
 import com.jaegokeeper.mail.MailService;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.image.dto.ImageInfoDTO;
@@ -35,16 +34,10 @@ public class AlbaService {
     private final ScheduleMapper scheduleMapper;
     private final ImageService imageService;
     private final MailService mailService;
-    private final StoreAccessValidator storeAccessValidator;
 
     @Transactional
     public int saveAlbaRegister(LoginContext login, AlbaRegisterRequest req) {
-        return saveAlbaRegister(login, req.getStoreId(), req);
-    }
-
-    @Transactional
-    public int saveAlbaRegister(LoginContext login, int storeId, AlbaRegisterRequest req) {
-        storeAccessValidator.validate(login, storeId);
+        int storeId = login.getStoreId();
         req.setStoreId(storeId);
         req.setAlbaEmail(normalizeOptionalEmail(req.getAlbaEmail()));
         if (!albaMapper.existsByStoreId(storeId)) {
@@ -97,12 +90,7 @@ public class AlbaService {
 
     @Transactional
     public void updateAlba(LoginContext login, AlbaUpdateRequest req) {
-        updateAlba(login, login.getStoreId(), req);
-    }
-
-    @Transactional
-    public void updateAlba(LoginContext login, int storeId, AlbaUpdateRequest req) {
-        validateAlbaAccess(login, storeId, req.getAlbaId());
+        validateAlbaAccess(login, req.getAlbaId());
         int updated = albaMapper.updateAlba(req);
         if (updated == 0) {
             throw new BusinessException(STATE_CONFLICT);
@@ -111,12 +99,7 @@ public class AlbaService {
 
     @Transactional
     public void deleteAlba(LoginContext login, int albaId) {
-        deleteAlba(login, login.getStoreId(), albaId);
-    }
-
-    @Transactional
-    public void deleteAlba(LoginContext login, int storeId, int albaId) {
-        validateAlbaAccess(login, storeId, albaId);
+        validateAlbaAccess(login, albaId);
         int deleted = albaMapper.deleteAlba(albaId);
         if (deleted == 0) {
             throw new BusinessException(STATE_CONFLICT);
@@ -134,12 +117,7 @@ public class AlbaService {
 
     @Transactional(readOnly = true)
     public AlbaDetailResponse getAlbaById(LoginContext login, int albaId) {
-        return getAlbaById(login, login.getStoreId(), albaId);
-    }
-
-    @Transactional(readOnly = true)
-    public AlbaDetailResponse getAlbaById(LoginContext login, int storeId, int albaId) {
-        validateAlbaAccess(login, storeId, albaId);
+        validateAlbaAccess(login, albaId);
         AlbaDetailResponse alba = albaMapper.getAlbaById(albaId);
         if (alba == null) {
             throw new BusinessException(ALBA_NOT_FOUND);
@@ -148,19 +126,12 @@ public class AlbaService {
     }
 
     @Transactional(readOnly = true)
-    public List<AlbaListResponse> getAllAlbaList(LoginContext login, Integer storeId) {
-        int targetStoreId = (storeId != null) ? storeId : login.getStoreId();
-        storeAccessValidator.validate(login, targetStoreId);
-        return albaMapper.selectAllAlba(targetStoreId);
+    public List<AlbaListResponse> getAllAlbaList(LoginContext login) {
+        return albaMapper.selectAllAlba(login.getStoreId());
     }
 
-    @Transactional(readOnly = true)
-    public List<AlbaListResponse> getAllAlbaList(LoginContext login, int storeId) {
-        return getAllAlbaList(login, Integer.valueOf(storeId));
-    }
-
-    private void validateAlbaAccess(LoginContext login, int storeId, int albaId) {
-        storeAccessValidator.validate(login, storeId);
+    private void validateAlbaAccess(LoginContext login, int albaId) {
+        int storeId = login.getStoreId();
         if (!albaMapper.existsAlbaById(albaId)) {
             throw new BusinessException(ALBA_NOT_FOUND);
         }

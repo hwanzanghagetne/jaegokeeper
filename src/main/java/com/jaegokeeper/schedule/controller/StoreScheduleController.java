@@ -19,7 +19,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/stores/{storeId}/schedules")
+@RequestMapping("/stores/schedules")
 @RequiredArgsConstructor
 public class StoreScheduleController {
 
@@ -28,61 +28,55 @@ public class StoreScheduleController {
     @Operation(summary = "스토어별 알바 근무 스케줄 등록")
     @PostMapping
     public ResponseEntity<Void> createSchedule(
-            @PathVariable int storeId,
             @Valid @RequestBody ScheduleRegisterRequest req,
             @LoginUser LoginContext login) {
-        scheduleService.saveScheduleRegister(login, storeId, req);
+        scheduleService.saveScheduleRegister(login, req);
         return ResponseEntity.status(201).build();
     }
 
     @Operation(summary = "스토어별 알바 근무 스케줄 수정")
     @PutMapping("/{scheduleId}")
     public ResponseEntity<Void> updateSchedule(
-            @PathVariable int storeId,
             @PathVariable int scheduleId,
             @Valid @RequestBody ScheduleUpdateRequest req,
             @LoginUser LoginContext login) {
         req.setScheduleId(scheduleId);
-        scheduleService.updateSchedule(login, storeId, req);
+        scheduleService.updateSchedule(login, req);
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "스토어별 특정 날짜 스케줄 조회")
     @GetMapping
     public ResponseEntity<List<ScheduleListResponse>> getSchedulesByDate(
-            @PathVariable int storeId,
             @RequestParam String date,
             @LoginUser LoginContext login) {
-        return ResponseEntity.ok(scheduleService.getScheduleListByDate(login, storeId, date));
+        return ResponseEntity.ok(scheduleService.getScheduleListByDate(login, date));
     }
 
     @Operation(summary = "스토어별 알바 출/퇴근 시간 조회")
     @GetMapping("/worktime")
     public ResponseEntity<List<WorkTimeResponse>> getWorkTime(
-            @PathVariable int storeId,
             @RequestParam int albaId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @LoginUser LoginContext login) {
-        return ResponseEntity.ok(scheduleService.selectWorkTime(login, storeId, albaId, date));
+        return ResponseEntity.ok(scheduleService.selectWorkTime(login, albaId, date));
     }
 
     @Operation(summary = "스토어별 출근 기록")
     @PostMapping("/workin")
     public ResponseEntity<Void> recordWorkIn(
-            @PathVariable int storeId,
             @Valid @RequestBody WorkInOutRequest req,
             @LoginUser LoginContext login) {
-        scheduleService.recordWorkIn(login, storeId, req);
+        scheduleService.recordWorkIn(login, req);
         return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "스토어별 퇴근 기록")
     @PostMapping("/workout")
     public ResponseEntity<Void> recordWorkOut(
-            @PathVariable int storeId,
             @Valid @RequestBody WorkInOutRequest req,
             @LoginUser LoginContext login) {
-        scheduleService.recordWorkOut(login, storeId, req);
+        scheduleService.recordWorkOut(login, req);
         return ResponseEntity.ok().build();
     }
 }

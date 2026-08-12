@@ -50,23 +50,15 @@ public class StoreAlbaControllerWebTest {
 
     @Test
     public void 스토어알바목록_미로그인_401() throws Exception {
-        mockMvc.perform(get("/stores/1/albas"))
+        mockMvc.perform(get("/stores/albas"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string(containsString("\"code\":\"LOGIN_REQUIRED\"")));
 
         verifyNoInteractions(albaService);
     }
 
-    @Test
-    public void 스토어알바목록_다른스토어_403() throws Exception {
-        MockHttpSession session = loginSession(1);
-
-        mockMvc.perform(get("/stores/2/albas").session(session))
-                .andExpect(status().isForbidden())
-                .andExpect(content().string(containsString("\"code\":\"FORBIDDEN\"")));
-
-        verifyNoInteractions(albaService);
-    }
+    // storeId가 URL에 없어져서 "다른 스토어로 요청" 시나리오 자체를 구성할 수 없다.
+    // (검증이 빠진 게 아니라 URL로 다른 점포를 지목하는 공격 표면 자체가 사라졌다.)
 
     @Test
     public void 스토어알바목록_같은스토어_200() throws Exception {
@@ -78,32 +70,18 @@ public class StoreAlbaControllerWebTest {
 
         doReturn(List.of(one))
                 .when(albaService)
-                .getAllAlbaList(any(LoginContext.class), intThat(v -> v == 1));
+                .getAllAlbaList(any(LoginContext.class));
 
-        mockMvc.perform(get("/stores/1/albas").session(session))
+        mockMvc.perform(get("/stores/albas").session(session))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("\"albaId\":11")));
     }
 
     @Test
     public void 스토어알바삭제_미로그인_401() throws Exception {
-        mockMvc.perform(delete("/stores/1/albas/11"))
+        mockMvc.perform(delete("/stores/albas/11"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string(containsString("\"code\":\"LOGIN_REQUIRED\"")));
-
-        verifyNoInteractions(albaService);
-    }
-
-    @Test
-    public void 스토어알바수정_다른스토어_403() throws Exception {
-        MockHttpSession session = loginSession(1);
-
-        mockMvc.perform(put("/stores/2/albas/11")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}")
-                        .session(session))
-                .andExpect(status().isForbidden())
-                .andExpect(content().string(containsString("\"code\":\"FORBIDDEN\"")));
 
         verifyNoInteractions(albaService);
     }
@@ -113,7 +91,7 @@ public class StoreAlbaControllerWebTest {
         MockHttpSession session = loginSession(1);
         String body = "{\"albaEmail\":\"not-an-email\"}";
 
-        mockMvc.perform(put("/stores/1/albas/11")
+        mockMvc.perform(put("/stores/albas/11")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .session(session))

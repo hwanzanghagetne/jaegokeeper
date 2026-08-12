@@ -1,14 +1,14 @@
-package com.jaegokeeper.common;
+package com.jaegokeeper.board;
 
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.auth.utils.LoginUserArgumentResolver;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jaegokeeper.auth.utils.SessionInterceptor;
+import com.jaegokeeper.board.controller.BoardController;
+import com.jaegokeeper.board.dto.response.BoardListResponse;
+import com.jaegokeeper.board.service.BoardService;
 import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.exception.GlobalExceptionHandler;
-import com.jaegokeeper.item.controller.ItemController;
-import com.jaegokeeper.item.dto.response.ItemListResponse;
-import com.jaegokeeper.item.service.ItemService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,22 +29,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * storeId는 더 이상 URL에 없고 세션(LoginContext)만 신뢰하므로, 이 테스트는
- * "로그인 여부"만 검증한다. 예전에 있던 "다른 storeId로 요청하면 403" 테스트는
- * URL에 storeId 자체가 없어져서 그 시나리오를 구성할 수 없어 삭제했다 —
- * 검증이 빠진 게 아니라 그 공격 표면 자체가 사라진 것이다.
+ * 리팩터링 전에는 BoardController가 @LoginUser를 받지 않고 서비스 계층 검증도
+ * 없어서 이 웹 테스트 자체가 없었다(SessionInterceptor의 URL storeId 비교 하나에만
+ * 의존). storeId를 세션 기준으로 통일하면서 다른 컨트롤러와 같은 최소 시나리오
+ * (미로그인 401 / 로그인 시 200)를 신규로 추가한다.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class StoreScopeInterceptorWebTest {
+public class BoardControllerWebTest {
 
     @Mock
-    private ItemService itemService;
+    private BoardService boardService;
 
     private MockMvc mockMvc;
 
     @Before
     public void setUp() {
-        ItemController controller = new ItemController(itemService);
+        BoardController controller = new BoardController(boardService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .addInterceptors(new SessionInterceptor(new ObjectMapper()))
                 .setControllerAdvice(new GlobalExceptionHandler())
@@ -53,23 +53,23 @@ public class StoreScopeInterceptorWebTest {
     }
 
     @Test
-    public void 스토어리소스_미로그인_401() throws Exception {
-        mockMvc.perform(get("/stores/items"))
+    public void 게시글목록_미로그인_401() throws Exception {
+        mockMvc.perform(get("/stores/boards"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string(containsString("\"code\":\"LOGIN_REQUIRED\"")));
 
-        verifyNoInteractions(itemService);
+        verifyNoInteractions(boardService);
     }
 
     @Test
-    public void 스토어리소스_로그인시_200() throws Exception {
+    public void 게시글목록_로그인시_200() throws Exception {
         MockHttpSession session = loginSession(1);
 
-        doReturn(PageResponse.of(Collections.<ItemListResponse>emptyList(), 1, 10, 0))
-                .when(itemService)
-                .getItemList(any(LoginContext.class), any());
+        doReturn(PageResponse.of(Collections.<BoardListResponse>emptyList(), 1, 10, 0))
+                .when(boardService)
+                .getBoardList(any(LoginContext.class), any());
 
-        mockMvc.perform(get("/stores/items").session(session))
+        mockMvc.perform(get("/stores/boards").session(session))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("\"content\":[]")));
     }

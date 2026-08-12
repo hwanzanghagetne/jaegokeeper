@@ -20,20 +20,18 @@ public class StoreController {
     private final StoreService storeService;
 
     @Operation(summary = "점포 정보 조회")
-    @GetMapping("/{storeId}")
+    @GetMapping("/me")
     public ResponseEntity<StoreDetailResponse> getStore(
-            @PathVariable int storeId,
             @LoginUser LoginContext login) {
-        return ResponseEntity.ok(storeService.getStoreDetail(login, storeId));
+        return ResponseEntity.ok(storeService.getStoreDetail(login));
     }
 
     @Operation(summary = "점포 정보 수정")
-    @PutMapping("/{storeId}")
+    @PutMapping("/me")
     public ResponseEntity<Void> updateStore(
-            @PathVariable int storeId,
             @Valid @RequestBody StoreUpdateRequest req,
             @LoginUser LoginContext login) {
-        storeService.updateStore(login, storeId, req);
+        storeService.updateStore(login, req);
         return ResponseEntity.noContent().build();
     }
 }

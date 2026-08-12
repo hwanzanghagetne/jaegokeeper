@@ -19,7 +19,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -49,7 +48,7 @@ public class StoreControllerWebTest {
         MockHttpSession session = loginSession(1);
         String body = "{\"storeName\":\"\",\"storeAdd1\":\"서울\",\"storeAdd2\":\"101호\",\"storeTel\":\"02-0000-0000\"}";
 
-        mockMvc.perform(put("/stores/1")
+        mockMvc.perform(put("/stores/me")
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -63,7 +62,7 @@ public class StoreControllerWebTest {
     public void 점포수정_로그인없음_401() throws Exception {
         String body = "{\"storeName\":\"자초단\",\"storeAdd1\":\"서울\",\"storeAdd2\":\"101호\",\"storeTel\":\"02-0000-0000\"}";
 
-        mockMvc.perform(put("/stores/1")
+        mockMvc.perform(put("/stores/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isUnauthorized())
@@ -77,13 +76,13 @@ public class StoreControllerWebTest {
         MockHttpSession session = loginSession(1);
         String body = "{\"storeName\":\"자초단\",\"storeAdd1\":\"서울\",\"storeAdd2\":\"101호\",\"storeTel\":\"02-0000-0000\"}";
 
-        mockMvc.perform(put("/stores/1")
+        mockMvc.perform(put("/stores/me")
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isNoContent());
 
-        verify(storeService).updateStore(any(LoginContext.class), eq(1), any());
+        verify(storeService).updateStore(any(LoginContext.class), any());
     }
 
     private MockHttpSession loginSession(int storeId) {
@@ -92,4 +91,3 @@ public class StoreControllerWebTest {
         return session;
     }
 }
-

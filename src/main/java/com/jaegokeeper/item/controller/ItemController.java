@@ -20,7 +20,7 @@ import jakarta.validation.Valid;
 
 @Tag(name = "Item")
 @RestController
-@RequestMapping("/stores/{storeId}/items")
+@RequestMapping("/stores/items")
 @RequiredArgsConstructor
 public class ItemController {
 
@@ -29,59 +29,53 @@ public class ItemController {
     @Operation(summary = "아이템 생성")
     @PostMapping
     public ResponseEntity<ItemCreateResponse> createItem(
-            @PathVariable Integer storeId,
             @Valid @ModelAttribute ItemCreateRequest dto,
             @LoginUser LoginContext login) {
-        Integer itemId = itemService.createItem(login, storeId, dto);
+        Integer itemId = itemService.createItem(login, dto);
         return ResponseEntity.status(201).body(new ItemCreateResponse(itemId));
     }
 
     @Operation(summary = "아이템 목록 조회")
     @GetMapping
     public ResponseEntity<PageResponse<ItemListResponse>> getItems(
-            @PathVariable Integer storeId,
             @Valid @ModelAttribute ItemPageRequest dto,
             @LoginUser LoginContext login) {
-        return ResponseEntity.ok(itemService.getItemList(login, storeId, dto));
+        return ResponseEntity.ok(itemService.getItemList(login, dto));
     }
 
     @Operation(summary = "아이템 상세 조회")
     @GetMapping("/{itemId}")
     public ResponseEntity<ItemDetailResponse> getItemDetail(
-            @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @LoginUser LoginContext login) {
-        return ResponseEntity.ok(itemService.getItemDetail(login, storeId, itemId));
+        return ResponseEntity.ok(itemService.getItemDetail(login, itemId));
     }
 
     @Operation(summary = "아이템 수정")
     @PutMapping("/{itemId}")
     public ResponseEntity<Void> modifyItem(
-            @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @Valid @ModelAttribute ItemUpdateRequest dto,
             @LoginUser LoginContext login) {
-        itemService.updateItem(login, storeId, itemId, dto);
+        itemService.updateItem(login, itemId, dto);
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "아이템 삭제")
     @DeleteMapping("/{itemId}")
     public ResponseEntity<Void> deleteItem(
-            @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @LoginUser LoginContext login) {
-        itemService.softDeleteItem(login, storeId, itemId);
+        itemService.softDeleteItem(login, itemId);
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "아이템 즐겨찾기 토글")
     @PatchMapping("/{itemId}/pin")
     public ResponseEntity<Void> toggleIsPinned(
-            @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @LoginUser LoginContext login) {
-        itemService.toggleItemPin(login, storeId, itemId);
+        itemService.toggleItemPin(login, itemId);
         return ResponseEntity.noContent().build();
     }
 }

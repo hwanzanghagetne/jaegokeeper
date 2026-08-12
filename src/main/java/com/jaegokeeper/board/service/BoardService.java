@@ -1,5 +1,6 @@
 package com.jaegokeeper.board.service;
 
+import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.board.dto.BoardUpdateParamImg;
 import com.jaegokeeper.board.dto.request.BoardCreateRequest;
 import com.jaegokeeper.board.dto.request.BoardPageRequest;
@@ -34,7 +35,8 @@ public class BoardService {
     private final AlbaMapper albaMapper;
 
     @Transactional(readOnly = true)
-    public PageResponse<BoardListResponse> getBoardList(Integer storeId, BoardPageRequest dto) {
+    public PageResponse<BoardListResponse> getBoardList(LoginContext login, BoardPageRequest dto) {
+        int storeId = login.getStoreId();
 
         int page = dto.getPageValue();
         int size = dto.getSizeValue();
@@ -51,8 +53,8 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public BoardDetailResponse getBoardDetail(Integer storeId, Integer boardId) {
-        BoardDetailResponse dto = boardMapper.getBoardDetail(storeId, boardId);
+    public BoardDetailResponse getBoardDetail(LoginContext login, Integer boardId) {
+        BoardDetailResponse dto = boardMapper.getBoardDetail(login.getStoreId(), boardId);
         if (dto == null) {
             throw new BusinessException(BOARD_NOT_FOUND);
         }
@@ -60,7 +62,8 @@ public class BoardService {
     }
 
     @Transactional
-    public Integer createBoard(Integer storeId, BoardType boardType, BoardCreateRequest dto) {
+    public Integer createBoard(LoginContext login, BoardType boardType, BoardCreateRequest dto) {
+        int storeId = login.getStoreId();
 
         BoardWriterType writerType = dto.getWriterType();
         if (writerType == null) {
@@ -90,7 +93,8 @@ public class BoardService {
     }
 
     @Transactional
-    public void updateBoard(Integer storeId, Integer boardId, BoardUpdateRequest dto) {
+    public void updateBoard(LoginContext login, Integer boardId, BoardUpdateRequest dto) {
+        int storeId = login.getStoreId();
 
         int exists = boardMapper.countActiveByStoreIdAndBoardId(storeId, boardId);
         if (exists != 1) {
@@ -123,7 +127,9 @@ public class BoardService {
     }
 
     @Transactional
-    public void softDeleteBoard(Integer storeId, Integer boardId) {
+    public void softDeleteBoard(LoginContext login, Integer boardId) {
+        int storeId = login.getStoreId();
+
         int exists = boardMapper.countActiveByStoreIdAndBoardId(storeId, boardId);
         if (exists != 1) {
             throw new BusinessException(BOARD_NOT_FOUND);

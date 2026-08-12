@@ -16,7 +16,7 @@ import jakarta.validation.Valid;
 
 @Tag(name = "Stock")
 @RestController
-@RequestMapping("/stores/{storeId}/items/{itemId}/stock")
+@RequestMapping("/stores/items/{itemId}/stock")
 @RequiredArgsConstructor
 public class StockController {
 
@@ -25,42 +25,38 @@ public class StockController {
     @Operation(summary = "재고 상세 조회")
     @GetMapping
     public ResponseEntity<StockDetailResponse> getStockDetail(
-            @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @LoginUser LoginContext login) {
-        return ResponseEntity.ok(stockService.getStockDetail(login, storeId, itemId));
+        return ResponseEntity.ok(stockService.getStockDetail(login, itemId));
     }
 
     @Operation(summary = "재고 입고 처리")
     @PostMapping("/in")
     public ResponseEntity<Void> inStock(
-            @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @Valid @RequestBody StockInOutRequest dto,
             @LoginUser LoginContext login) {
-        stockService.inStock(login, storeId, itemId, dto);
+        stockService.inStock(login, itemId, dto);
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "재고 출고 처리")
     @PostMapping("/out")
     public ResponseEntity<Void> outStock(
-            @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @Valid @RequestBody StockInOutRequest dto,
             @LoginUser LoginContext login) {
-        stockService.outStock(login, storeId, itemId, dto);
+        stockService.outStock(login, itemId, dto);
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "재고 직접 조정")
     @PostMapping("/adjust")
     public ResponseEntity<Void> adjustStock(
-            @PathVariable Integer storeId,
             @PathVariable Integer itemId,
             @Valid @RequestBody StockAmountUpdateRequest dto,
             @LoginUser LoginContext login) {
-        stockService.updateStockAmount(login, storeId, itemId, dto);
+        stockService.updateStockAmount(login, itemId, dto);
         return ResponseEntity.noContent().build();
     }
 }

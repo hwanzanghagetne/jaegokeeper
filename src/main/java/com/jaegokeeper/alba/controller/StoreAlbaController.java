@@ -18,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/stores/{storeId}/albas")
+@RequestMapping("/stores/albas")
 public class StoreAlbaController {
 
     private final AlbaService albaService;
@@ -26,50 +26,44 @@ public class StoreAlbaController {
     @Operation(summary = "스토어별 알바 목록 조회")
     @GetMapping
     public ResponseEntity<List<AlbaListResponse>> getAlbas(
-            @PathVariable int storeId,
             @LoginUser LoginContext login) {
-        return ResponseEntity.ok(albaService.getAllAlbaList(login, storeId));
+        return ResponseEntity.ok(albaService.getAllAlbaList(login));
     }
 
     @Operation(summary = "스토어별 알바 등록")
     @PostMapping
     public ResponseEntity<AlbaCreateResponse> createAlba(
-            @PathVariable int storeId,
             @Valid @ModelAttribute AlbaRegisterRequest req,
             @LoginUser LoginContext login) {
-        req.setStoreId(storeId);
-        int albaId = albaService.saveAlbaRegister(login, storeId, req);
+        int albaId = albaService.saveAlbaRegister(login, req);
         return ResponseEntity.status(201).body(new AlbaCreateResponse(albaId));
     }
 
     @Operation(summary = "스토어별 알바 상세 조회")
     @GetMapping("/{albaId}")
     public ResponseEntity<AlbaDetailResponse> getAlba(
-            @PathVariable int storeId,
             @PathVariable int albaId,
             @LoginUser LoginContext login) {
-        return ResponseEntity.ok(albaService.getAlbaById(login, storeId, albaId));
+        return ResponseEntity.ok(albaService.getAlbaById(login, albaId));
     }
 
     @Operation(summary = "스토어별 알바 수정")
     @PutMapping("/{albaId}")
     public ResponseEntity<Void> updateAlba(
-            @PathVariable int storeId,
             @PathVariable int albaId,
             @Valid @RequestBody AlbaUpdateRequest req,
             @LoginUser LoginContext login) {
         req.setAlbaId(albaId);
-        albaService.updateAlba(login, storeId, req);
+        albaService.updateAlba(login, req);
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "스토어별 알바 삭제")
     @DeleteMapping("/{albaId}")
     public ResponseEntity<Void> deleteAlba(
-            @PathVariable int storeId,
             @PathVariable int albaId,
             @LoginUser LoginContext login) {
-        albaService.deleteAlba(login, storeId, albaId);
+        albaService.deleteAlba(login, albaId);
         return ResponseEntity.noContent().build();
     }
 }

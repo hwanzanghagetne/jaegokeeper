@@ -1,7 +1,6 @@
 package com.jaegokeeper.item;
 
 import com.jaegokeeper.auth.dto.LoginContext;
-import com.jaegokeeper.auth.utils.StoreAccessValidator;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.exception.ErrorCode;
 import com.jaegokeeper.image.service.ImageService;
@@ -23,7 +22,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -44,9 +42,6 @@ public class ItemServiceTest {
     @Mock
     private ImageService imgService;
 
-    @Mock
-    private StoreAccessValidator storeAccessValidator;
-
     private LoginContext login;
 
     @Before
@@ -55,20 +50,8 @@ public class ItemServiceTest {
         login = new LoginContext(10, 1, "tester", "LOCAL");
     }
 
-    @Test
-    public void 아이템생성_본인매장아님_예외() {
-        ItemCreateRequest req = new ItemCreateRequest();
-        req.setItemName("치킨");
-        req.setStockAmount(10);
-
-        doThrow(new BusinessException(ErrorCode.FORBIDDEN))
-                .when(storeAccessValidator).validate(login, 99);
-
-        BusinessException e = assertThrows(BusinessException.class,
-                () -> itemService.createItem(login, 99, req));
-
-        assertEquals(ErrorCode.FORBIDDEN, e.getErrorCode());
-    }
+    // storeId가 더 이상 파라미터로 넘어오지 않고 항상 login.getStoreId()이므로,
+    // "본인 매장이 아닌 storeId로 요청" 시나리오는 구성할 수 없어 삭제했다.
 
     @Test
     public void 아이템생성_매장없음_예외() {
@@ -79,7 +62,7 @@ public class ItemServiceTest {
         when(storeMapper.existsById(1)).thenReturn(false);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> itemService.createItem(login, 1, req));
+                () -> itemService.createItem(login, req));
 
         assertEquals(ErrorCode.STORE_NOT_FOUND, e.getErrorCode());
     }
@@ -94,7 +77,7 @@ public class ItemServiceTest {
         when(itemMapper.insertItem(any(Item.class))).thenReturn(0);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> itemService.createItem(login, 1, req));
+                () -> itemService.createItem(login, req));
 
         assertEquals(ErrorCode.INTERNAL_ERROR, e.getErrorCode());
     }
@@ -112,7 +95,7 @@ public class ItemServiceTest {
             return 1;
         }).when(itemMapper).insertItem(any(Item.class));
 
-        Integer itemId = itemService.createItem(login, 1, req);
+        Integer itemId = itemService.createItem(login, req);
 
         assertEquals(Integer.valueOf(100), itemId);
         verify(stockService).initStock(100, 10);
@@ -123,7 +106,7 @@ public class ItemServiceTest {
         when(itemMapper.softDeleteItem(1, 5)).thenReturn(0);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> itemService.softDeleteItem(login, 1, 5));
+                () -> itemService.softDeleteItem(login, 5));
 
         assertEquals(ErrorCode.ITEM_NOT_FOUND, e.getErrorCode());
     }
@@ -133,7 +116,7 @@ public class ItemServiceTest {
         when(itemMapper.findItemDetail(1, 5)).thenReturn(null);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> itemService.getItemDetail(login, 1, 5));
+                () -> itemService.getItemDetail(login, 5));
 
         assertEquals(ErrorCode.ITEM_NOT_FOUND, e.getErrorCode());
     }
@@ -143,7 +126,7 @@ public class ItemServiceTest {
         when(itemMapper.togglePin(1, 5)).thenReturn(0);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> itemService.toggleItemPin(login, 1, 5));
+                () -> itemService.toggleItemPin(login, 5));
 
         assertEquals(ErrorCode.ITEM_NOT_FOUND, e.getErrorCode());
     }
@@ -158,7 +141,7 @@ public class ItemServiceTest {
         req.setFile(file);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> itemService.updateItem(login, 1, 5, req));
+                () -> itemService.updateItem(login, 5, req));
 
         assertEquals(ErrorCode.IMAGE_UPDATE_CONFLICT, e.getErrorCode());
     }
@@ -171,7 +154,7 @@ public class ItemServiceTest {
         when(itemMapper.updateItem(any(Integer.class), any(Integer.class), any())).thenReturn(0);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> itemService.updateItem(login, 1, 5, req));
+                () -> itemService.updateItem(login, 5, req));
 
         assertEquals(ErrorCode.ITEM_NOT_FOUND, e.getErrorCode());
     }

@@ -1,7 +1,6 @@
 package com.jaegokeeper.stock.service;
 
 import com.jaegokeeper.auth.dto.LoginContext;
-import com.jaegokeeper.auth.utils.StoreAccessValidator;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.stock.dto.StockAdjustRequest;
 import com.jaegokeeper.stock.dto.StockAmountUpdateRequest;
@@ -25,11 +24,10 @@ public class StockService {
     private final StockMapper stockMapper;
     private final LogMapper logMapper;
     private final BufferMapper bufferMapper;
-    private final StoreAccessValidator storeAccessValidator;
 
     @Transactional
-    public void inStock(LoginContext login, Integer storeId, Integer itemId, StockInOutRequest dto) {
-        storeAccessValidator.validate(login, storeId);
+    public void inStock(LoginContext login, Integer itemId, StockInOutRequest dto) {
+        int storeId = login.getStoreId();
         int updated = stockMapper.increaseQuantity(storeId, itemId, dto.getAmount());
         if (updated != 1) {
             throw new BusinessException(STOCK_NOT_FOUND);
@@ -41,8 +39,8 @@ public class StockService {
     }
 
     @Transactional
-    public void outStock(LoginContext login, Integer storeId, Integer itemId, StockInOutRequest dto) {
-        storeAccessValidator.validate(login, storeId);
+    public void outStock(LoginContext login, Integer itemId, StockInOutRequest dto) {
+        int storeId = login.getStoreId();
         findStockAmountOrThrow(storeId, itemId);
         int updated = stockMapper.decreaseQuantity(storeId, itemId, dto.getAmount());
         if (updated != 1) {
@@ -55,8 +53,8 @@ public class StockService {
     }
 
     @Transactional
-    public void updateStockAmount(LoginContext login, Integer storeId, Integer itemId, StockAmountUpdateRequest dto) {
-        storeAccessValidator.validate(login, storeId);
+    public void updateStockAmount(LoginContext login, Integer itemId, StockAmountUpdateRequest dto) {
+        int storeId = login.getStoreId();
         int existAmount = findStockAmountOrThrow(storeId, itemId);
         if (dto.getStockAmount().equals(existAmount)) {
             return;
@@ -72,8 +70,8 @@ public class StockService {
     }
 
     @Transactional
-    public void adjustStock(LoginContext login, Integer storeId, Integer itemId, StockAdjustRequest dto) {
-        storeAccessValidator.validate(login, storeId);
+    public void adjustStock(LoginContext login, Integer itemId, StockAdjustRequest dto) {
+        int storeId = login.getStoreId();
         Integer newTargetAmount = dto.getTargetAmount();
         Integer newBufferAmount = dto.getBufferAmount();
 
@@ -117,9 +115,8 @@ public class StockService {
     }
 
     @Transactional(readOnly = true)
-    public StockDetailResponse getStockDetail(LoginContext login, Integer storeId, Integer itemId) {
-        storeAccessValidator.validate(login, storeId);
-        StockDetailResponse dto = stockMapper.findStockDetail(storeId, itemId);
+    public StockDetailResponse getStockDetail(LoginContext login, Integer itemId) {
+        StockDetailResponse dto = stockMapper.findStockDetail(login.getStoreId(), itemId);
         if (dto == null) {
             throw new BusinessException(STOCK_NOT_FOUND);
         }

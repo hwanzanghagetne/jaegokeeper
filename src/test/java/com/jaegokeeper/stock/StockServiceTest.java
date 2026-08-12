@@ -1,7 +1,6 @@
 package com.jaegokeeper.stock;
 
 import com.jaegokeeper.auth.dto.LoginContext;
-import com.jaegokeeper.auth.utils.StoreAccessValidator;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.exception.ErrorCode;
 import com.jaegokeeper.stock.dto.StockInOutRequest;
@@ -32,9 +31,6 @@ public class StockServiceTest {
     @Mock
     private BufferMapper bufferMapper;
 
-    @Mock
-    private StoreAccessValidator storeAccessValidator;
-
     private LoginContext login;
 
     @Before
@@ -53,7 +49,7 @@ public class StockServiceTest {
         when(stockMapper.increaseQuantity(1, 1, 10)).thenReturn(1);
         when(logMapper.insertLog(1, com.jaegokeeper.stock.enums.LogType.IN, 10)).thenReturn(1);
 
-        stockService.inStock(login, 1, 1, req);
+        stockService.inStock(login, 1, req);
     }
 
     @Test
@@ -64,7 +60,7 @@ public class StockServiceTest {
         when(stockMapper.increaseQuantity(1, 999, 10)).thenReturn(0);
 
         try {
-            stockService.inStock(login, 1, 999, req);
+            stockService.inStock(login, 999, req);
             fail("BusinessException이 발생해야 합니다");
         } catch (BusinessException e) {
             assertEquals(ErrorCode.STOCK_NOT_FOUND, e.getErrorCode());
@@ -82,7 +78,7 @@ public class StockServiceTest {
         when(stockMapper.decreaseQuantity(1, 1, 100)).thenReturn(0);
 
         try {
-            stockService.outStock(login, 1, 1, req);
+            stockService.outStock(login, 1, req);
             fail("BusinessException이 발생해야 합니다");
         } catch (BusinessException e) {
             assertEquals(ErrorCode.STOCK_QUANTITY_NOT_ENOUGH, e.getErrorCode());
@@ -97,7 +93,7 @@ public class StockServiceTest {
         when(stockMapper.findStockAmountByItemId(1, 999)).thenReturn(null);
 
         try {
-            stockService.outStock(login, 1, 999, req);
+            stockService.outStock(login, 999, req);
             fail("BusinessException이 발생해야 합니다");
         } catch (BusinessException e) {
             assertEquals(ErrorCode.STOCK_NOT_FOUND, e.getErrorCode());
@@ -113,6 +109,6 @@ public class StockServiceTest {
         when(stockMapper.decreaseQuantity(1, 1, 5)).thenReturn(1);
         when(logMapper.insertLog(1, com.jaegokeeper.stock.enums.LogType.OUT, 5)).thenReturn(1);
 
-        stockService.outStock(login, 1, 1, req);
+        stockService.outStock(login, 1, req);
     }
 }

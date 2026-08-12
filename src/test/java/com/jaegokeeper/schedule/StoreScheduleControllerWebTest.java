@@ -50,25 +50,15 @@ public class StoreScheduleControllerWebTest {
 
     @Test
     public void 스토어스케줄조회_미로그인_401() throws Exception {
-        mockMvc.perform(get("/stores/1/schedules").param("date", "2026-04-08"))
+        mockMvc.perform(get("/stores/schedules").param("date", "2026-04-08"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string(containsString("\"code\":\"LOGIN_REQUIRED\"")));
 
         verifyNoInteractions(scheduleService);
     }
 
-    @Test
-    public void 스토어스케줄조회_다른스토어_403() throws Exception {
-        MockHttpSession session = loginSession(1);
-
-        mockMvc.perform(get("/stores/2/schedules")
-                        .param("date", "2026-04-08")
-                        .session(session))
-                .andExpect(status().isForbidden())
-                .andExpect(content().string(containsString("\"code\":\"FORBIDDEN\"")));
-
-        verifyNoInteractions(scheduleService);
-    }
+    // storeId가 URL에 없어져서 "다른 스토어로 요청" 시나리오 자체를 구성할 수 없다.
+    // (검증이 빠진 게 아니라 URL로 다른 점포를 지목하는 공격 표면 자체가 사라졌다.)
 
     @Test
     public void 스토어스케줄조회_같은스토어_200() throws Exception {
@@ -80,9 +70,9 @@ public class StoreScheduleControllerWebTest {
 
         doReturn(List.of(row))
                 .when(scheduleService)
-                .getScheduleListByDate(any(LoginContext.class), intThat(v -> v == 1), eq("2026-04-08"));
+                .getScheduleListByDate(any(LoginContext.class), eq("2026-04-08"));
 
-        mockMvc.perform(get("/stores/1/schedules")
+        mockMvc.perform(get("/stores/schedules")
                         .param("date", "2026-04-08")
                         .session(session))
                 .andExpect(status().isOk())
@@ -92,7 +82,7 @@ public class StoreScheduleControllerWebTest {
 
     @Test
     public void 스토어스케줄수정_미로그인_401() throws Exception {
-        mockMvc.perform(put("/stores/1/schedules/3")
+        mockMvc.perform(put("/stores/schedules/3")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isUnauthorized())
@@ -102,24 +92,10 @@ public class StoreScheduleControllerWebTest {
     }
 
     @Test
-    public void 스토어스케줄수정_다른스토어_403() throws Exception {
-        MockHttpSession session = loginSession(1);
-
-        mockMvc.perform(put("/stores/2/schedules/3")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}")
-                        .session(session))
-                .andExpect(status().isForbidden())
-                .andExpect(content().string(containsString("\"code\":\"FORBIDDEN\"")));
-
-        verifyNoInteractions(scheduleService);
-    }
-
-    @Test
     public void 출근기록_albaId누락_400() throws Exception {
         MockHttpSession session = loginSession(1);
 
-        mockMvc.perform(post("/stores/1/schedules/workin")
+        mockMvc.perform(post("/stores/schedules/workin")
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
