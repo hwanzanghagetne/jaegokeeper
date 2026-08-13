@@ -16,6 +16,11 @@
 
     <!-- 어노테이션 기반 MVC 활성화(UTF-8 설정 포함) -->
     <annotation-driven>
+        <!-- SecurityConfig는 부모(root) 컨텍스트에 있고 MVC는 이 자식 컨텍스트에 있으므로,
+             @AuthenticationPrincipal 처리기를 MVC 쪽에 명시적으로 등록한다. -->
+        <argument-resolvers>
+            <beans:bean class="org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver"/>
+        </argument-resolvers>
         <message-converters>
             <!-- byte[] 응답(springdoc의 /v3/api-docs 등)이 Jackson에 의해 base64 문자열로
                  감싸이지 않도록 Jackson보다 먼저 등록 -->
