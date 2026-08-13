@@ -1,0 +1,13 @@
+.git
+.github
+.idea
+.vscode
+target
+docs
+tools
+db
+assets
+.env
+.env.*
+CLAUDE.md
+*.iml

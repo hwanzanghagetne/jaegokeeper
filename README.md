@@ -103,6 +103,17 @@
 - 이미지는 로컬 파일시스템 대신 `AWS S3`에 저장하고, 조회 시 presigned URL로 리다이렉트합니다. EC2에 부여한 IAM 역할로 인증하며 별도 액세스 키는 관리하지 않습니다.
 - 배포는 `GitHub Actions`(GitHub 호스티드 러너에서 빌드 → SSH로 EC2에 WAR 전달 → Tomcat 재기동)로 자동화했고, 헬스체크 실패 시 이전 버전으로 자동 롤백합니다.
 
+### 로컬 Docker 실행
+
+로컬에서도 운영과 같은 Java 17, Tomcat 10.1 환경으로 실행할 수 있습니다.
+
+1. `.env.example`을 `.env.local`로 복사하고 실제 환경변수 값을 입력합니다.
+2. 프로젝트 루트에서 `docker compose up --build -d`를 실행합니다.
+3. `http://localhost:8080/`에서 `server is running` 응답을 확인합니다.
+4. 종료할 때는 `docker compose down`을 실행합니다.
+
+Docker 내부에서 호스트 PC의 MySQL에 접근할 때는 `DB_URL`의 호스트로 `host.docker.internal`을 사용합니다. RDS를 사용한다면 해당 RDS 주소를 그대로 입력합니다. AWS 키는 로컬에서 S3 기능을 확인할 때만 사용하며 저장소에 커밋하지 않습니다.
+
 ---
 
 ## ERD
