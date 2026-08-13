@@ -1,6 +1,6 @@
 package com.jaegokeeper.stock.controller;
 
-import com.jaegokeeper.auth.annotation.LoginUser;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.stock.dto.StockAmountUpdateRequest;
 import com.jaegokeeper.stock.dto.StockDetailResponse;
@@ -26,7 +26,7 @@ public class StockController {
     @GetMapping
     public ResponseEntity<StockDetailResponse> getStockDetail(
             @PathVariable Integer itemId,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         return ResponseEntity.ok(stockService.getStockDetail(login, itemId));
     }
 
@@ -35,7 +35,7 @@ public class StockController {
     public ResponseEntity<Void> inStock(
             @PathVariable Integer itemId,
             @Valid @RequestBody StockInOutRequest dto,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         stockService.inStock(login, itemId, dto);
         return ResponseEntity.noContent().build();
     }
@@ -45,7 +45,7 @@ public class StockController {
     public ResponseEntity<Void> outStock(
             @PathVariable Integer itemId,
             @Valid @RequestBody StockInOutRequest dto,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         stockService.outStock(login, itemId, dto);
         return ResponseEntity.noContent().build();
     }
@@ -55,7 +55,7 @@ public class StockController {
     public ResponseEntity<Void> adjustStock(
             @PathVariable Integer itemId,
             @Valid @RequestBody StockAmountUpdateRequest dto,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         stockService.updateStockAmount(login, itemId, dto);
         return ResponseEntity.noContent().build();
     }

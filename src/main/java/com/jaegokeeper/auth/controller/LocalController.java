@@ -13,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,10 +29,11 @@ public class LocalController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SessionResponse> login(
             @Validated @RequestBody LoginRequest req,
-            HttpServletRequest request
+            HttpServletRequest request,
+            HttpServletResponse response
     ) {
         int userId = localService.login(req);
-        return ResponseEntity.ok(sessionService.createSession(userId, Provider.LOCAL.name(), request));
+        return ResponseEntity.ok(sessionService.createSession(userId, Provider.LOCAL.name(), request, response));
     }
 
 }

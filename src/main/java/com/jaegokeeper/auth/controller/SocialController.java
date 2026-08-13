@@ -12,6 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,7 +28,8 @@ public class SocialController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> complete(
             @Validated @RequestBody SocialRequest req,
-            HttpServletRequest request
+            HttpServletRequest request,
+            HttpServletResponse response
     ) {
         String provider = req.getProvider().name();
         SocialCompleteResponse result = socialService.complete(provider, req.getAccessToken());
@@ -36,7 +38,7 @@ public class SocialController {
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(result);
         }
 
-        return ResponseEntity.ok(sessionService.createSession(result.getUserId(), provider, request));
+        return ResponseEntity.ok(sessionService.createSession(result.getUserId(), provider, request, response));
     }
 
 }

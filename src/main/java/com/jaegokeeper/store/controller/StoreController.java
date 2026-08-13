@@ -1,6 +1,6 @@
 package com.jaegokeeper.store.controller;
 
-import com.jaegokeeper.auth.annotation.LoginUser;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.store.dto.StoreDetailResponse;
 import com.jaegokeeper.store.dto.StoreUpdateRequest;
@@ -22,7 +22,7 @@ public class StoreController {
     @Operation(summary = "점포 정보 조회")
     @GetMapping("/me")
     public ResponseEntity<StoreDetailResponse> getStore(
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         return ResponseEntity.ok(storeService.getStoreDetail(login));
     }
 
@@ -30,7 +30,7 @@ public class StoreController {
     @PutMapping("/me")
     public ResponseEntity<Void> updateStore(
             @Valid @RequestBody StoreUpdateRequest req,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         storeService.updateStore(login, req);
         return ResponseEntity.noContent().build();
     }

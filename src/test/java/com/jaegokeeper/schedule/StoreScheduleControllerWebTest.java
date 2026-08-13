@@ -1,35 +1,46 @@
 package com.jaegokeeper.schedule;
 
 import com.jaegokeeper.auth.dto.LoginContext;
-import com.jaegokeeper.auth.utils.LoginUserArgumentResolver;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jaegokeeper.auth.utils.SessionInterceptor;
 import com.jaegokeeper.exception.GlobalExceptionHandler;
 import com.jaegokeeper.schedule.controller.StoreScheduleController;
 import com.jaegokeeper.schedule.dto.ScheduleListResponse;
 import com.jaegokeeper.schedule.service.ScheduleService;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * "미로그인 401"은 SecurityFilterChain이 담당하며 standaloneSetup()으로는 검증 불가하므로,
+ * Security 필터체인 통합 테스트/LoginRequiredEntryPointTest가 그 책임을 진다.
+ * 여기서는 로그인된 상태의 해피패스만 다룬다.
+ *
+ * storeId가 URL에 없어져서 "다른 스토어로 요청" 시나리오 자체를 구성할 수 없다.
+ * (검증이 빠진 게 아니라 URL로 다른 점포를 지목하는 공격 표면 자체가 사라졌다.)
+ *
+ * 로그인 상태는 SecurityContextHolder에 직접 Authentication을 설정해서 시뮬레이션한다
+ * (SecurityMockMvcRequestPostProcessors.authentication()은 필터 체인이 있어야 동작하므로
+ * 필터가 없는 standaloneSetup()에서는 쓸 수 없다).
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class StoreScheduleControllerWebTest {
 
@@ -42,28 +53,18 @@ public class StoreScheduleControllerWebTest {
     public void setUp() {
         StoreScheduleController controller = new StoreScheduleController(scheduleService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
-                .addInterceptors(new SessionInterceptor(new ObjectMapper()))
                 .setControllerAdvice(new GlobalExceptionHandler())
-                .setCustomArgumentResolvers(new LoginUserArgumentResolver())
+                .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
     }
 
-    @Test
-    public void 스토어스케줄조회_미로그인_401() throws Exception {
-        mockMvc.perform(get("/stores/schedules").param("date", "2026-04-08"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(content().string(containsString("\"code\":\"LOGIN_REQUIRED\"")));
-
-        verifyNoInteractions(scheduleService);
+    @After
+    public void tearDown() {
+        SecurityContextHolder.clearContext();
     }
-
-    // storeId가 URL에 없어져서 "다른 스토어로 요청" 시나리오 자체를 구성할 수 없다.
-    // (검증이 빠진 게 아니라 URL로 다른 점포를 지목하는 공격 표면 자체가 사라졌다.)
 
     @Test
     public void 스토어스케줄조회_같은스토어_200() throws Exception {
-        MockHttpSession session = loginSession(1);
-
         ScheduleListResponse row = new ScheduleListResponse();
         row.setScheduleId(21);
         row.setAlbaId(7);
@@ -72,31 +73,19 @@ public class StoreScheduleControllerWebTest {
                 .when(scheduleService)
                 .getScheduleListByDate(any(LoginContext.class), eq("2026-04-08"));
 
-        mockMvc.perform(get("/stores/schedules")
-                        .param("date", "2026-04-08")
-                        .session(session))
+        login(1);
+
+        mockMvc.perform(get("/stores/schedules").param("date", "2026-04-08"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("\"scheduleId\":21")))
                 .andExpect(content().string(containsString("\"albaId\":7")));
     }
 
     @Test
-    public void 스토어스케줄수정_미로그인_401() throws Exception {
-        mockMvc.perform(put("/stores/schedules/3")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(content().string(containsString("\"code\":\"LOGIN_REQUIRED\"")));
-
-        verifyNoInteractions(scheduleService);
-    }
-
-    @Test
     public void 출근기록_albaId누락_400() throws Exception {
-        MockHttpSession session = loginSession(1);
+        login(1);
 
         mockMvc.perform(post("/stores/schedules/workin")
-                        .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest())
@@ -105,9 +94,9 @@ public class StoreScheduleControllerWebTest {
         verifyNoInteractions(scheduleService);
     }
 
-    private MockHttpSession loginSession(int storeId) {
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("login", new LoginContext(100, storeId, "tester", "LOCAL"));
-        return session;
+    private static void login(int storeId) {
+        LoginContext loginContext = new LoginContext(100, storeId, "tester", "LOCAL");
+        SecurityContextHolder.getContext().setAuthentication(
+                UsernamePasswordAuthenticationToken.authenticated(loginContext, null, List.of()));
     }
 }

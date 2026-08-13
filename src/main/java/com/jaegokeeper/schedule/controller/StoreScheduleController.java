@@ -1,6 +1,6 @@
 package com.jaegokeeper.schedule.controller;
 
-import com.jaegokeeper.auth.annotation.LoginUser;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.schedule.dto.ScheduleListResponse;
 import com.jaegokeeper.schedule.dto.ScheduleRegisterRequest;
@@ -29,7 +29,7 @@ public class StoreScheduleController {
     @PostMapping
     public ResponseEntity<Void> createSchedule(
             @Valid @RequestBody ScheduleRegisterRequest req,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         scheduleService.saveScheduleRegister(login, req);
         return ResponseEntity.status(201).build();
     }
@@ -39,7 +39,7 @@ public class StoreScheduleController {
     public ResponseEntity<Void> updateSchedule(
             @PathVariable int scheduleId,
             @Valid @RequestBody ScheduleUpdateRequest req,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         req.setScheduleId(scheduleId);
         scheduleService.updateSchedule(login, req);
         return ResponseEntity.noContent().build();
@@ -49,7 +49,7 @@ public class StoreScheduleController {
     @GetMapping
     public ResponseEntity<List<ScheduleListResponse>> getSchedulesByDate(
             @RequestParam String date,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         return ResponseEntity.ok(scheduleService.getScheduleListByDate(login, date));
     }
 
@@ -58,7 +58,7 @@ public class StoreScheduleController {
     public ResponseEntity<List<WorkTimeResponse>> getWorkTime(
             @RequestParam int albaId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         return ResponseEntity.ok(scheduleService.selectWorkTime(login, albaId, date));
     }
 
@@ -66,7 +66,7 @@ public class StoreScheduleController {
     @PostMapping("/workin")
     public ResponseEntity<Void> recordWorkIn(
             @Valid @RequestBody WorkInOutRequest req,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         scheduleService.recordWorkIn(login, req);
         return ResponseEntity.ok().build();
     }
@@ -75,7 +75,7 @@ public class StoreScheduleController {
     @PostMapping("/workout")
     public ResponseEntity<Void> recordWorkOut(
             @Valid @RequestBody WorkInOutRequest req,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         scheduleService.recordWorkOut(login, req);
         return ResponseEntity.ok().build();
     }

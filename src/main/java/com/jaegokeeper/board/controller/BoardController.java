@@ -1,6 +1,6 @@
 package com.jaegokeeper.board.controller;
 
-import com.jaegokeeper.auth.annotation.LoginUser;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.board.dto.request.BoardCreateRequest;
 import com.jaegokeeper.board.dto.request.BoardPageRequest;
@@ -33,7 +33,7 @@ public class BoardController {
     public ResponseEntity<BoardCreateResponse> createBoard(
             @RequestParam BoardType type,
             @Valid @ModelAttribute BoardCreateRequest dto,
-            @LoginUser LoginContext login
+            @AuthenticationPrincipal LoginContext login
     ) {
         Integer boardId = boardService.createBoard(login, type, dto);
         return ResponseEntity.status(201).body(new BoardCreateResponse(boardId));
@@ -43,7 +43,7 @@ public class BoardController {
     @GetMapping
     public ResponseEntity<PageResponse<BoardListResponse>> getBoards(
             @Valid @ModelAttribute BoardPageRequest dto,
-            @LoginUser LoginContext login
+            @AuthenticationPrincipal LoginContext login
     ) {
         return ResponseEntity.ok(boardService.getBoardList(login, dto));
     }
@@ -52,7 +52,7 @@ public class BoardController {
     @GetMapping("/{boardId}")
     public ResponseEntity<BoardDetailResponse> getBoardDetail(
             @PathVariable Integer boardId,
-            @LoginUser LoginContext login
+            @AuthenticationPrincipal LoginContext login
     ) {
         return ResponseEntity.ok(boardService.getBoardDetail(login, boardId));
     }
@@ -62,7 +62,7 @@ public class BoardController {
     public ResponseEntity<Void> updateBoard(
             @PathVariable Integer boardId,
             @Valid @ModelAttribute BoardUpdateRequest dto,
-            @LoginUser LoginContext login
+            @AuthenticationPrincipal LoginContext login
     ) {
         boardService.updateBoard(login, boardId, dto);
         return ResponseEntity.noContent().build();
@@ -72,7 +72,7 @@ public class BoardController {
     @DeleteMapping("/{boardId}")
     public ResponseEntity<Void> deleteBoard(
             @PathVariable Integer boardId,
-            @LoginUser LoginContext login
+            @AuthenticationPrincipal LoginContext login
     ) {
         boardService.softDeleteBoard(login, boardId);
         return ResponseEntity.noContent().build();

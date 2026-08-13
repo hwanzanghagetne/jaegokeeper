@@ -19,6 +19,7 @@ import com.jaegokeeper.onboarding.dto.SocialOwnerSignUpRequest;
 import com.jaegokeeper.store.dto.StoreDto;
 import com.jaegokeeper.store.mapper.StoreMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -55,7 +56,7 @@ public class OnboardingService {
     }
 
     @Transactional
-    public OwnerSignUpResponse socialOwnerSignUp(SocialOwnerSignUpRequest req, HttpServletRequest request) {
+    public OwnerSignUpResponse socialOwnerSignUp(SocialOwnerSignUpRequest req, HttpServletRequest request, HttpServletResponse response) {
         PendingSocialSignup pending = pendingSocialSignupService.consume(req.getSignupToken());
         String email = normalizeVerifiedSocialEmail(pending);
 
@@ -63,7 +64,7 @@ public class OnboardingService {
         if (existing != null) {
             int userId = linkProviderToExistingUser(existing, pending.getProvider(), pending.getProviderUid());
             StoreDto store = createOwnerStoreIfMissing(userId, req.getStore());
-            sessionService.createSession(userId, pending.getProvider(), request);
+            sessionService.createSession(userId, pending.getProvider(), request, response);
             return OwnerSignUpResponse.builder()
                     .userId(userId)
                     .storeId(store.getStoreId())
@@ -74,7 +75,7 @@ public class OnboardingService {
 
         UserDTO user = createSocialUser(pending, req.getAccount(), email);
         StoreDto store = createSocialOwnerStore(user.getUserId(), req.getStore());
-        sessionService.createSession(user.getUserId(), pending.getProvider(), request);
+        sessionService.createSession(user.getUserId(), pending.getProvider(), request, response);
 
         return OwnerSignUpResponse.builder()
                 .userId(user.getUserId())

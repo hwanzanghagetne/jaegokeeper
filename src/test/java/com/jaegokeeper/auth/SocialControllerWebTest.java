@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
@@ -96,7 +97,7 @@ public class SocialControllerWebTest {
                 .build();
 
         when(socialService.complete(eq("KAKAO"), eq("token-1"))).thenReturn(SocialCompleteResponse.login(25));
-        when(sessionService.createSession(eq(25), eq("KAKAO"), any(HttpServletRequest.class)))
+        when(sessionService.createSession(eq(25), eq("KAKAO"), any(HttpServletRequest.class), any(HttpServletResponse.class)))
                 .thenReturn(response);
 
         mockMvc.perform(post("/auth/social/complete")
@@ -108,6 +109,6 @@ public class SocialControllerWebTest {
                 .andExpect(content().string(containsString("\"provider\":\"KAKAO\"")));
 
         verify(socialService).complete("KAKAO", "token-1");
-        verify(sessionService).createSession(eq(25), eq("KAKAO"), any(HttpServletRequest.class));
+        verify(sessionService).createSession(eq(25), eq("KAKAO"), any(HttpServletRequest.class), any(HttpServletResponse.class));
     }
 }

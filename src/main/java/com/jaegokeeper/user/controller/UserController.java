@@ -1,6 +1,6 @@
 package com.jaegokeeper.user.controller;
 
-import com.jaegokeeper.auth.annotation.LoginUser;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.user.dto.UserDetailResponse;
 import com.jaegokeeper.user.dto.UserUpdateRequest;
@@ -23,7 +23,7 @@ public class UserController {
     @GetMapping("/{userId}")
     public ResponseEntity<UserDetailResponse> getUser(
             @PathVariable int userId,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         return ResponseEntity.ok(userService.getUserDetail(login, userId));
     }
 
@@ -32,7 +32,7 @@ public class UserController {
     public ResponseEntity<Void> updateUser(
             @PathVariable int userId,
             @Valid @RequestBody UserUpdateRequest userDto,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         userService.updateUser(login, userId, userDto);
         return ResponseEntity.noContent().build();
     }

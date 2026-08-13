@@ -6,6 +6,7 @@ import com.jaegokeeper.onboarding.dto.SocialOwnerSignUpRequest;
 import com.jaegokeeper.onboarding.service.OnboardingService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +35,8 @@ public class OnboardingController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<OwnerSignUpResponse> socialOwnerSignUp(
             @Validated @RequestBody SocialOwnerSignUpRequest req,
-            HttpServletRequest request) {
-        return ResponseEntity.ok(onboardingService.socialOwnerSignUp(req, request));
+            HttpServletRequest request,
+            HttpServletResponse response) {
+        return ResponseEntity.ok(onboardingService.socialOwnerSignUp(req, request, response));
     }
 }

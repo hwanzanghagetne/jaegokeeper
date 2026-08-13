@@ -1,6 +1,6 @@
 package com.jaegokeeper.item.controller;
 
-import com.jaegokeeper.auth.annotation.LoginUser;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.item.dto.request.ItemCreateRequest;
@@ -30,7 +30,7 @@ public class ItemController {
     @PostMapping
     public ResponseEntity<ItemCreateResponse> createItem(
             @Valid @ModelAttribute ItemCreateRequest dto,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         Integer itemId = itemService.createItem(login, dto);
         return ResponseEntity.status(201).body(new ItemCreateResponse(itemId));
     }
@@ -39,7 +39,7 @@ public class ItemController {
     @GetMapping
     public ResponseEntity<PageResponse<ItemListResponse>> getItems(
             @Valid @ModelAttribute ItemPageRequest dto,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         return ResponseEntity.ok(itemService.getItemList(login, dto));
     }
 
@@ -47,7 +47,7 @@ public class ItemController {
     @GetMapping("/{itemId}")
     public ResponseEntity<ItemDetailResponse> getItemDetail(
             @PathVariable Integer itemId,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         return ResponseEntity.ok(itemService.getItemDetail(login, itemId));
     }
 
@@ -56,7 +56,7 @@ public class ItemController {
     public ResponseEntity<Void> modifyItem(
             @PathVariable Integer itemId,
             @Valid @ModelAttribute ItemUpdateRequest dto,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         itemService.updateItem(login, itemId, dto);
         return ResponseEntity.noContent().build();
     }
@@ -65,7 +65,7 @@ public class ItemController {
     @DeleteMapping("/{itemId}")
     public ResponseEntity<Void> deleteItem(
             @PathVariable Integer itemId,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         itemService.softDeleteItem(login, itemId);
         return ResponseEntity.noContent().build();
     }
@@ -74,7 +74,7 @@ public class ItemController {
     @PatchMapping("/{itemId}/pin")
     public ResponseEntity<Void> toggleIsPinned(
             @PathVariable Integer itemId,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         itemService.toggleItemPin(login, itemId);
         return ResponseEntity.noContent().build();
     }

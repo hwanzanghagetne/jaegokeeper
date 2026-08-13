@@ -6,7 +6,7 @@ import com.jaegokeeper.alba.dto.AlbaListResponse;
 import com.jaegokeeper.alba.dto.AlbaRegisterRequest;
 import com.jaegokeeper.alba.dto.AlbaUpdateRequest;
 import com.jaegokeeper.alba.service.AlbaService;
-import com.jaegokeeper.auth.annotation.LoginUser;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.jaegokeeper.auth.dto.LoginContext;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ public class StoreAlbaController {
     @Operation(summary = "스토어별 알바 목록 조회")
     @GetMapping
     public ResponseEntity<List<AlbaListResponse>> getAlbas(
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         return ResponseEntity.ok(albaService.getAllAlbaList(login));
     }
 
@@ -34,7 +34,7 @@ public class StoreAlbaController {
     @PostMapping
     public ResponseEntity<AlbaCreateResponse> createAlba(
             @Valid @ModelAttribute AlbaRegisterRequest req,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         int albaId = albaService.saveAlbaRegister(login, req);
         return ResponseEntity.status(201).body(new AlbaCreateResponse(albaId));
     }
@@ -43,7 +43,7 @@ public class StoreAlbaController {
     @GetMapping("/{albaId}")
     public ResponseEntity<AlbaDetailResponse> getAlba(
             @PathVariable int albaId,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         return ResponseEntity.ok(albaService.getAlbaById(login, albaId));
     }
 
@@ -52,7 +52,7 @@ public class StoreAlbaController {
     public ResponseEntity<Void> updateAlba(
             @PathVariable int albaId,
             @Valid @RequestBody AlbaUpdateRequest req,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         req.setAlbaId(albaId);
         albaService.updateAlba(login, req);
         return ResponseEntity.noContent().build();
@@ -62,7 +62,7 @@ public class StoreAlbaController {
     @DeleteMapping("/{albaId}")
     public ResponseEntity<Void> deleteAlba(
             @PathVariable int albaId,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         albaService.deleteAlba(login, albaId);
         return ResponseEntity.noContent().build();
     }

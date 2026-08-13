@@ -1,6 +1,6 @@
 package com.jaegokeeper.request.controller;
 
-import com.jaegokeeper.auth.annotation.LoginUser;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.request.dto.request.RequestCreateBatchRequest;
@@ -30,7 +30,7 @@ public class RequestController {
     @GetMapping
     public ResponseEntity<PageResponse<RequestListResponse>> getRequests(
             @Valid @ModelAttribute RequestPageRequest dto,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         return ResponseEntity.ok(requestService.getRequestList(login, dto));
     }
 
@@ -38,7 +38,7 @@ public class RequestController {
     @GetMapping("/{requestId}")
     public ResponseEntity<RequestDetailResponse> getRequestDetail(
             @PathVariable Integer requestId,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         return ResponseEntity.ok(requestService.getRequestDetail(login, requestId));
     }
 
@@ -46,7 +46,7 @@ public class RequestController {
     @PostMapping
     public ResponseEntity<Integer> createRequests(
             @Valid @RequestBody RequestCreateBatchRequest dto,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         int createdCount = requestService.createRequest(login, dto);
         return ResponseEntity.status(201).body(createdCount);
     }
@@ -55,7 +55,7 @@ public class RequestController {
     @DeleteMapping("/{requestId}")
     public ResponseEntity<Void> deleteRequest(
             @PathVariable Integer requestId,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         requestService.softDeleteRequest(login, requestId);
         return ResponseEntity.noContent().build();
     }
@@ -65,7 +65,7 @@ public class RequestController {
     public ResponseEntity<Void> updateRequest(
             @PathVariable Integer requestId,
             @Valid @RequestBody RequestUpdateRequest dto,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         requestService.updateRequest(login, requestId, dto);
         return ResponseEntity.noContent().build();
     }
@@ -75,7 +75,7 @@ public class RequestController {
     public ResponseEntity<Void> updateRequestStatus(
             @PathVariable Integer requestId,
             @Valid @RequestBody RequestStatusUpdateRequest dto,
-            @LoginUser LoginContext login) {
+            @AuthenticationPrincipal LoginContext login) {
         requestService.updateRequestStatus(login, requestId, dto);
         return ResponseEntity.noContent().build();
     }
