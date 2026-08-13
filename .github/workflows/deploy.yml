@@ -39,9 +39,6 @@ jobs:
       - name: Test
         run: mvn -B test
 
-      - name: Build WAR
-        run: mvn -B clean package -DskipTests
-
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -58,15 +55,14 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
 
-      - name: Copy WAR to EC2
+      - name: Copy Docker Compose to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "target/JaegoKeeper.war"
+          source: "compose.prod.yaml"
           target: "/tmp"
-          strip_components: 1
 
       - name: Deploy on EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -77,38 +73,43 @@ jobs:
           script: |
             set -euo pipefail
 
-            TOMCAT_HOME="/opt/tomcat10"
-            WAR_PATH="/tmp/JaegoKeeper.war"
-            ROOT_WAR="${TOMCAT_HOME}/webapps/ROOT.war"
-            ROOT_DIR="${TOMCAT_HOME}/webapps/ROOT"
-            BACKUP_WAR="/tmp/ROOT.war.bak.$(date +%Y%m%d_%H%M%S)"
+            APP_DIR="/opt/jaegokeeper"
+            COMPOSE_FILE="${APP_DIR}/compose.prod.yaml"
+            NEW_IMAGE="ghcr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}"
             HEALTHCHECK_URL="http://127.0.0.1:8080/"
 
-            test -f "${WAR_PATH}"
+            test -f "/tmp/compose.prod.yaml"
+            test -f "${APP_DIR}/.env"
+            install -m 600 "/tmp/compose.prod.yaml" "${COMPOSE_FILE}"
 
-            if [[ -f "${ROOT_WAR}" ]]; then
-              cp "${ROOT_WAR}" "${BACKUP_WAR}"
-            fi
+            PREVIOUS_IMAGE="$(docker inspect --format '{{.Config.Image}}' jaegokeeper-backend 2>/dev/null || true)"
 
+            # 1GB EC2에서 두 Tomcat을 동시에 실행하지 않는다.
             sudo systemctl stop tomcat10
 
-            rm -rf "${ROOT_DIR}"
-            cp "${WAR_PATH}" "${ROOT_WAR}"
+            cd "${APP_DIR}"
+            export BACKEND_IMAGE="${NEW_IMAGE}"
+            export BACKEND_PORT=8080
 
-            sudo systemctl start tomcat10
+            docker compose -f "${COMPOSE_FILE}" pull
 
-            for i in $(seq 1 40); do
-              if curl -fsS "${HEALTHCHECK_URL}" > /dev/null 2>&1; then
-                echo "Health check OK: ${HEALTHCHECK_URL}"
-                exit 0
-              fi
-              sleep 2
-            done
-
-            echo "Health check failed, rolling back..."
-            if [[ -f "${BACKUP_WAR}" ]]; then
-              sudo systemctl stop tomcat10
-              cp "${BACKUP_WAR}" "${ROOT_WAR}"
-              sudo systemctl start tomcat10
+            if docker compose -f "${COMPOSE_FILE}" up -d --force-recreate --wait --wait-timeout 90 \
+              && curl -fsS "${HEALTHCHECK_URL}" > /dev/null; then
+              echo "Deploy succeeded: ${NEW_IMAGE}"
+              docker image prune -f > /dev/null
+              exit 0
             fi
+
+            echo "Deploy failed. Starting rollback..."
+
+            if [[ -n "${PREVIOUS_IMAGE}" ]]; then
+              export BACKEND_IMAGE="${PREVIOUS_IMAGE}"
+              if docker compose -f "${COMPOSE_FILE}" up -d --force-recreate --wait --wait-timeout 90 \
+                && curl -fsS "${HEALTHCHECK_URL}" > /dev/null; then
+                echo "Docker rollback succeeded: ${PREVIOUS_IMAGE}"
+                exit 1
+              fi
+            fi
+
+            echo "Docker rollback failed"
             exit 1
