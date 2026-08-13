@@ -9,12 +9,14 @@ on:
       - 'pom.xml'
       - 'Dockerfile'
       - 'compose*.yaml'
+      - 'scripts/deploy_docker.sh'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
   packages: write
+  id-token: write
 
 env:
   REGISTRY: ghcr.io
@@ -55,61 +57,65 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
 
-      - name: Copy Docker Compose to EC2
-        uses: appleboy/scp-action@v0.1.7
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6.2.3
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "compose.prod.yaml"
-          target: "/tmp"
+          role-to-assume: arn:aws:iam::739754704259:role/jaegokeeper-github-deploy-role
+          aws-region: ap-northeast-2
+          allowed-account-ids: 739754704259
+          role-session-name: jaegokeeper-${{ github.run_id }}
 
-      - name: Deploy on EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            set -euo pipefail
+      - name: Deploy through SSM
+        env:
+          INSTANCE_ID: i-0f7438b7e60e43291
+        run: |
+          set -euo pipefail
 
-            APP_DIR="/opt/jaegokeeper"
-            COMPOSE_FILE="${APP_DIR}/compose.prod.yaml"
-            NEW_IMAGE="ghcr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-            HEALTHCHECK_URL="http://127.0.0.1:8080/"
+          SCRIPT_URL="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/scripts/deploy_docker.sh"
+          IMAGE="${REGISTRY}/${IMAGE_NAME}:${GITHUB_SHA}"
 
-            test -f "/tmp/compose.prod.yaml"
-            test -f "${APP_DIR}/.env"
-            install -m 600 "/tmp/compose.prod.yaml" "${COMPOSE_FILE}"
+          PARAMETERS="$(jq -n \
+            --arg script_url "${SCRIPT_URL}" \
+            --arg sha "${GITHUB_SHA}" \
+            --arg image "${IMAGE}" \
+            '{commands: [
+              "set -eu",
+              ("curl -fsSL " + ($script_url | @sh) + " -o /tmp/jaegokeeper-deploy.sh"),
+              "chown ubuntu:ubuntu /tmp/jaegokeeper-deploy.sh",
+              "chmod 700 /tmp/jaegokeeper-deploy.sh",
+              ("sudo -u ubuntu -H /tmp/jaegokeeper-deploy.sh " + ($sha | @sh) + " " + ($image | @sh))
+            ]}')"
 
-            PREVIOUS_IMAGE="$(docker inspect --format '{{.Config.Image}}' jaegokeeper-backend 2>/dev/null || true)"
+          COMMAND_ID="$(aws ssm send-command \
+            --instance-ids "${INSTANCE_ID}" \
+            --document-name AWS-RunShellScript \
+            --comment "Deploy Jaegokeeper ${GITHUB_SHA}" \
+            --parameters "${PARAMETERS}" \
+            --query 'Command.CommandId' \
+            --output text)"
 
-            # 1GB EC2에서 두 Tomcat을 동시에 실행하지 않는다.
-            sudo systemctl stop tomcat10
+          echo "SSM command: ${COMMAND_ID}"
 
-            cd "${APP_DIR}"
-            export BACKEND_IMAGE="${NEW_IMAGE}"
-            export BACKEND_PORT=8080
+          STATUS="Pending"
+          for _ in {1..60}; do
+            STATUS="$(aws ssm get-command-invocation \
+              --command-id "${COMMAND_ID}" \
+              --instance-id "${INSTANCE_ID}" \
+              --query Status \
+              --output text 2>/dev/null || true)"
 
-            docker compose -f "${COMPOSE_FILE}" pull
+            case "${STATUS}" in
+              Success|Failed|Cancelled|TimedOut|Cancelling)
+                break
+                ;;
+            esac
 
-            if docker compose -f "${COMPOSE_FILE}" up -d --force-recreate --wait --wait-timeout 90 \
-              && curl -fsS "${HEALTHCHECK_URL}" > /dev/null; then
-              echo "Deploy succeeded: ${NEW_IMAGE}"
-              docker image prune -f > /dev/null
-              exit 0
-            fi
+            sleep 5
+          done
 
-            echo "Deploy failed. Starting rollback..."
+          aws ssm get-command-invocation \
+            --command-id "${COMMAND_ID}" \
+            --instance-id "${INSTANCE_ID}" \
+            --query '{Status:Status,StandardOutput:StandardOutputContent,StandardError:StandardErrorContent}'
 
-            if [[ -n "${PREVIOUS_IMAGE}" ]]; then
-              export BACKEND_IMAGE="${PREVIOUS_IMAGE}"
-              if docker compose -f "${COMPOSE_FILE}" up -d --force-recreate --wait --wait-timeout 90 \
-                && curl -fsS "${HEALTHCHECK_URL}" > /dev/null; then
-                echo "Docker rollback succeeded: ${PREVIOUS_IMAGE}"
-                exit 1
-              fi
-            fi
-
-            echo "Docker rollback failed"
-            exit 1
+          test "${STATUS}" = "Success"
