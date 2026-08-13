@@ -7,8 +7,18 @@ on:
     paths:
       - 'src/**'
       - 'pom.xml'
+      - 'Dockerfile'
+      - 'compose*.yaml'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/jaegokeeper-backend
 
 jobs:
   deploy:
@@ -31,6 +41,22 @@ jobs:
 
       - name: Build WAR
         run: mvn -B clean package -DskipTests
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
 
       - name: Copy WAR to EC2
         uses: appleboy/scp-action@v0.1.7

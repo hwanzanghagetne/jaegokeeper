@@ -1,0 +1,15 @@
+services:
+  backend:
+    image: ${BACKEND_IMAGE:?BACKEND_IMAGE is required}
+    container_name: jaegokeeper-backend
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-18080}:8080"
+    env_file:
+      - ${BACKEND_ENV_FILE:-/opt/jaegokeeper/.env}
+    restart: unless-stopped
+    pull_policy: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"

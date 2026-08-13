@@ -114,6 +114,8 @@
 
 Docker 내부에서 호스트 PC의 MySQL에 접근할 때는 `DB_URL`의 호스트로 `host.docker.internal`을 사용합니다. RDS를 사용한다면 해당 RDS 주소를 그대로 입력합니다. AWS 키는 로컬에서 S3 기능을 확인할 때만 사용하며 저장소에 커밋하지 않습니다.
 
+운영용 `compose.prod.yaml`은 기존 Tomcat과 병행 검증할 수 있도록 기본적으로 `127.0.0.1:18080`에 연결됩니다. 운영 전환 전까지 기존 8080 Tomcat과 Nginx 설정은 유지합니다.
+
 ---
 
 ## ERD
