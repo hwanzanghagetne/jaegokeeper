@@ -52,6 +52,7 @@
 ### Backend
 ![java 17](https://img.shields.io/badge/-Java%2017-ED8B00?style=flat-square&logo=java&logoColor=white)
 ![spring 6.2](https://img.shields.io/badge/Spring%206.2%20(Jakarta)-6DB33F?style=flat-square&logo=spring&logoColor=white)
+![spring security 6.3](https://img.shields.io/badge/Spring%20Security%206.3-6DB33F?style=flat-square&logo=springsecurity&logoColor=white)
 ![mybatis 3.5](https://img.shields.io/badge/MyBatis%203.5-BE1E2D?style=flat-square&logoColor=white)
 ![mysql 8.0](https://img.shields.io/badge/MySQL%208.0-005C84?style=flat-square&logo=mysql&logoColor=white)
 ![springdoc openapi](https://img.shields.io/badge/springdoc--openapi%202.8-85EA2D?style=flat-square&logo=swagger&logoColor=black)
@@ -64,7 +65,8 @@
 
 ### Infra / Deploy
 ![nginx](https://img.shields.io/badge/Nginx-009639?style=flat-square&logo=nginx&logoColor=white)
-![tomcat 10](https://img.shields.io/badge/Tomcat%2010-F8DC75?style=flat-square&logo=apachetomcat&logoColor=black)
+![docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
+![tomcat 10.1](https://img.shields.io/badge/Tomcat%2010.1-F8DC75?style=flat-square&logo=apachetomcat&logoColor=black)
 ![aws ec2](https://img.shields.io/badge/AWS%20EC2-FF9900?style=flat-square&logo=amazonec2&logoColor=white)
 ![aws rds](https://img.shields.io/badge/AWS%20RDS%20(MySQL)-527FFF?style=flat-square&logo=amazonrds&logoColor=white)
 ![aws s3](https://img.shields.io/badge/AWS%20S3-569A31?style=flat-square&logo=amazons3&logoColor=white)
@@ -94,27 +96,13 @@
 ## 시스템 아키텍처 및 배포 구조
 
 <p align="center">
-  <img src="./assets/images/jaegokeeper-deployment-architecture.png" alt="재고키퍼 배포 아키텍처: Browser -> Vercel(Next.js/React) -> HTTPS(jaegokeeper.store) -> EC2(Nginx -> Tomcat 10 -> Spring MVC) -> AWS RDS(MySQL) / AWS S3(presigned URL). 배포 파이프라인: GitHub Actions -> SSH Deploy -> EC2/Tomcat -> Health Check(실패 시 Rollback)" width="1000" />
+  <img src="./assets/images/jaegokeeper-deployment-architecture.png" alt="재고키퍼 배포 아키텍처: Browser -> Vercel(Next.js/React) -> HTTPS(jaegokeeper.store) -> EC2(Nginx -> Docker(Tomcat 10.1) -> Spring MVC) -> AWS RDS(MySQL) / AWS S3(presigned URL). 배포 파이프라인: GitHub Actions -> GHCR 이미지 빌드/푸시 -> GitHub OIDC로 AWS 임시 자격증명 획득 -> AWS SSM Run Command로 EC2에 배포 지시 -> 컨테이너 교체 -> Health Check(실패 시 직전 이미지로 Rollback)" width="1000" />
 </p>
 
-- `Client`는 `Vercel`에 배포된 `Next.js(React)` 프론트엔드(`https://jaegokeeper-blush.vercel.app`)에 접속하고, API 요청은 자체 도메인(`https://jaegokeeper.store`)의 백엔드로 전달됩니다.
-- 백엔드는 `EC2` 위에서 `Nginx` -> `Tomcat 10(8080)` -> `Spring MVC` 흐름으로 동작합니다.
-- DB(`MySQL`)는 `EC2`와 분리된 `AWS RDS`를 사용하며, RDS는 EC2 보안 그룹에서만 접근 가능하도록 제한하고 퍼블릭 액세스를 차단했습니다.
-- 이미지는 로컬 파일시스템 대신 `AWS S3`에 저장하고, 조회 시 presigned URL로 리다이렉트합니다. EC2에 부여한 IAM 역할로 인증하며 별도 액세스 키는 관리하지 않습니다.
-- 배포는 `GitHub Actions`(GitHub 호스티드 러너에서 빌드 → SSH로 EC2에 WAR 전달 → Tomcat 재기동)로 자동화했고, 헬스체크 실패 시 이전 버전으로 자동 롤백합니다.
-
-### 로컬 Docker 실행
-
-로컬에서도 운영과 같은 Java 17, Tomcat 10.1 환경으로 실행할 수 있습니다.
-
-1. `.env.example`을 `.env.local`로 복사하고 실제 환경변수 값을 입력합니다.
-2. 프로젝트 루트에서 `docker compose up --build -d`를 실행합니다.
-3. `http://localhost:8080/`에서 `server is running` 응답을 확인합니다.
-4. 종료할 때는 `docker compose down`을 실행합니다.
-
-Docker 내부에서 호스트 PC의 MySQL에 접근할 때는 `DB_URL`의 호스트로 `host.docker.internal`을 사용합니다. RDS를 사용한다면 해당 RDS 주소를 그대로 입력합니다. AWS 키는 로컬에서 S3 기능을 확인할 때만 사용하며 저장소에 커밋하지 않습니다.
-
-운영용 `compose.prod.yaml`은 기존 Tomcat과 병행 검증할 수 있도록 기본적으로 `127.0.0.1:18080`에 연결됩니다. 운영 전환 전까지 기존 8080 Tomcat과 Nginx 설정은 유지합니다.
+- 프론트엔드는 `Vercel`에 배포하고, API 요청은 `https://jaegokeeper.store`의 백엔드로 전달합니다.
+- 백엔드는 EC2 호스트의 `Nginx`가 요청을 받아 Docker 컨테이너에서 실행 중인 `Tomcat 10.1` 기반 Spring MVC 애플리케이션으로 전달합니다.
+- 데이터베이스는 외부 접근을 차단한 `AWS RDS(MySQL)`를 사용하고, 이미지는 `AWS S3`에 저장합니다.
+- 배포는 `GitHub Actions`를 통해 Docker 이미지를 빌드하고 EC2 컨테이너를 교체하도록 자동화했으며, 실패 시 직전 이미지로 롤백합니다.
 
 ---
 
@@ -168,17 +156,17 @@ Docker 내부에서 호스트 PC의 MySQL에 접근할 때는 `DB_URL`의 호스
 
 | 패키지 | 역할 |
 |:---:|:---|
-| `auth` | 로컬/소셜 로그인, 세션 생성/조회/로그아웃 처리 |
+| `auth` | 로컬/소셜 로그인, Spring Security 기반 세션 인증·조회·로그아웃 처리 |
 | `onboarding` | 이메일 인증 기반 사장 회원가입 및 초기 점포 생성 |
 | `item` / `stock` / `request` | 상품 관리, 재고 입출고, 매장 요청 등록/상태 변경 |
 | `alba` / `schedule` | 알바 등록/수정/삭제와 근무 스케줄/출퇴근 기록 |
 | `board` | 공지/게시글 등록·수정·조회 |
-| `image` | 이미지 업로드, 경로 검증, 파일 조회/정리 |
+| `image` | 이미지 검증·S3 업로드, presigned URL 발급, S3 객체 정리 |
 | `store` / `user` / `email` | 점포/사용자 정보 수정, 이메일 인증 코드 발송/검증 |
 | `mail` | 실제 메일 발송 인프라(Gmail SMTP, 비동기, 재시도) — `email`(인증코드 검증 로직)과 역할 분리 |
 | `common` | 공용 DTO(페이징), AOP(`@Timer`), 헬스체크 |
 | `exception` | 공통 에러코드 정의 및 전역 예외 응답 처리 |
-| `config` | 비동기, springdoc(OpenAPI), Jackson, Mail 템플릿, S3 클라이언트 등 인프라 설정 |
+| `config` | 비동기 처리, JSON 변환, Mail 템플릿, S3 클라이언트 설정 |
 | `mappers` | MyBatis SQL 매퍼 XML |
 
 </div>
@@ -231,26 +219,28 @@ src/main/resources/mappers
 - 선택 이유: 동시성 제어를 애플리케이션이 아닌 DB 조건식에서 처리해야 경쟁 상태를 줄일 수 있기 때문
 - 결과: 업데이트 성공 행 수로 출고 성공/실패를 판별하고, 부족 시 `STOCK_QUANTITY_NOT_ENOUGH`를 반환
 
-### 2) 파일 저장과 DB 트랜잭션 정합성
-- 도전: 이미지 업로드는 파일시스템, 비즈니스 데이터는 DB에 저장되어 실패 시 정합성 깨질 수 있음
+### 2) S3 파일과 DB 트랜잭션 정합성
+- 도전: S3 파일 업로드와 DB 정보 저장은 하나의 트랜잭션으로 처리할 수 없어, DB 처리 실패 시 S3에 불필요한 파일이 남을 수 있음
 - 해결:
-  - `ImageService`에서 상대경로 저장, 경로 traversal 방어, MIME 재검증 적용
-  - `ItemService`, `AlbaService`에서 업로드 이후 예외 발생 시 파일 cleanup 처리
-- 선택 이유: 파일시스템은 DB 트랜잭션으로 롤백되지 않으므로 서비스 계층에서 실패 cleanup을 명시적으로 처리
-- 결과: 실패 시 고아 파일 발생 가능성을 줄이고 업로드 안정성 개선
+  - 임시 파일을 이용해 실제 MIME 타입을 검증한 후 S3에 업로드
+  - DB에는 파일 자체가 아닌 S3 객체 키를 저장
+  - 이후 비즈니스 처리에 실패하면 업로드한 S3 객체를 삭제
+  - 이미지 조회 시 10분 동안 유효한 presigned URL 발급
+- 선택 이유: DB 트랜잭션이 롤백돼도 이미 업로드된 S3 객체는 자동으로 삭제되지 않기 때문
+- 결과: 실패 시 불필요한 S3 객체가 남을 가능성을 줄이고, 이미지를 비공개 상태로 안전하게 제공
 
 ### 3) 수동 배포 리스크를 자동 배포로 전환
 - 도전: 수동 배포 과정에서 빌드/환경변수/프로세스 재시작 단계가 반복되며 운영 실수 가능성이 높았음
-- 해결: `GitHub Actions`(GitHub 호스티드 러너에서 빌드 → SSH로 EC2에 WAR 전달 → Tomcat 재기동) 배포 파이프라인 구성, 헬스체크 실패 시 자동 롤백 추가
-- 선택 이유: 반복 가능한 절차를 코드화해야 환경 의존성과 휴먼 에러를 줄일 수 있기 때문
-- 결과: 배포 과정을 표준화하고 실패 원인을 로그 기준으로 빠르게 추적할 수 있는 구조로 개선
+- 해결: `GitHub Actions`를 이용해 테스트, Docker 이미지 빌드, EC2 컨테이너 교체 과정을 자동화하고 헬스체크 실패 시 직전 이미지로 롤백하도록 구성
+- 선택 이유: 반복 가능한 절차를 코드화해야 환경 의존성과 휴먼 에러를 줄일 수 있기 때문. 초기엔 WAR를 SSH로 전달해 Tomcat을 재기동하는 방식이었는데, 실행 환경(Java/Tomcat 버전)까지 이미지 하나로 버전 관리하고 싶어서 Docker/GHCR 기반으로 전환. 이후 EC2 보안그룹에서 SSH 인바운드 자체를 닫으면서 배포 경로도 `GitHub OIDC`로 발급받은 임시 AWS 자격증명 + `AWS SSM Run Command`로 다시 바꿔, 운영 서버에 SSH 포트를 상시 열어두지 않고도 배포가 가능하도록 함
+- 결과: 배포 과정을 표준화하고 실패 원인을 로그 기준으로 빠르게 추적할 수 있는 구조로 개선. 배포 실패 시 직전에 실행 중이던 이미지 태그로 즉시 롤백 가능. 배포 과정에서는 장기 SSH 키·AWS 액세스 키를 사용하지 않음
 
 ---
 
 ## 트러블슈팅
 
 ### 1) 알바 등록 500 (`keyProperty` 매핑 실패)
-- 증상: `POST /stores/{storeId}/albas` 호출 시 500
+- 증상: `POST /stores/albas` 호출 시 500
 - 원인: MyBatis `useGeneratedKeys="true" keyProperty="albaId"`인데 DTO에 setter 대상 필드 부재
 - 조치: `AlbaRegisterRequest`에 `albaId` 추가, generated key를 스케줄 등록 흐름에 연계
 - 확인: 신규 등록/중복 검증/스케줄 생성까지 WORKLOG 기준 검증 완료
