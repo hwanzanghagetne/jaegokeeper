@@ -32,20 +32,4 @@ public class SocialOwnerSignUpRequest {
         @Size(max = 20)
         private String userPhone;
     }
-
-    @Getter
-    @NoArgsConstructor
-    public static class StoreInfo {
-        @NotBlank @Size(max = 20)
-        private String storeName;
-
-        @Size(max = 20)
-        private String storeTel;
-
-        @Size(max = 255)
-        private String storeAdd1;
-
-        @Size(max = 255)
-        private String storeAdd2;
-    }
 }
