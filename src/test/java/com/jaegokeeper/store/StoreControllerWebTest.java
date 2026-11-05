@@ -27,15 +27,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * "미로그인 401"은 SecurityFilterChain이 담당하며 standaloneSetup()으로는 검증 불가하므로,
- * Security 필터체인 통합 테스트/LoginRequiredEntryPointTest가 그 책임을 진다.
- * 여기서는 로그인된 상태의 해피패스만 다룬다.
- *
- * 로그인 상태는 SecurityContextHolder에 직접 Authentication을 설정해서 시뮬레이션한다
- * (SecurityMockMvcRequestPostProcessors.authentication()은 필터 체인이 있어야 동작하므로
- * 필터가 없는 standaloneSetup()에서는 쓸 수 없다).
- */
 @RunWith(MockitoJUnitRunner.class)
 public class StoreControllerWebTest {
 

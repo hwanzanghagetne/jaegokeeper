@@ -78,8 +78,6 @@ public class SessionServiceTest {
         sessionService.createSession(1, "LOCAL", request, response);
 
         assertTrue("기존 세션은 무효화돼야 한다", oldSession.isInvalid());
-        // MockHttpServletRequest는 getSession(true) 호출 시 무효화된 세션을 감지하면
-        // 새 MockHttpSession을 만들어준다(실제 서블릿 컨테이너의 세션 재생성과 동일한 동작).
         assertNotSame("새 세션이 발급돼야 한다", oldSession, request.getSession(false));
     }
 

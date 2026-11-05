@@ -73,7 +73,6 @@ public class ImageService {
         String key = null;
 
         try {
-            // 확장자만으로는 위조 가능하니, 임시 파일로 받아 실제 콘텐츠 타입을 확인한 뒤 S3에 올린다.
             tempPath = Files.createTempFile("img-upload-", "." + ext);
             file.transferTo(tempPath);
 
@@ -97,7 +96,6 @@ public class ImageService {
             );
 
             dto.setOriginName(originalName);
-            // DB에는 S3 객체 키만 저장하고, 실제 접근 URL은 조회 시 presigned URL로 발급한다.
             dto.setImagePath(key);
 
             imageMapper.insertImgInfo(dto);
@@ -152,7 +150,6 @@ public class ImageService {
         try {
             s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucketName).key(key).build());
         } catch (Exception ignored) {
-            // cleanup 실패는 원인 예외를 덮지 않는다.
         }
     }
 
@@ -161,7 +158,6 @@ public class ImageService {
         try {
             Files.deleteIfExists(path);
         } catch (Exception ignored) {
-            // cleanup 실패는 원인 예외를 덮지 않는다.
         }
     }
 }

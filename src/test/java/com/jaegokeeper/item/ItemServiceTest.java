@@ -50,8 +50,6 @@ public class ItemServiceTest {
         login = new LoginContext(10, 1, "tester", "LOCAL");
     }
 
-    // storeId가 더 이상 파라미터로 넘어오지 않고 항상 login.getStoreId()이므로,
-    // "본인 매장이 아닌 storeId로 요청" 시나리오는 구성할 수 없어 삭제했다.
 
     @Test
     public void 아이템생성_매장없음_예외() {

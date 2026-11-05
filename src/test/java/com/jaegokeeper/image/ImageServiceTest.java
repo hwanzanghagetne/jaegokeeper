@@ -121,9 +121,7 @@ public class ImageServiceTest {
 
     @Test
     public void 파일삭제_빈경로는_예외없이무시() {
-        // relPath가 null/blank면 아무 것도 하지 않고 조용히 반환되어야 한다
         imageService.deleteImageFile(null);
         imageService.deleteImageFile("");
-        // 예외가 발생하지 않으면 성공
     }
 }

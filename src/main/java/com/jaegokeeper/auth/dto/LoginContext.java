@@ -13,7 +13,7 @@ public class LoginContext implements Serializable {
     private final int userId;
     private final int storeId;
     private final String userName;
-    private final String provider; // LOCAL/GOOGLE/KAKAO
+    private final String provider;
 
     public LoginContext(int userId, int storeId, String userName, String provider) {
         this.userId = userId;

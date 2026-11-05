@@ -22,8 +22,6 @@ public class AsyncConfig implements AsyncConfigurer {
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        // 메일 발송 전용 풀: 평소 1개, 최대 2개, 대기 100건
-        // 큐 초과 시 CallerRunsPolicy → API 스레드가 직접 처리 (요청 유실 없이 자연스럽게 속도 조절)
         executor.setCorePoolSize(1);
         executor.setMaxPoolSize(2);
         executor.setQueueCapacity(100);

@@ -83,7 +83,6 @@
         LIMIT #{size} OFFSET #{offset}
     </select>
 
-    <!--  상세 페이지  -->
     <select id="getBoardDetail" resultType="com.jaegokeeper.board.dto.response.BoardDetailResponse">
         SELECT
             board_id AS boardId,
@@ -98,7 +97,6 @@
           AND is_active = b'1'
     </select>
 
-    <!--  등록 페이지  -->
     <insert id="insertBoard" parameterType="com.jaegokeeper.board.model.Board"
             useGeneratedKeys="true" keyProperty="boardId">
         INSERT INTO board (
@@ -152,7 +150,6 @@
         AND is_active = b'1'
     </update>
 
-    <!--  삭제 페이지  -->
     <update id="softDeleteBoard">
         UPDATE board b
         SET b.is_active = b'0',

@@ -29,7 +29,6 @@ public class LocalServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    // ===================== login =====================
 
     @Test
     public void 로그인_존재하지않는_이메일_예외() {

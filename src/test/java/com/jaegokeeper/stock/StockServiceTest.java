@@ -39,7 +39,6 @@ public class StockServiceTest {
         login = new LoginContext(100, 1, "tester", "LOCAL");
     }
 
-    // ===================== inStock =====================
 
     @Test
     public void 입고_성공() {
@@ -67,7 +66,6 @@ public class StockServiceTest {
         }
     }
 
-    // ===================== outStock =====================
 
     @Test
     public void 출고_재고부족_예외() {

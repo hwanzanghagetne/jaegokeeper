@@ -135,10 +135,9 @@ public class ItemService {
         }
     }
 
-    // 업로드 후 실패 시 파일 경로가 필요하므로 ImageInfoDTO 자체를 반환한다.
     private ImageInfoDTO uploadImageDtoIfPresent(ImageInfoDTO dto) {
         if (dto.getFile() == null || dto.getFile().isEmpty()) return null;
-        imgService.uploadImg(dto); // dto에 imagePath, imageId가 세팅됨
+        imgService.uploadImg(dto);
         return dto;
     }
 

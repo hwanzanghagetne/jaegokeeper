@@ -14,11 +14,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-/**
- * 보호 API에 비로그인 상태로 접근했을 때의 401 응답을, 기존 SessionInterceptor.writeError()와
- * 동일한 JSON 계약(ErrorCode.LOGIN_REQUIRED)으로 유지하기 위한 EntryPoint.
- * 이게 없으면 Spring Security 기본값(403 Http403ForbiddenEntryPoint)으로 계약이 깨진다.
- */
 @Component
 @RequiredArgsConstructor
 public class LoginRequiredEntryPoint implements AuthenticationEntryPoint {

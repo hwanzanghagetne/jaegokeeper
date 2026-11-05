@@ -59,8 +59,6 @@ public class StoreServiceTest {
         assertEquals("테스트 매장", result.getStoreName());
     }
 
-    // storeId가 더 이상 파라미터로 넘어오지 않으므로 "본인 매장이 아닌 storeId로 조회"
-    // 시나리오는 구성할 수 없어 삭제했다 — login.getStoreId()가 유일한 출처다.
 
     @Test
     public void 점포조회_대상없음_예외() {

@@ -16,7 +16,6 @@ import static com.jaegokeeper.exception.ErrorCode.*;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // @Valid 검증 실패 400
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException e) {
 
@@ -35,7 +34,6 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
-    // 비즈니스 예외
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusiness(BusinessException e, HttpServletRequest request) {
         ErrorCode errorCode = e.getErrorCode();
@@ -66,7 +64,6 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
-    // 잘못된 인자
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException e, HttpServletRequest request) {
         log.warn("[BAD_REQUEST] (IllegalArgument) method={} uri={} param={} message={}",
@@ -112,7 +109,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(BAD_REQUEST.getStatus()).body(response);
     }
 
-    // 그 외
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnhandled(Exception e, HttpServletRequest request) {
 

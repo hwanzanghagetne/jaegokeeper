@@ -40,7 +40,6 @@ public class RequestServiceTest {
         login = new LoginContext(100, 1, "tester", "LOCAL");
     }
 
-    // ===================== updateRequestStatus =====================
 
     @Test
     public void 요청상태변경_존재하지않는요청_예외() {
@@ -114,7 +113,6 @@ public class RequestServiceTest {
         requestService.updateRequestStatus(login, 1, req);
     }
 
-    // ===================== getRequestDetail =====================
 
     @Test
     public void 요청상세_존재하지않는요청_예외() {

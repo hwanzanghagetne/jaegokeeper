@@ -14,12 +14,10 @@
             http://www.springframework.org/schema/util
             http://www.springframework.org/schema/util/spring-util.xsd">
 
-    <!-- Component Scan: 서비스/리포지토리/인프라 계층만 (컨트롤러는 servlet-context에서 담당) -->
     <context:component-scan base-package="com.jaegokeeper">
         <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
     </context:component-scan>
 
-    <!-- DataSource 설정 (커넥션 풀: DBCP2) -->
     <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
         <property name="url" value="${DB_URL}"/>
@@ -32,32 +30,27 @@
         <property name="maxWaitMillis" value="3000"/>
     </bean>
 
-    <!-- MyBatis SqlSessionFactory -->
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="dataSource" ref="dataSource"/>
         <property name="mapperLocations" value="classpath*:mappers/**/*.xml"/>
     </bean>
 
-    <!-- 패키지 Mapper 스캔 -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
         <property name="basePackage" value="com.jaegokeeper"/>
         <property name="annotationClass" value="org.apache.ibatis.annotations.Mapper"/>
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
     </bean>
 
-    <!-- Transaction Manager -->
     <bean id="transactionManager"
           class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <!-- Enable @Transactional -->
     <tx:annotation-driven transaction-manager="transactionManager"/>
 
-    <!-- mail properties -->
     <context:property-placeholder location="classpath:mail.properties" />
 
-    <!-- CORS 설정 (mvc:cors 네임스페이스는 ${...} 플레이스홀더를 치환하지 않아 Filter 방식으로 대체) -->
+    <!-- mvc:cors는 ${...}를 치환하지 않아 CorsFilter 빈으로 구성한다 -->
     <bean id="corsConfigurationSource" class="org.springframework.web.cors.UrlBasedCorsConfigurationSource">
         <property name="corsConfigurations">
             <util:map>
@@ -95,7 +88,6 @@
         <constructor-arg ref="corsConfigurationSource"/>
     </bean>
 
-    <!-- JavaMailSender -->
     <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
         <property name="host" value="${mail.host}"/>
         <property name="port" value="${mail.port}"/>

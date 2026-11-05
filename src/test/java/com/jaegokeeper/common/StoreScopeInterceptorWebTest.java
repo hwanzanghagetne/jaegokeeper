@@ -28,22 +28,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * storeId는 더 이상 URL에 없고 세션(LoginContext)만 신뢰하므로, 이 테스트는
- * "로그인 여부"만 검증한다. 예전에 있던 "다른 storeId로 요청하면 403" 테스트는
- * URL에 storeId 자체가 없어져서 그 시나리오를 구성할 수 없어 삭제했다 —
- * 검증이 빠진 게 아니라 그 공격 표면 자체가 사라진 것이다.
- *
- * "미로그인 401"은 이제 SecurityFilterChain(서블릿 필터)이 담당하는데,
- * standaloneSetup()은 필터 체인을 안 태우므로 이 테스트로는 검증할 수 없다.
- * 그 책임은 Security 필터체인 통합 테스트(ItemController 스파이크)와
- * LoginRequiredEntryPointTest가 진다. 여기서는 로그인된 상태의 해피패스만 다룬다.
- *
- * 로그인 상태 시뮬레이션은 SecurityMockMvcRequestPostProcessors.authentication()이 아니라
- * SecurityContextHolder에 직접 설정하는 방식을 쓴다 — 그 포스트프로세서는 SecurityContextRepository를
- * 거쳐 "필터가 나중에 읽어가는" 구조라 실제 필터 체인이 없는 standaloneSetup()에서는 동작하지 않는다
- * (AuthenticationPrincipalArgumentResolver는 SecurityContextHolder를 직접 읽으므로 이렇게 해야 함).
- */
 @RunWith(MockitoJUnitRunner.class)
 public class StoreScopeInterceptorWebTest {
 
