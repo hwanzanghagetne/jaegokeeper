@@ -3,6 +3,7 @@ package com.jaegokeeper.auth.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -14,10 +15,19 @@ public class GoogleVerifier implements SocialVerifier {
     private final RestTemplate restTemplate;
     private final ObjectMapper om;
 
+    @Value("${GOOGLE_CLIENT_ID:}")
+    private String clientId;
+
     @Override public String provider() { return "GOOGLE"; }
 
     @Override
     public SocialProfile verify(String accessToken) throws Exception {
+        String aud = text(om.readTree(restTemplate.getForObject(
+                "https://oauth2.googleapis.com/tokeninfo?access_token={token}", String.class, accessToken)), "aud");
+        if (clientId.isBlank() || !clientId.equals(aud)) {
+            throw new IllegalArgumentException("google token audience mismatch");
+        }
+
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         ResponseEntity<String> res = restTemplate.exchange(
