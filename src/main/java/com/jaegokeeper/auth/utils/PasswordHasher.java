@@ -1,15 +1,17 @@
 package com.jaegokeeper.auth.utils;
 
-import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public final class PasswordHasher {
+    private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder(12);
+
     private PasswordHasher() {}
 
     public static String hash(String raw) {
-        return BCrypt.hashpw(raw, BCrypt.gensalt(12));
+        return ENCODER.encode(raw);
     }
 
     public static boolean matches(String raw, String hashed) {
-        return hashed != null && !hashed.isBlank() && BCrypt.checkpw(raw, hashed);
+        return hashed != null && !hashed.isBlank() && ENCODER.matches(raw, hashed);
     }
 }

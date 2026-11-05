@@ -11,10 +11,8 @@ public class UserDTO {
     private Integer userId;
 
     private String userName;
-//    private String userPass;
     private String userMail;
     private String userPhone;
-//    private String login_type;
     private Boolean isActive;
 
     private String userRole;
