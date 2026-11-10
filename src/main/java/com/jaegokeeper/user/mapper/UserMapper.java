@@ -12,7 +12,5 @@ public interface UserMapper {
 
     int countByEmail(@Param("email") String email);
 
-    boolean existsById(@Param("userId") int userId);
-
     UserDetailResponse findUserDetail(@Param("userId") int userId);
 }

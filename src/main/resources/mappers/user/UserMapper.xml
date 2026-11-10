@@ -7,8 +7,10 @@
 
     <update id="updateUser" parameterType="com.jaegokeeper.user.dto.UserUpdateRequest">
         UPDATE user
-        SET user_phone = #{userPhone},
-            user_mail  = #{userMail}
+        <set>
+            user_phone = #{userPhone},
+            <if test="userMail != null">user_mail = #{userMail},</if>
+        </set>
         WHERE user_id = #{userId}
     </update>
 
@@ -16,12 +18,6 @@
         SELECT COUNT(*)
         FROM user
         WHERE user_mail = #{email}
-    </select>
-
-    <select id="existsById" resultType="boolean">
-        SELECT COUNT(*) > 0
-        FROM user
-        WHERE user_id = #{userId}
     </select>
 
     <select id="findUserDetail" resultType="com.jaegokeeper.user.dto.UserDetailResponse">
