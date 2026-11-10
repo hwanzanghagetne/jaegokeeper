@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 @Getter
@@ -13,6 +14,7 @@ public class ScheduleUpdateRequest {
 
     private Integer scheduleId;
 
+    @NotBlank(message = "알바 근무 요일은 필수입니다.")
     @Size(max = 20, message = "스케줄 시간은 최대 20자까지 입력 가능합니다")
     private String scheduleTime;
 }

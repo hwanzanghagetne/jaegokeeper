@@ -4,41 +4,19 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.jaegokeeper.schedule.mapper.ScheduleMapper">
-
     <insert id="insertSchedule" parameterType="com.jaegokeeper.schedule.dto.ScheduleRegisterRequest">
         INSERT INTO schedule (alba_id, schedule_time)
         VALUES (#{albaId}, #{scheduleTime})
     </insert>
 
-    <update id="updateSchedule" parameterType="com.jaegokeeper.schedule.dto.ScheduleUpdateRequest">
-        UPDATE schedule
-        SET schedule_time = #{scheduleTime}
-        WHERE schedule_id = #{scheduleId}
-    </update>
-
-    <select id="existsScheduleById" resultType="boolean">
-        SELECT COUNT(*) > 0
-        FROM schedule
-        WHERE schedule_id = #{scheduleId}
-    </select>
-
-    <select id="countByStoreIdAndScheduleId" resultType="int">
-        SELECT COUNT(*)
-        FROM schedule s
-        INNER JOIN alba a ON a.alba_id = s.alba_id
-        WHERE s.schedule_id = #{scheduleId}
+    <update id="updateSchedule">
+        UPDATE schedule s
+        JOIN alba a ON a.alba_id = s.alba_id
+        SET s.schedule_time = #{req.scheduleTime}
+        WHERE s.schedule_id = #{req.scheduleId}
           AND a.store_id = #{storeId}
           AND a.is_active = b'1'
-    </select>
-
-    <select id="selectSchedulesByDate" resultType="com.jaegokeeper.schedule.dto.ScheduleDetailResponse">
-        SELECT
-            schedule_id AS scheduleId,
-            alba_id     AS albaId,
-            schedule_time AS scheduleTime
-        FROM schedule
-        WHERE schedule_time = #{scheduleTime}
-    </select>
+    </update>
 
     <select id="selectSchedulesWithWorkByDate" resultType="com.jaegokeeper.schedule.dto.ScheduleListResponse">
         SELECT
@@ -74,7 +52,15 @@
 
     <insert id="insertWorkIn" parameterType="com.jaegokeeper.schedule.dto.WorkInOutRequest">
         INSERT INTO work (alba_id, work_date, work_in, work_status)
-        VALUES (#{albaId}, #{workDate}, #{workIn}, #{workStatus})
+        SELECT #{albaId}, #{workDate}, #{workIn}, #{workStatus}
+        FROM DUAL
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM work
+            WHERE alba_id = #{albaId}
+              AND DATE(work_in) = #{workDate}
+              AND work_out IS NULL
+        )
     </insert>
 
     <update id="updateWorkOut" parameterType="com.jaegokeeper.schedule.dto.WorkInOutRequest">

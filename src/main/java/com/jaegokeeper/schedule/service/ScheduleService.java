@@ -4,7 +4,7 @@ import com.jaegokeeper.alba.mapper.AlbaMapper;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.common.DateTimeConstants;
 import com.jaegokeeper.exception.BusinessException;
-import com.jaegokeeper.schedule.dto.ScheduleDetailResponse;
+import com.jaegokeeper.schedule.ScheduleTimes;
 import com.jaegokeeper.schedule.dto.ScheduleListResponse;
 import com.jaegokeeper.schedule.dto.ScheduleRegisterRequest;
 import com.jaegokeeper.schedule.dto.ScheduleUpdateRequest;
@@ -12,15 +12,15 @@ import com.jaegokeeper.schedule.dto.WorkInOutRequest;
 import com.jaegokeeper.schedule.dto.WorkTimeResponse;
 import com.jaegokeeper.schedule.mapper.ScheduleMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.jaegokeeper.exception.ErrorCode.*;
-
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static com.jaegokeeper.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -32,26 +32,33 @@ public class ScheduleService {
     @Transactional
     public int saveScheduleRegister(LoginContext login, ScheduleRegisterRequest req) {
         validateAlbaAccess(login, req.getAlbaId());
-        return scheduleMapper.insertSchedule(req);
+        req.setScheduleTime(ScheduleTimes.normalize(req.getScheduleTime()));
+        try {
+            return scheduleMapper.insertSchedule(req);
+        } catch (DuplicateKeyException e) {
+            throw new BusinessException(SCHEDULE_TIME_DUPLICATE);
+        }
     }
 
     @Transactional
     public void updateSchedule(LoginContext login, ScheduleUpdateRequest req) {
-        validateScheduleAccess(login, req.getScheduleId());
-        int updated = scheduleMapper.updateSchedule(req);
+        if (req.getScheduleId() == null) {
+            throw new BusinessException(BAD_REQUEST);
+        }
+        req.setScheduleTime(ScheduleTimes.normalize(req.getScheduleTime()));
+        int updated;
+        try {
+            updated = scheduleMapper.updateSchedule(login.getStoreId(), req);
+        } catch (DuplicateKeyException e) {
+            throw new BusinessException(SCHEDULE_TIME_DUPLICATE);
+        }
         if (updated == 0) {
-            throw new BusinessException(STATE_CONFLICT);
+            throw new BusinessException(SCHEDULE_NOT_FOUND);
         }
     }
 
-    public List<ScheduleDetailResponse> getScheduleByDate(String date) {
-        DayOfWeek dayOfWeek = LocalDate.parse(date).getDayOfWeek();
-        return scheduleMapper.selectSchedulesByDate(dayOfWeek.toString());
-    }
-
-    public List<ScheduleListResponse> getScheduleListByDate(LoginContext login, String date) {
-        DayOfWeek dayOfWeek = LocalDate.parse(date).getDayOfWeek();
-        return scheduleMapper.selectSchedulesWithWorkByDate(login.getStoreId(), date, dayOfWeek.toString());
+    public List<ScheduleListResponse> getScheduleListByDate(LoginContext login, LocalDate date) {
+        return scheduleMapper.selectSchedulesWithWorkByDate(login.getStoreId(), date, date.getDayOfWeek().name());
     }
 
     public List<WorkTimeResponse> selectWorkTime(LoginContext login, int albaId, LocalDate date) {
@@ -63,7 +70,9 @@ public class ScheduleService {
         validateAlbaAccess(login, req.getAlbaId());
         req.setWorkIn(LocalDateTime.now(DateTimeConstants.KST));
         req.setWorkDate(LocalDate.now(DateTimeConstants.KST));
-        scheduleMapper.insertWorkIn(req);
+        if (scheduleMapper.insertWorkIn(req) == 0) {
+            throw new BusinessException(STATE_CONFLICT);
+        }
     }
 
     public void recordWorkOut(LoginContext login, WorkInOutRequest req) {
@@ -80,23 +89,8 @@ public class ScheduleService {
         if (albaId == null) {
             throw new BusinessException(BAD_REQUEST);
         }
-        if (!albaMapper.existsAlbaById(albaId)) {
-            throw new BusinessException(ALBA_NOT_FOUND);
-        }
         if (albaMapper.countByStoreIdAndAlbaId(login.getStoreId(), albaId) == 0) {
-            throw new BusinessException(FORBIDDEN);
-        }
-    }
-
-    private void validateScheduleAccess(LoginContext login, Integer scheduleId) {
-        if (scheduleId == null) {
-            throw new BusinessException(BAD_REQUEST);
-        }
-        if (!scheduleMapper.existsScheduleById(scheduleId)) {
-            throw new BusinessException(SCHEDULE_NOT_FOUND);
-        }
-        if (scheduleMapper.countByStoreIdAndScheduleId(login.getStoreId(), scheduleId) == 0) {
-            throw new BusinessException(FORBIDDEN);
+            throw new BusinessException(ALBA_NOT_FOUND);
         }
     }
 }

@@ -18,6 +18,7 @@ import org.springframework.security.web.method.annotation.AuthenticationPrincipa
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -59,7 +60,7 @@ public class StoreScheduleControllerWebTest {
 
         doReturn(List.of(row))
                 .when(scheduleService)
-                .getScheduleListByDate(any(LoginContext.class), eq("2026-04-08"));
+                .getScheduleListByDate(any(LoginContext.class), eq(LocalDate.of(2026, 4, 8)));
 
         login(1);
 

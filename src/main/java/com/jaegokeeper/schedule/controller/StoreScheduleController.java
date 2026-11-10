@@ -48,7 +48,7 @@ public class StoreScheduleController {
     @Operation(summary = "스토어별 특정 날짜 스케줄 조회")
     @GetMapping
     public ResponseEntity<List<ScheduleListResponse>> getSchedulesByDate(
-            @RequestParam String date,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @AuthenticationPrincipal LoginContext login) {
         return ResponseEntity.ok(scheduleService.getScheduleListByDate(login, date));
     }
