@@ -71,13 +71,13 @@
             r.created_at         AS latestRequestCreatedAt
         FROM item i
         JOIN stock s ON s.item_id = i.item_id
-        LEFT JOIN (
-            SELECT item_id, MAX(request_id) AS max_request_id
-            FROM request
-            GROUP BY item_id
-        ) latest_r ON latest_r.item_id = i.item_id
         LEFT JOIN request r
-            ON r.request_id = latest_r.max_request_id
+            ON r.request_id = (
+                SELECT MAX(r2.request_id)
+                FROM request r2
+                WHERE r2.item_id = i.item_id
+                  AND r2.is_active = b'1'
+            )
         <where>
             i.store_id = #{storeId}
             AND i.is_active = b'1'
@@ -125,7 +125,7 @@
         LEFT JOIN buffer b ON b.item_id = i.item_id
         LEFT JOIN log l
             ON l.item_id = i.item_id
-           AND l.created_at = (SELECT MAX(l2.created_at) FROM log l2 WHERE l2.item_id = i.item_id)
+           AND l.log_id = (SELECT MAX(l2.log_id) FROM log l2 WHERE l2.item_id = i.item_id)
         WHERE i.store_id = #{storeId}
           AND i.item_id = #{itemId}
           AND i.is_active = b'1'
