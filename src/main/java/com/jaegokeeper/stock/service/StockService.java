@@ -54,48 +54,20 @@ public class StockService {
 
     @Transactional
     public void updateStockAmount(LoginContext login, Integer itemId, StockAmountUpdateRequest dto) {
-        int storeId = login.getStoreId();
-        int existAmount = findStockAmountOrThrow(storeId, itemId);
-        if (dto.getStockAmount().equals(existAmount)) {
-            return;
-        }
-        int updated = stockMapper.updateStockAmount(storeId, itemId, dto.getStockAmount());
-        if (updated != 1) {
-            throw new BusinessException(STOCK_NOT_FOUND);
-        }
-        int inserted = logMapper.insertLog(itemId, ADJUST, dto.getStockAmount());
-        if (inserted != 1) {
-            throw new BusinessException(INTERNAL_ERROR);
-        }
+        changeStockAmount(login.getStoreId(), itemId, dto.getStockAmount());
     }
 
     @Transactional
     public void adjustStock(LoginContext login, Integer itemId, StockAdjustRequest dto) {
         int storeId = login.getStoreId();
-        Integer newTargetAmount = dto.getTargetAmount();
-        Integer newBufferAmount = dto.getBufferAmount();
 
-        if (newBufferAmount == null && newTargetAmount == null) {
-            return;
+        if (dto.getTargetAmount() != null) {
+            changeStockAmount(storeId, itemId, dto.getTargetAmount());
         }
 
-        if (newTargetAmount != null) {
-            int existAmount = findStockAmountOrThrow(storeId, itemId);
-            int updatedStock = stockMapper.updateStockAmount(storeId, itemId, newTargetAmount);
-            if (updatedStock != 1) {
-                throw new BusinessException(STOCK_NOT_FOUND);
-            }
-            if (!newTargetAmount.equals(existAmount)) {
-                int inserted = logMapper.insertLog(itemId, ADJUST, newTargetAmount);
-                if (inserted != 1) {
-                    throw new BusinessException(INTERNAL_ERROR);
-                }
-            }
-        }
-
-        if (newBufferAmount != null) {
-            int updatedSafe = bufferMapper.updateBufferAmount(storeId, itemId, newBufferAmount);
-            if (updatedSafe != 1) {
+        if (dto.getBufferAmount() != null) {
+            int updatedBuffer = bufferMapper.updateBufferAmount(storeId, itemId, dto.getBufferAmount());
+            if (updatedBuffer != 1) {
                 throw new BusinessException(STOCK_NOT_FOUND);
             }
         }
@@ -121,6 +93,21 @@ public class StockService {
             throw new BusinessException(STOCK_NOT_FOUND);
         }
         return dto;
+    }
+
+    private void changeStockAmount(int storeId, Integer itemId, Integer newAmount) {
+        int existAmount = findStockAmountOrThrow(storeId, itemId);
+        if (newAmount.equals(existAmount)) {
+            return;
+        }
+        int updated = stockMapper.updateStockAmount(storeId, itemId, newAmount);
+        if (updated != 1) {
+            throw new BusinessException(STOCK_NOT_FOUND);
+        }
+        int inserted = logMapper.insertLog(itemId, ADJUST, newAmount);
+        if (inserted != 1) {
+            throw new BusinessException(INTERNAL_ERROR);
+        }
     }
 
     private int findStockAmountOrThrow(Integer storeId, Integer itemId) {
