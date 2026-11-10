@@ -45,16 +45,12 @@
             GROUP BY alba_id
         ) latest_w ON latest_w.alba_id = alba.alba_id
         LEFT JOIN work ON work.work_id = latest_w.max_work_id
-        <where>
-            <if test="storeId != null">
-                alba.store_id = #{storeId}
-                AND alba.is_active = b'1'
-            </if>
-        </where>
+        WHERE alba.store_id = #{storeId}
+          AND alba.is_active = b'1'
         ORDER BY alba.alba_id DESC
     </select>
 
-    <select id="getAlbaById" parameterType="int" resultType="com.jaegokeeper.alba.dto.AlbaDetailResponse">
+    <select id="getAlbaById" resultType="com.jaegokeeper.alba.dto.AlbaDetailResponse">
         SELECT alba_id    AS albaId,
                image_id   AS imageId,
                store_id   AS storeId,
@@ -64,24 +60,8 @@
                alba_status AS albaStatus
         FROM alba
         WHERE alba_id = #{albaId}
-    </select>
-
-    <select id="getAlbaByStore" parameterType="int" resultType="com.jaegokeeper.alba.dto.AlbaDetailResponse">
-        SELECT alba_id    AS albaId,
-               image_id   AS imageId,
-               store_id   AS storeId,
-               alba_name  AS albaName,
-               alba_phone AS albaPhone,
-               alba_email AS albaEmail,
-               alba_status AS albaStatus
-        FROM alba
-        WHERE store_id = #{storeId}
-    </select>
-
-    <select id="existsAlbaById" parameterType="int" resultType="boolean">
-        SELECT COUNT(*) > 0
-        FROM alba
-        WHERE alba_id = #{albaId}
+          AND store_id = #{storeId}
+          AND is_active = b'1'
     </select>
 
     <select id="existsByStoreId" parameterType="int" resultType="boolean">
@@ -96,6 +76,9 @@
         WHERE store_id = #{storeId}
           AND alba_phone = #{albaPhone}
           AND is_active = b'1'
+        <if test="excludeAlbaId != null">
+          AND alba_id != #{excludeAlbaId}
+        </if>
     </select>
 
     <select id="existsByAlbaEmail" resultType="int">
@@ -104,6 +87,9 @@
         WHERE store_id = #{storeId}
           AND alba_email = #{albaEmail}
           AND is_active = b'1'
+        <if test="excludeAlbaId != null">
+          AND alba_id != #{excludeAlbaId}
+        </if>
     </select>
 
     <insert id="insertAlba" parameterType="com.jaegokeeper.alba.dto.AlbaRegisterRequest"
@@ -112,17 +98,18 @@
         VALUES (#{storeId}, #{albaName}, #{albaPhone}, #{albaEmail}, #{albaStatus}, NOW(), NOW(), b'1', #{imageId})
     </insert>
 
-    <update id="updateAlba" parameterType="com.jaegokeeper.alba.dto.AlbaUpdateRequest">
+    <update id="updateAlba">
         UPDATE alba
         <set>
-            <if test="storeId != null">store_id = #{storeId},</if>
-            <if test="albaName != null">alba_name = #{albaName},</if>
-            <if test="albaPhone != null">alba_phone = #{albaPhone},</if>
-            <if test="albaEmail != null">alba_email = #{albaEmail},</if>
-            <if test="albaStatus != null">alba_status = #{albaStatus},</if>
+            <if test="req.albaName != null">alba_name = #{req.albaName},</if>
+            <if test="req.albaPhone != null">alba_phone = #{req.albaPhone},</if>
+            <if test="req.albaEmail != null">alba_email = #{req.albaEmail},</if>
+            <if test="req.albaStatus != null">alba_status = #{req.albaStatus},</if>
             updated_at = NOW()
         </set>
-        WHERE alba_id = #{albaId}
+        WHERE alba_id = #{req.albaId}
+          AND store_id = #{storeId}
+          AND is_active = b'1'
     </update>
 
     <update id="deleteAlba">
@@ -130,9 +117,10 @@
         SET is_active = 0,
             updated_at = NOW()
         WHERE alba_id = #{albaId}
+          AND store_id = #{storeId}
+          AND is_active = b'1'
     </update>
 
-    <!-- board 도메인(BoardService)에서도 작성자 검증용으로 사용 -->
     <select id="countByStoreIdAndAlbaId" resultType="int">
         SELECT COUNT(*)
         FROM alba a

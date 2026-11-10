@@ -14,22 +14,23 @@ public interface AlbaMapper {
 
     void insertAlba(AlbaRegisterRequest req);
 
-    boolean existsAlbaById(int albaId);
-
     boolean existsByStoreId(int storeId);
 
-    int existsByAlbaPhone(@Param("storeId") Integer storeId, @Param("albaPhone") String albaPhone);
-    int existsByAlbaEmail(@Param("storeId") Integer storeId, @Param("albaEmail") String albaEmail);
+    int existsByAlbaPhone(@Param("storeId") Integer storeId,
+                          @Param("albaPhone") String albaPhone,
+                          @Param("excludeAlbaId") Integer excludeAlbaId);
+
+    int existsByAlbaEmail(@Param("storeId") Integer storeId,
+                          @Param("albaEmail") String albaEmail,
+                          @Param("excludeAlbaId") Integer excludeAlbaId);
 
     List<AlbaListResponse> selectAllAlba(@Param("storeId") Integer storeId);
 
-    int updateAlba(AlbaUpdateRequest req);
+    int updateAlba(@Param("storeId") int storeId, @Param("req") AlbaUpdateRequest req);
 
-    int deleteAlba(@Param("albaId") int albaId);
+    int deleteAlba(@Param("storeId") int storeId, @Param("albaId") int albaId);
 
-    AlbaDetailResponse getAlbaById(@Param("albaId") int albaId);
-
-    AlbaDetailResponse getAlbaByStore(@Param("storeId") int storeId);
+    AlbaDetailResponse getAlbaById(@Param("storeId") int storeId, @Param("albaId") int albaId);
 
     int countByStoreIdAndAlbaId(@Param("storeId") Integer storeId, @Param("albaId") Integer albaId);
 

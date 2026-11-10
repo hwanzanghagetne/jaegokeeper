@@ -10,6 +10,7 @@ import com.jaegokeeper.mail.MailService;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.image.dto.ImageInfoDTO;
 import com.jaegokeeper.image.service.ImageService;
+import com.jaegokeeper.schedule.ScheduleTimes;
 import com.jaegokeeper.schedule.dto.ScheduleRegisterRequest;
 import com.jaegokeeper.schedule.mapper.ScheduleMapper;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,6 @@ import org.springframework.util.StringUtils;
 
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import static com.jaegokeeper.exception.ErrorCode.*;
@@ -43,10 +43,10 @@ public class AlbaService {
         if (!albaMapper.existsByStoreId(storeId)) {
             throw new BusinessException(STORE_NOT_FOUND);
         }
-        if (albaMapper.existsByAlbaPhone(storeId, req.getAlbaPhone()) > 0) {
+        if (albaMapper.existsByAlbaPhone(storeId, req.getAlbaPhone(), null) > 0) {
             throw new BusinessException(ALBA_PHONE_DUPLICATE);
         }
-        if (req.getAlbaEmail() != null && albaMapper.existsByAlbaEmail(storeId, req.getAlbaEmail()) > 0) {
+        if (req.getAlbaEmail() != null && albaMapper.existsByAlbaEmail(storeId, req.getAlbaEmail(), null) > 0) {
             throw new BusinessException(ALBA_EMAIL_DUPLICATE);
         }
         ImageInfoDTO imageDto = null;
@@ -90,8 +90,20 @@ public class AlbaService {
 
     @Transactional
     public void updateAlba(LoginContext login, AlbaUpdateRequest req) {
-        validateAlbaAccess(login, req.getAlbaId());
-        int updated = albaMapper.updateAlba(req);
+        int storeId = login.getStoreId();
+        req.setAlbaEmail(normalizeOptionalEmail(req.getAlbaEmail()));
+        if (albaMapper.countByStoreIdAndAlbaId(storeId, req.getAlbaId()) == 0) {
+            throw new BusinessException(ALBA_NOT_FOUND);
+        }
+        if (req.getAlbaPhone() != null
+                && albaMapper.existsByAlbaPhone(storeId, req.getAlbaPhone(), req.getAlbaId()) > 0) {
+            throw new BusinessException(ALBA_PHONE_DUPLICATE);
+        }
+        if (req.getAlbaEmail() != null
+                && albaMapper.existsByAlbaEmail(storeId, req.getAlbaEmail(), req.getAlbaId()) > 0) {
+            throw new BusinessException(ALBA_EMAIL_DUPLICATE);
+        }
+        int updated = albaMapper.updateAlba(storeId, req);
         if (updated == 0) {
             throw new BusinessException(STATE_CONFLICT);
         }
@@ -99,26 +111,14 @@ public class AlbaService {
 
     @Transactional
     public void deleteAlba(LoginContext login, int albaId) {
-        validateAlbaAccess(login, albaId);
-        int deleted = albaMapper.deleteAlba(albaId);
-        if (deleted == 0) {
-            throw new BusinessException(STATE_CONFLICT);
-        }
-    }
-
-    @Transactional(readOnly = true)
-    public AlbaDetailResponse getAlbaByStore(int storeId) {
-        AlbaDetailResponse alba = albaMapper.getAlbaByStore(storeId);
-        if (alba == null) {
+        if (albaMapper.deleteAlba(login.getStoreId(), albaId) == 0) {
             throw new BusinessException(ALBA_NOT_FOUND);
         }
-        return alba;
     }
 
     @Transactional(readOnly = true)
     public AlbaDetailResponse getAlbaById(LoginContext login, int albaId) {
-        validateAlbaAccess(login, albaId);
-        AlbaDetailResponse alba = albaMapper.getAlbaById(albaId);
+        AlbaDetailResponse alba = albaMapper.getAlbaById(login.getStoreId(), albaId);
         if (alba == null) {
             throw new BusinessException(ALBA_NOT_FOUND);
         }
@@ -128,16 +128,6 @@ public class AlbaService {
     @Transactional(readOnly = true)
     public List<AlbaListResponse> getAllAlbaList(LoginContext login) {
         return albaMapper.selectAllAlba(login.getStoreId());
-    }
-
-    private void validateAlbaAccess(LoginContext login, int albaId) {
-        int storeId = login.getStoreId();
-        if (!albaMapper.existsAlbaById(albaId)) {
-            throw new BusinessException(ALBA_NOT_FOUND);
-        }
-        if (albaMapper.countByStoreIdAndAlbaId(storeId, albaId) == 0) {
-            throw new BusinessException(FORBIDDEN);
-        }
     }
 
     private String normalizeOptionalEmail(String albaEmail) {
@@ -156,44 +146,8 @@ public class AlbaService {
             if (!StringUtils.hasText(raw)) {
                 continue;
             }
-            normalized.add(normalizeScheduleTime(raw));
+            normalized.add(ScheduleTimes.normalize(raw));
         }
         return normalized;
-    }
-
-    private String normalizeScheduleTime(String rawScheduleTime) {
-        String value = rawScheduleTime.trim().toUpperCase(Locale.ROOT);
-        switch (value) {
-            case "SUNDAY":
-            case "SUN":
-            case "일":
-                return "SUNDAY";
-            case "MONDAY":
-            case "MON":
-            case "월":
-                return "MONDAY";
-            case "TUESDAY":
-            case "TUE":
-            case "화":
-                return "TUESDAY";
-            case "WEDNESDAY":
-            case "WED":
-            case "수":
-                return "WEDNESDAY";
-            case "THURSDAY":
-            case "THU":
-            case "목":
-                return "THURSDAY";
-            case "FRIDAY":
-            case "FRI":
-            case "금":
-                return "FRIDAY";
-            case "SATURDAY":
-            case "SAT":
-            case "토":
-                return "SATURDAY";
-            default:
-                throw new BusinessException(BAD_REQUEST);
-        }
     }
 }

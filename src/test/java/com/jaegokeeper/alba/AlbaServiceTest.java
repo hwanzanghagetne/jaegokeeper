@@ -1,9 +1,9 @@
 package com.jaegokeeper.alba;
 
+import com.jaegokeeper.alba.dto.AlbaDetailResponse;
 import com.jaegokeeper.alba.dto.AlbaRegisterRequest;
 import com.jaegokeeper.alba.dto.AlbaUpdateRequest;
 import com.jaegokeeper.alba.mapper.AlbaMapper;
-import com.jaegokeeper.alba.mapper.WorkMapper;
 import com.jaegokeeper.alba.service.AlbaService;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.mail.MailService;
@@ -34,9 +34,6 @@ public class AlbaServiceTest {
     private AlbaMapper albaMapper;
 
     @Mock
-    private WorkMapper workMapper;
-
-    @Mock
     private ScheduleMapper scheduleMapper;
 
     @Mock
@@ -45,6 +42,8 @@ public class AlbaServiceTest {
     @Mock
     private MailService mailService;
 
+    private final LoginContext login = new LoginContext(10, 1, "tester", "LOCAL");
+
     @Before
     public void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -52,13 +51,11 @@ public class AlbaServiceTest {
 
     @Test
     public void 알바수정_0건영향_예외() {
-        LoginContext login = new LoginContext(10, 1, "tester", "LOCAL");
         AlbaUpdateRequest req = new AlbaUpdateRequest();
         req.setAlbaId(5);
 
-        when(albaMapper.existsAlbaById(5)).thenReturn(true);
         when(albaMapper.countByStoreIdAndAlbaId(1, 5)).thenReturn(1);
-        when(albaMapper.updateAlba(any(AlbaUpdateRequest.class))).thenReturn(0);
+        when(albaMapper.updateAlba(1, req)).thenReturn(0);
 
         BusinessException e = assertThrows(BusinessException.class,
                 () -> albaService.updateAlba(login, req));
@@ -67,20 +64,105 @@ public class AlbaServiceTest {
     }
 
     @Test
+    public void 알바수정_내매장_알바가_아니면_NOT_FOUND() {
+        AlbaUpdateRequest req = new AlbaUpdateRequest();
+        req.setAlbaId(5);
+
+        when(albaMapper.countByStoreIdAndAlbaId(1, 5)).thenReturn(0);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> albaService.updateAlba(login, req));
+
+        assertEquals(ErrorCode.ALBA_NOT_FOUND, e.getErrorCode());
+        verify(albaMapper, never()).updateAlba(any(Integer.class), any());
+    }
+
+    @Test
+    public void 알바수정_다른_알바의_전화번호면_중복_예외() {
+        AlbaUpdateRequest req = new AlbaUpdateRequest();
+        req.setAlbaId(5);
+        req.setAlbaPhone("010-1111-2222");
+
+        when(albaMapper.countByStoreIdAndAlbaId(1, 5)).thenReturn(1);
+        when(albaMapper.existsByAlbaPhone(1, "010-1111-2222", 5)).thenReturn(1);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> albaService.updateAlba(login, req));
+
+        assertEquals(ErrorCode.ALBA_PHONE_DUPLICATE, e.getErrorCode());
+    }
+
+    @Test
+    public void 알바수정_다른_알바의_이메일이면_중복_예외_이메일은_소문자로_비교() {
+        AlbaUpdateRequest req = new AlbaUpdateRequest();
+        req.setAlbaId(5);
+        req.setAlbaEmail("Alba@Example.com");
+
+        when(albaMapper.countByStoreIdAndAlbaId(1, 5)).thenReturn(1);
+        when(albaMapper.existsByAlbaEmail(1, "alba@example.com", 5)).thenReturn(1);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> albaService.updateAlba(login, req));
+
+        assertEquals(ErrorCode.ALBA_EMAIL_DUPLICATE, e.getErrorCode());
+    }
+
+    @Test
+    public void 알바수정_정상() {
+        AlbaUpdateRequest req = new AlbaUpdateRequest();
+        req.setAlbaId(5);
+        req.setAlbaName("새이름");
+
+        when(albaMapper.countByStoreIdAndAlbaId(1, 5)).thenReturn(1);
+        when(albaMapper.updateAlba(1, req)).thenReturn(1);
+
+        albaService.updateAlba(login, req);
+
+        verify(albaMapper).updateAlba(1, req);
+    }
+
+    @Test
+    public void 알바삭제_대상없으면_NOT_FOUND() {
+        when(albaMapper.deleteAlba(1, 5)).thenReturn(0);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> albaService.deleteAlba(login, 5));
+
+        assertEquals(ErrorCode.ALBA_NOT_FOUND, e.getErrorCode());
+    }
+
+    @Test
+    public void 알바상세_다른_매장이면_NOT_FOUND() {
+        when(albaMapper.getAlbaById(1, 5)).thenReturn(null);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> albaService.getAlbaById(login, 5));
+
+        assertEquals(ErrorCode.ALBA_NOT_FOUND, e.getErrorCode());
+    }
+
+    @Test
+    public void 알바상세_정상() {
+        AlbaDetailResponse detail = new AlbaDetailResponse();
+        when(albaMapper.getAlbaById(1, 5)).thenReturn(detail);
+
+        assertEquals(detail, albaService.getAlbaById(login, 5));
+    }
+
+    @Test
     public void 알바등록_이메일있으면_환영메일발송() {
-        LoginContext login = new LoginContext(10, 1, "tester", "LOCAL");
         AlbaRegisterRequest req = new AlbaRegisterRequest();
         req.setAlbaName("홍길동");
         req.setAlbaPhone("010-1234-5678");
         req.setAlbaEmail("alba@example.com");
 
         when(albaMapper.existsByStoreId(1)).thenReturn(true);
-        when(albaMapper.existsByAlbaPhone(1, "010-1234-5678")).thenReturn(0);
-        when(albaMapper.existsByAlbaEmail(1, "alba@example.com")).thenReturn(0);
+        when(albaMapper.existsByAlbaPhone(1, "010-1234-5678", null)).thenReturn(0);
+        when(albaMapper.existsByAlbaEmail(1, "alba@example.com", null)).thenReturn(0);
         doAnswer(invocation -> {
             AlbaRegisterRequest arg = invocation.getArgument(0);
             arg.setAlbaId(100);
-            return 1;
+            return null;
         }).when(albaMapper).insertAlba(any(AlbaRegisterRequest.class));
 
         albaService.saveAlbaRegister(login, req);
@@ -90,17 +172,16 @@ public class AlbaServiceTest {
 
     @Test
     public void 알바등록_이메일없으면_환영메일미발송() {
-        LoginContext login = new LoginContext(10, 1, "tester", "LOCAL");
         AlbaRegisterRequest req = new AlbaRegisterRequest();
         req.setAlbaName("홍길동");
         req.setAlbaPhone("010-1234-5678");
 
         when(albaMapper.existsByStoreId(1)).thenReturn(true);
-        when(albaMapper.existsByAlbaPhone(1, "010-1234-5678")).thenReturn(0);
+        when(albaMapper.existsByAlbaPhone(1, "010-1234-5678", null)).thenReturn(0);
         doAnswer(invocation -> {
             AlbaRegisterRequest arg = invocation.getArgument(0);
             arg.setAlbaId(101);
-            return 1;
+            return null;
         }).when(albaMapper).insertAlba(any(AlbaRegisterRequest.class));
 
         albaService.saveAlbaRegister(login, req);
