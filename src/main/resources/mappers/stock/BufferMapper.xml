@@ -20,10 +20,4 @@
         WHERE b.item_id = #{itemId}
     </update>
 
-    <select id="findBufferAmountByItemId" resultType="int">
-        SELECT buffer_amount
-        FROM buffer
-        WHERE item_id = #{itemId}
-    </select>
-
 </mapper>

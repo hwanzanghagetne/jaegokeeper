@@ -32,7 +32,7 @@
 
     <update id="updateStore" parameterType="com.jaegokeeper.store.dto.StoreUpdateRequest">
         UPDATE store
-        SET store_Name = #{storeName},
+        SET store_name = #{storeName},
             store_add1 = #{storeAdd1},
             store_add2 = #{storeAdd2},
             store_tel = #{storeTel}
