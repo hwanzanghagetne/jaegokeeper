@@ -6,7 +6,7 @@ COPY pom.xml ./
 RUN mvn -B -DskipTests dependency:go-offline
 
 COPY src ./src
-RUN mvn -B clean package
+RUN mvn -B -DskipTests clean package
 
 FROM tomcat:10.1-jdk17-temurin@sha256:9eb082a17c024e694b9b7392a630b7298b39b63764d6551a7b284cea755ab3b2
 

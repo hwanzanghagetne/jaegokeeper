@@ -16,7 +16,7 @@ public class MailTemplateConfig {
         resolver.setSuffix(".html");
         resolver.setTemplateMode(TemplateMode.HTML);
         resolver.setCharacterEncoding("UTF-8");
-        resolver.setCacheable(false);
+        resolver.setCacheable(true);
         resolver.setOrder(1);
         resolver.setCheckExistence(true);
         return resolver;
