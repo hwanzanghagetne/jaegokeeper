@@ -30,6 +30,11 @@ public enum ErrorCode {
     ALBA_NOT_FOUND(HttpStatus.NOT_FOUND, "알바생을 찾을 수 없습니다."),
     SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "스케줄을 찾을 수 없습니다."),
     IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "이미지를 찾을 수 없습니다."),
+    NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 경로를 찾을 수 없습니다."),
+
+    METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "허용되지 않는 요청 방식입니다."),
+    UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "지원하지 않는 요청 형식입니다."),
+    FILE_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, "업로드할 수 있는 파일 크기를 초과했습니다."),
 
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 가입된 이메일입니다."),
     ALBA_PHONE_DUPLICATE(HttpStatus.CONFLICT, "이미 등록된 전화번호입니다."),
@@ -40,7 +45,6 @@ public enum ErrorCode {
     REQUEST_ALREADY_CLOSED(HttpStatus.CONFLICT, "이미 완료되었거나 취소된 요청은 상태를 변경할 수 없습니다."),
     STOCK_QUANTITY_NOT_ENOUGH(HttpStatus.CONFLICT, "출고 수량이 현재 재고보다 많습니다."),
 
-    IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 업로드에 실패했습니다."),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.");
 
     private final HttpStatus status;

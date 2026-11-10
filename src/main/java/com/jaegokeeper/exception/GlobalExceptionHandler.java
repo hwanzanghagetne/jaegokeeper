@@ -4,9 +4,17 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
@@ -109,6 +117,33 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(BAD_REQUEST.getStatus()).body(response);
     }
 
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class,
+            MissingServletRequestParameterException.class,
+            MissingServletRequestPartException.class})
+    public ResponseEntity<ErrorResponse> handleBadParameter(Exception e, HttpServletRequest request) {
+        return clientError(BAD_REQUEST, e, request);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleMethodNotAllowed(Exception e, HttpServletRequest request) {
+        return clientError(METHOD_NOT_ALLOWED, e, request);
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleUnsupportedMediaType(Exception e, HttpServletRequest request) {
+        return clientError(UNSUPPORTED_MEDIA_TYPE, e, request);
+    }
+
+    @ExceptionHandler({NoHandlerFoundException.class, NoResourceFoundException.class})
+    public ResponseEntity<ErrorResponse> handleNotFound(Exception e, HttpServletRequest request) {
+        return clientError(NOT_FOUND, e, request);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> handleUploadTooLarge(Exception e, HttpServletRequest request) {
+        return clientError(FILE_TOO_LARGE, e, request);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnhandled(Exception e, HttpServletRequest request) {
 
@@ -127,5 +162,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(INTERNAL_ERROR.getStatus())
                 .body(response);
+    }
+
+    private ResponseEntity<ErrorResponse> clientError(ErrorCode errorCode, Exception e, HttpServletRequest request) {
+        log.warn("[{}] method={} uri={} message={}",
+                errorCode.name(), request.getMethod(), request.getRequestURI(), e.getMessage());
+
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(new ErrorResponse(errorCode.name(), errorCode.getMessage(), null));
     }
 }
