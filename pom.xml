@@ -18,6 +18,7 @@
 
         <!-- 버전 한 곳에서 관리 -->
         <spring.version>6.2.17</spring.version>
+        <spring.security.version>6.5.11</spring.security.version>
         <jakarta.mail.version>2.0.1</jakarta.mail.version>
         <mybatis.version>3.5.16</mybatis.version>
         <mybatis.spring.version>3.0.3</mybatis.spring.version>
@@ -147,28 +148,27 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- BCrypt (Spring Security 전체 말고, crypto만 쓰는 방법) -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
-            <version>6.3.3</version>
+            <version>${spring.security.version}</version>
         </dependency>
 
         <!-- Spring Security: 세션 기반 인증(SecurityFilterChain, SecurityContext) -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-web</artifactId>
-            <version>6.3.3</version>
+            <version>${spring.security.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-config</artifactId>
-            <version>6.3.3</version>
+            <version>${spring.security.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
-            <version>6.3.3</version>
+            <version>${spring.security.version}</version>
             <scope>test</scope>
         </dependency>
 
