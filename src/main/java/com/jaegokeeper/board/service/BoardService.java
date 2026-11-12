@@ -1,7 +1,7 @@
 package com.jaegokeeper.board.service;
 
 import com.jaegokeeper.auth.dto.LoginContext;
-import com.jaegokeeper.board.dto.BoardUpdateParamImg;
+import com.jaegokeeper.board.dto.BoardUpdateParam;
 import com.jaegokeeper.board.dto.request.BoardCreateRequest;
 import com.jaegokeeper.board.dto.request.BoardPageRequest;
 import com.jaegokeeper.board.dto.request.BoardUpdateRequest;
@@ -109,7 +109,7 @@ public class BoardService {
         Integer newImageId = (uploadedImage != null) ? uploadedImage.getImageId() : null;
 
         try {
-            BoardUpdateParamImg updateBoard = new BoardUpdateParamImg(
+            BoardUpdateParam updateBoard = new BoardUpdateParam(
                     dto.getTitle(),
                     dto.getContent(),
                     writer,
@@ -117,7 +117,7 @@ public class BoardService {
                     wantsRemove ? true : null
             );
 
-            int updatedBoard = boardMapper.updateBoardImg(storeId, boardId, updateBoard);
+            int updatedBoard = boardMapper.updateBoard(storeId, boardId, updateBoard);
             if (updatedBoard != 1) {
                 throw new BusinessException(BOARD_NOT_FOUND);
             }
@@ -129,14 +129,7 @@ public class BoardService {
 
     @Transactional
     public void softDeleteBoard(LoginContext login, Integer boardId) {
-        int storeId = login.getStoreId();
-
-        int exists = boardMapper.countActiveByStoreIdAndBoardId(storeId, boardId);
-        if (exists != 1) {
-            throw new BusinessException(BOARD_NOT_FOUND);
-        }
-
-        int deletedBoard = boardMapper.softDeleteBoard(storeId, boardId);
+        int deletedBoard = boardMapper.softDeleteBoard(login.getStoreId(), boardId);
         if (deletedBoard != 1) {
             throw new BusinessException(BOARD_NOT_FOUND);
         }

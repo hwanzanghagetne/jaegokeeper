@@ -56,7 +56,12 @@ public class AlbaService {
 
             Alba alba = Alba.create(storeId, req.getAlbaName(), req.getAlbaPhone(),
                     albaEmail, req.getAlbaStatus(), imageId);
-            albaMapper.insertAlba(alba);
+            try {
+                albaMapper.insertAlba(alba);
+            } catch (DuplicateKeyException e) {
+                boolean phoneTaken = albaMapper.existsByAlbaPhone(storeId, req.getAlbaPhone(), null) > 0;
+                throw new BusinessException(phoneTaken ? ALBA_PHONE_DUPLICATE : ALBA_EMAIL_DUPLICATE);
+            }
             if (alba.getAlbaId() == null) {
                 throw new BusinessException(INTERNAL_ERROR);
             }

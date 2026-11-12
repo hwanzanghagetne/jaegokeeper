@@ -1,5 +1,6 @@
 package com.jaegokeeper.image.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.image.dto.ImageInfoDTO;
 import com.jaegokeeper.image.service.ImageService;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Image")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/img")

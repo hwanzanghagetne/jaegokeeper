@@ -1,5 +1,6 @@
 package com.jaegokeeper.onboarding.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.jaegokeeper.onboarding.dto.OwnerSignUpRequest;
 import com.jaegokeeper.onboarding.dto.OwnerSignUpResponse;
 import com.jaegokeeper.onboarding.dto.SocialOwnerSignUpRequest;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Onboarding")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/onboarding")

@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ItemUpdateParamImg {
+public class ItemUpdateParam {
 
     private String itemName;
     private Boolean isPinned;

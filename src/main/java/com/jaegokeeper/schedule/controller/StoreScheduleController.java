@@ -1,5 +1,6 @@
 package com.jaegokeeper.schedule.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.schedule.dto.ScheduleListResponse;
@@ -18,6 +19,7 @@ import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 
+@Tag(name = "Schedule")
 @RestController
 @RequestMapping("/stores/schedules")
 @RequiredArgsConstructor

@@ -14,7 +14,7 @@ import static com.jaegokeeper.stock.StockConstants.MAX_AMOUNT;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class StockAdjustRequest {
+public class StockAndBufferUpdate {
 
     @Min(0)
     @Max(MAX_AMOUNT)

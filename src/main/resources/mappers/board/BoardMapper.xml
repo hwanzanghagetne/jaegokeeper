@@ -97,7 +97,7 @@
                 #{imageId})
     </insert>
 
-    <update id="updateBoardImg">
+    <update id="updateBoard">
         UPDATE board
         <set>
             <if test="dto.title != null">

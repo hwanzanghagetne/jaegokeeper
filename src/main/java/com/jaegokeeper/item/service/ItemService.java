@@ -3,12 +3,12 @@ package com.jaegokeeper.item.service;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.common.dto.PageResponse;
 import com.jaegokeeper.exception.BusinessException;
-import com.jaegokeeper.stock.dto.StockAdjustRequest;
+import com.jaegokeeper.stock.dto.StockAndBufferUpdate;
 import com.jaegokeeper.stock.service.StockService;
 import com.jaegokeeper.image.dto.ImageInfoDTO;
 import com.jaegokeeper.image.service.ImageService;
 import com.jaegokeeper.item.model.Item;
-import com.jaegokeeper.item.dto.ItemUpdateParamImg;
+import com.jaegokeeper.item.dto.ItemUpdateParam;
 import com.jaegokeeper.item.dto.request.ItemCreateRequest;
 import com.jaegokeeper.item.dto.request.ItemPageRequest;
 import com.jaegokeeper.item.dto.request.ItemUpdateRequest;
@@ -105,7 +105,7 @@ public class ItemService {
         Integer newImageId = (uploadedImage != null) ? uploadedImage.getImageId() : null;
 
         try {
-            ItemUpdateParamImg updateItem = new ItemUpdateParamImg(
+            ItemUpdateParam updateItem = new ItemUpdateParam(
                     dto.getItemName(),
                     dto.getIsPinned(),
                     newImageId,
@@ -118,8 +118,8 @@ public class ItemService {
             }
 
             if (dto.getTargetAmount() != null || dto.getBufferAmount() != null) {
-                StockAdjustRequest stockAdjustRequest = new StockAdjustRequest(dto.getTargetAmount(), dto.getBufferAmount());
-                stockService.adjustStock(login, itemId, stockAdjustRequest);
+                StockAndBufferUpdate stockUpdate = new StockAndBufferUpdate(dto.getTargetAmount(), dto.getBufferAmount());
+                stockService.updateStockAndBuffer(login, itemId, stockUpdate);
             }
         } catch (Exception e) {
             if (uploadedImage != null) imgService.deleteImageFile(uploadedImage.getImagePath());

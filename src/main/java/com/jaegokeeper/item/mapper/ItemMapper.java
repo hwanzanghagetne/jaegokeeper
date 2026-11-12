@@ -1,7 +1,7 @@
 package com.jaegokeeper.item.mapper;
 
 import com.jaegokeeper.item.model.Item;
-import com.jaegokeeper.item.dto.ItemUpdateParamImg;
+import com.jaegokeeper.item.dto.ItemUpdateParam;
 import com.jaegokeeper.item.dto.response.ItemDetailResponse;
 import com.jaegokeeper.item.dto.response.ItemListResponse;
 import com.jaegokeeper.item.enums.ItemFilter;
@@ -35,7 +35,7 @@ public interface ItemMapper {
 
     int updateItem(@Param("storeId") Integer storeId,
                    @Param("itemId") Integer itemId,
-                   @Param("dto") ItemUpdateParamImg dto);
+                   @Param("dto") ItemUpdateParam dto);
 
     int countByStoreIdAndItemId(@Param("storeId") Integer storeId,
                                 @Param("itemId") Integer itemId);

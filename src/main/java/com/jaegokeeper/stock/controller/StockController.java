@@ -56,7 +56,7 @@ public class StockController {
             @PathVariable Integer itemId,
             @Valid @RequestBody StockAmountUpdateRequest dto,
             @AuthenticationPrincipal LoginContext login) {
-        stockService.updateStockAmount(login, itemId, dto);
+        stockService.adjustStockAmount(login, itemId, dto);
         return ResponseEntity.noContent().build();
     }
 }

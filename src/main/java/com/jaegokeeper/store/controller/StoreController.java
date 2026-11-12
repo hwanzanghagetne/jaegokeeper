@@ -1,5 +1,6 @@
 package com.jaegokeeper.store.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.store.dto.StoreDetailResponse;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
+@Tag(name = "Store")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/stores")

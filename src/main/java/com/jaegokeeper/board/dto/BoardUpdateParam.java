@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class BoardUpdateParamImg {
+public class BoardUpdateParam {
 
     private String title;
     private String content;

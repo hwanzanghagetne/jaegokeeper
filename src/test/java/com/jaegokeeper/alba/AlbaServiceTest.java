@@ -302,4 +302,32 @@ public class AlbaServiceTest {
         assertEquals(ErrorCode.SCHEDULE_TIME_DUPLICATE, e.getErrorCode());
         verify(imageService).deleteImageFile("2026/11/10/a.png");
     }
+
+    @Test
+    public void 알바등록_동시_등록으로_전화번호_중복키_예외면_전화번호_중복_예외와_이미지_삭제() {
+        AlbaRegisterRequest req = registerRequest();
+        when(albaMapper.existsByStoreId(1)).thenReturn(true);
+        when(imageService.uploadIfPresent(any())).thenReturn(uploaded(9, "2026/11/10/a.png"));
+        doThrow(new org.springframework.dao.DuplicateKeyException("dup")).when(albaMapper).insertAlba(any(Alba.class));
+        when(albaMapper.existsByAlbaPhone(1, "010-1234-5678", null)).thenReturn(0, 1);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> albaService.saveAlbaRegister(login, req));
+
+        assertEquals(ErrorCode.ALBA_PHONE_DUPLICATE, e.getErrorCode());
+        verify(imageService).deleteImageFile("2026/11/10/a.png");
+    }
+
+    @Test
+    public void 알바등록_동시_등록으로_이메일_중복키_예외면_이메일_중복_예외() {
+        AlbaRegisterRequest req = registerRequest();
+        req.setAlbaEmail("alba@example.com");
+        when(albaMapper.existsByStoreId(1)).thenReturn(true);
+        doThrow(new org.springframework.dao.DuplicateKeyException("dup")).when(albaMapper).insertAlba(any(Alba.class));
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> albaService.saveAlbaRegister(login, req));
+
+        assertEquals(ErrorCode.ALBA_EMAIL_DUPLICATE, e.getErrorCode());
+    }
 }

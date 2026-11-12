@@ -2,7 +2,7 @@ package com.jaegokeeper.stock.service;
 
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.exception.BusinessException;
-import com.jaegokeeper.stock.dto.StockAdjustRequest;
+import com.jaegokeeper.stock.dto.StockAndBufferUpdate;
 import com.jaegokeeper.stock.dto.StockAmountUpdateRequest;
 import com.jaegokeeper.stock.dto.StockDetailResponse;
 import com.jaegokeeper.stock.dto.StockInOutRequest;
@@ -53,12 +53,12 @@ public class StockService {
     }
 
     @Transactional
-    public void updateStockAmount(LoginContext login, Integer itemId, StockAmountUpdateRequest dto) {
+    public void adjustStockAmount(LoginContext login, Integer itemId, StockAmountUpdateRequest dto) {
         changeStockAmount(login.getStoreId(), itemId, dto.getStockAmount());
     }
 
     @Transactional
-    public void adjustStock(LoginContext login, Integer itemId, StockAdjustRequest dto) {
+    public void updateStockAndBuffer(LoginContext login, Integer itemId, StockAndBufferUpdate dto) {
         int storeId = login.getStoreId();
 
         if (dto.getTargetAmount() != null) {

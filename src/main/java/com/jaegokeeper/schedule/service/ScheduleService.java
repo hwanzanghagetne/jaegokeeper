@@ -42,9 +42,6 @@ public class ScheduleService {
 
     @Transactional
     public void updateSchedule(LoginContext login, ScheduleUpdateRequest req) {
-        if (req.getScheduleId() == null) {
-            throw new BusinessException(BAD_REQUEST);
-        }
         req.setScheduleTime(ScheduleTimes.normalize(req.getScheduleTime()));
         int updated;
         try {
@@ -57,10 +54,12 @@ public class ScheduleService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<ScheduleListResponse> getScheduleListByDate(LoginContext login, LocalDate date) {
         return scheduleMapper.selectSchedulesWithWorkByDate(login.getStoreId(), date, date.getDayOfWeek().name());
     }
 
+    @Transactional(readOnly = true)
     public List<WorkTimeResponse> selectWorkTime(LoginContext login, int albaId, LocalDate date) {
         validateAlbaAccess(login, albaId);
         return scheduleMapper.selectWorkTime(login.getStoreId(), albaId, date);

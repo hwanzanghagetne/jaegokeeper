@@ -2,7 +2,7 @@ package com.jaegokeeper.board;
 
 import com.jaegokeeper.alba.mapper.AlbaMapper;
 import com.jaegokeeper.auth.dto.LoginContext;
-import com.jaegokeeper.board.dto.BoardUpdateParamImg;
+import com.jaegokeeper.board.dto.BoardUpdateParam;
 import com.jaegokeeper.board.dto.request.BoardCreateRequest;
 import com.jaegokeeper.board.dto.request.BoardPageRequest;
 import com.jaegokeeper.board.dto.request.BoardUpdateRequest;
@@ -147,7 +147,7 @@ public class BoardServiceTest {
 
     @Test
     public void 게시글삭제_대상없음_예외() {
-        when(boardMapper.countActiveByStoreIdAndBoardId(1, 5)).thenReturn(0);
+        when(boardMapper.softDeleteBoard(1, 5)).thenReturn(0);
 
         BusinessException e = assertThrows(BusinessException.class,
                 () -> boardService.softDeleteBoard(login, 5));
@@ -234,15 +234,15 @@ public class BoardServiceTest {
     @Test
     public void 게시글수정_이미지_삭제_요청은_변경_파라미터에_반영() {
         when(boardMapper.countActiveByStoreIdAndBoardId(1, 5)).thenReturn(1);
-        when(boardMapper.updateBoardImg(eq(1), eq(5), any(BoardUpdateParamImg.class))).thenReturn(1);
+        when(boardMapper.updateBoard(eq(1), eq(5), any(BoardUpdateParam.class))).thenReturn(1);
         BoardUpdateRequest req = new BoardUpdateRequest();
         req.setTitle("새 제목");
         req.setRemoveImage(true);
 
         boardService.updateBoard(login, 5, req);
 
-        ArgumentCaptor<BoardUpdateParamImg> captor = ArgumentCaptor.forClass(BoardUpdateParamImg.class);
-        verify(boardMapper).updateBoardImg(eq(1), eq(5), captor.capture());
+        ArgumentCaptor<BoardUpdateParam> captor = ArgumentCaptor.forClass(BoardUpdateParam.class);
+        verify(boardMapper).updateBoard(eq(1), eq(5), captor.capture());
         assertEquals("새 제목", captor.getValue().getTitle());
         assertEquals(Boolean.TRUE, captor.getValue().getRemoveImage());
         assertNull(captor.getValue().getImageId());
@@ -254,7 +254,7 @@ public class BoardServiceTest {
         BoardUpdateRequest req = new BoardUpdateRequest();
         req.setFile(imageFile());
         when(imgService.uploadForUpdate(any(), any())).thenReturn(uploaded(9, "2026/11/10/b.png"));
-        when(boardMapper.updateBoardImg(eq(1), eq(5), any(BoardUpdateParamImg.class))).thenReturn(0);
+        when(boardMapper.updateBoard(eq(1), eq(5), any(BoardUpdateParam.class))).thenReturn(0);
 
         BusinessException e = assertThrows(BusinessException.class,
                 () -> boardService.updateBoard(login, 5, req));
@@ -265,7 +265,6 @@ public class BoardServiceTest {
 
     @Test
     public void 게시글삭제_성공() {
-        when(boardMapper.countActiveByStoreIdAndBoardId(1, 5)).thenReturn(1);
         when(boardMapper.softDeleteBoard(1, 5)).thenReturn(1);
 
         boardService.softDeleteBoard(login, 5);

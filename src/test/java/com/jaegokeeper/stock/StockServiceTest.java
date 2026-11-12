@@ -3,7 +3,7 @@ package com.jaegokeeper.stock;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.exception.ErrorCode;
-import com.jaegokeeper.stock.dto.StockAdjustRequest;
+import com.jaegokeeper.stock.dto.StockAndBufferUpdate;
 import com.jaegokeeper.stock.dto.StockAmountUpdateRequest;
 import com.jaegokeeper.stock.dto.StockInOutRequest;
 import com.jaegokeeper.stock.enums.LogType;
@@ -132,7 +132,7 @@ public class StockServiceTest {
         when(stockMapper.updateStockAmount(1, 1, 8)).thenReturn(1);
         when(logMapper.insertLog(1, LogType.ADJUST, 8)).thenReturn(1);
 
-        stockService.updateStockAmount(login, 1, req);
+        stockService.adjustStockAmount(login, 1, req);
 
         verify(logMapper).insertLog(1, LogType.ADJUST, 8);
     }
@@ -144,7 +144,7 @@ public class StockServiceTest {
 
         when(stockMapper.findStockAmountByItemId(1, 1)).thenReturn(5);
 
-        stockService.updateStockAmount(login, 1, req);
+        stockService.adjustStockAmount(login, 1, req);
 
         verify(stockMapper, never()).updateStockAmount(anyInt(), anyInt(), anyInt());
         verify(logMapper, never()).insertLog(anyInt(), any(), anyInt());
@@ -158,7 +158,7 @@ public class StockServiceTest {
         when(stockMapper.findStockAmountByItemId(1, 1)).thenReturn(null);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> stockService.updateStockAmount(login, 1, req));
+                () -> stockService.adjustStockAmount(login, 1, req));
         assertEquals(ErrorCode.STOCK_NOT_FOUND, e.getErrorCode());
     }
 
@@ -166,7 +166,7 @@ public class StockServiceTest {
     public void 상품수정_버퍼만_변경하면_재고는_건드리지_않음() {
         when(bufferMapper.updateBufferAmount(1, 1, 4)).thenReturn(1);
 
-        stockService.adjustStock(login, 1, new StockAdjustRequest(null, 4));
+        stockService.updateStockAndBuffer(login, 1, new StockAndBufferUpdate(null, 4));
 
         verify(bufferMapper).updateBufferAmount(1, 1, 4);
         verify(stockMapper, never()).updateStockAmount(anyInt(), anyInt(), anyInt());
@@ -179,7 +179,7 @@ public class StockServiceTest {
         when(logMapper.insertLog(1, LogType.ADJUST, 9)).thenReturn(1);
         when(bufferMapper.updateBufferAmount(1, 1, 3)).thenReturn(1);
 
-        stockService.adjustStock(login, 1, new StockAdjustRequest(9, 3));
+        stockService.updateStockAndBuffer(login, 1, new StockAndBufferUpdate(9, 3));
 
         verify(logMapper).insertLog(1, LogType.ADJUST, 9);
         verify(bufferMapper).updateBufferAmount(1, 1, 3);

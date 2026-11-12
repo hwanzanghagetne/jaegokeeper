@@ -1,5 +1,6 @@
 package com.jaegokeeper.auth.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.auth.dto.SessionResponse;
 import com.jaegokeeper.exception.BusinessException;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import static com.jaegokeeper.exception.ErrorCode.LOGIN_REQUIRED;
 
+@Tag(name = "Session")
 @RestController
 @RequestMapping("/auth/session")
 public class SessionController {

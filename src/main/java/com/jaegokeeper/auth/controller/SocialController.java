@@ -1,5 +1,6 @@
 package com.jaegokeeper.auth.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.jaegokeeper.auth.dto.*;
 import com.jaegokeeper.auth.service.SessionService;
 import com.jaegokeeper.auth.service.SocialService;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+@Tag(name = "Social")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth/social")

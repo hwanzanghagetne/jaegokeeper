@@ -1,5 +1,6 @@
 package com.jaegokeeper.alba.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.jaegokeeper.alba.dto.AlbaCreateResponse;
 import com.jaegokeeper.alba.dto.AlbaDetailResponse;
 import com.jaegokeeper.alba.dto.AlbaListResponse;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 
+@Tag(name = "Alba")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/stores/albas")

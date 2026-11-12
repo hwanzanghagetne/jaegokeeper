@@ -1,6 +1,6 @@
 package com.jaegokeeper.board.mapper;
 
-import com.jaegokeeper.board.dto.BoardUpdateParamImg;
+import com.jaegokeeper.board.dto.BoardUpdateParam;
 import com.jaegokeeper.board.dto.response.BoardDetailResponse;
 import com.jaegokeeper.board.model.Board;
 import com.jaegokeeper.board.dto.response.BoardListResponse;
@@ -31,9 +31,9 @@ public interface BoardMapper {
 
     int insertBoard(Board dto);
 
-    int updateBoardImg(@Param("storeId") Integer storeId,
+    int updateBoard(@Param("storeId") Integer storeId,
                        @Param("boardId") Integer boardId,
-                       @Param("dto") BoardUpdateParamImg dto);
+                       @Param("dto") BoardUpdateParam dto);
 
     int softDeleteBoard(@Param("storeId") Integer storeId,
                         @Param("boardId") Integer boardId);

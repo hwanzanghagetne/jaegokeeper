@@ -1,5 +1,6 @@
 package com.jaegokeeper.auth.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.jaegokeeper.auth.dto.LoginRequest;
 import com.jaegokeeper.auth.dto.SessionResponse;
 import com.jaegokeeper.auth.enums.Provider;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+@Tag(name = "Local")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth/local")
