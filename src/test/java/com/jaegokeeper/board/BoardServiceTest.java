@@ -2,8 +2,12 @@ package com.jaegokeeper.board;
 
 import com.jaegokeeper.alba.mapper.AlbaMapper;
 import com.jaegokeeper.auth.dto.LoginContext;
+import com.jaegokeeper.board.dto.BoardUpdateParamImg;
 import com.jaegokeeper.board.dto.request.BoardCreateRequest;
+import com.jaegokeeper.board.dto.request.BoardPageRequest;
 import com.jaegokeeper.board.dto.request.BoardUpdateRequest;
+import com.jaegokeeper.board.dto.response.BoardListResponse;
+import com.jaegokeeper.board.enums.BoardSearchType;
 import com.jaegokeeper.board.enums.BoardType;
 import com.jaegokeeper.board.enums.BoardWriterType;
 import com.jaegokeeper.board.mapper.BoardMapper;
@@ -11,17 +15,27 @@ import com.jaegokeeper.board.model.Board;
 import com.jaegokeeper.board.service.BoardService;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.exception.ErrorCode;
+import com.jaegokeeper.common.dto.PageResponse;
+import com.jaegokeeper.image.dto.ImageInfoDTO;
 import com.jaegokeeper.image.service.ImageService;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.mock.web.MockMultipartFile;
+
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class BoardServiceTest {
@@ -150,5 +164,128 @@ public class BoardServiceTest {
                 () -> boardService.getBoardDetail(login, 5));
 
         assertEquals(ErrorCode.BOARD_NOT_FOUND, e.getErrorCode());
+    }
+
+    private MockMultipartFile imageFile() {
+        return new MockMultipartFile("file", "a.png", "image/png", new byte[]{1, 2, 3});
+    }
+
+    private void stubUploadReturning(int imageId, String imagePath) {
+        when(imgService.uploadImg(any(ImageInfoDTO.class))).thenAnswer(invocation -> {
+            ImageInfoDTO dto = invocation.getArgument(0);
+            dto.setImagePath(imagePath);
+            return imageId;
+        });
+    }
+
+    @Test
+    public void 게시글목록_페이지와_개수로_조회_위치를_계산() {
+        BoardPageRequest page = new BoardPageRequest();
+        page.setPage(3);
+        page.setSize(5);
+        List<BoardListResponse> content = List.of(new BoardListResponse());
+        when(boardMapper.countBoardList(1, null, null, BoardSearchType.ALL)).thenReturn(12);
+        when(boardMapper.findBoardList(1, null, null, BoardSearchType.ALL, 5, 10)).thenReturn(content);
+
+        PageResponse<BoardListResponse> result = boardService.getBoardList(login, page);
+
+        assertEquals(content, result.getContent());
+        assertEquals(Integer.valueOf(3), result.getTotalPages());
+    }
+
+    @Test
+    public void 게시글작성_알바_작성자는_알바_이름으로_저장() {
+        BoardCreateRequest req = new BoardCreateRequest();
+        req.setTitle("공지");
+        req.setContent("내용");
+        req.setWriterType(BoardWriterType.ALBA);
+        req.setWriterId(5);
+        when(albaMapper.countByStoreIdAndAlbaId(1, 5)).thenReturn(1);
+        when(albaMapper.findAlbaNameByAlbaId(5)).thenReturn("홍길동");
+        doAnswer(invocation -> {
+            Board board = invocation.getArgument(0);
+            board.setBoardId(300);
+            return 1;
+        }).when(boardMapper).insertBoard(any(Board.class));
+
+        boardService.createBoard(login, BoardType.NOTICE, req);
+
+        ArgumentCaptor<Board> captor = ArgumentCaptor.forClass(Board.class);
+        verify(boardMapper).insertBoard(captor.capture());
+        assertEquals("홍길동", captor.getValue().getWriter());
+        assertEquals(Integer.valueOf(1), captor.getValue().getStoreId());
+        assertEquals(BoardType.NOTICE, captor.getValue().getBoardType());
+    }
+
+    @Test
+    public void 게시글작성_저장_실패시_올린_이미지_삭제() {
+        BoardCreateRequest req = new BoardCreateRequest();
+        req.setTitle("공지");
+        req.setContent("내용");
+        req.setWriterType(BoardWriterType.ANONYMOUS);
+        req.setFile(imageFile());
+        stubUploadReturning(9, "2026/11/10/a.png");
+        when(boardMapper.insertBoard(any(Board.class))).thenThrow(new IllegalStateException("db down"));
+
+        assertThrows(IllegalStateException.class,
+                () -> boardService.createBoard(login, BoardType.NOTICE, req));
+
+        verify(imgService).deleteImageFile("2026/11/10/a.png");
+    }
+
+    @Test
+    public void 게시글수정_파일_업로드와_이미지_삭제를_동시에_요청하면_예외() {
+        when(boardMapper.countActiveByStoreIdAndBoardId(1, 5)).thenReturn(1);
+        BoardUpdateRequest req = new BoardUpdateRequest();
+        req.setRemoveImage(true);
+        req.setFile(imageFile());
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> boardService.updateBoard(login, 5, req));
+
+        assertEquals(ErrorCode.IMAGE_UPDATE_CONFLICT, e.getErrorCode());
+        verify(imgService, never()).uploadImg(any());
+    }
+
+    @Test
+    public void 게시글수정_이미지_삭제_요청은_변경_파라미터에_반영() {
+        when(boardMapper.countActiveByStoreIdAndBoardId(1, 5)).thenReturn(1);
+        when(boardMapper.updateBoardImg(eq(1), eq(5), any(BoardUpdateParamImg.class))).thenReturn(1);
+        BoardUpdateRequest req = new BoardUpdateRequest();
+        req.setTitle("새 제목");
+        req.setRemoveImage(true);
+
+        boardService.updateBoard(login, 5, req);
+
+        ArgumentCaptor<BoardUpdateParamImg> captor = ArgumentCaptor.forClass(BoardUpdateParamImg.class);
+        verify(boardMapper).updateBoardImg(eq(1), eq(5), captor.capture());
+        assertEquals("새 제목", captor.getValue().getTitle());
+        assertEquals(Boolean.TRUE, captor.getValue().getRemoveImage());
+        assertNull(captor.getValue().getImageId());
+    }
+
+    @Test
+    public void 게시글수정_갱신_실패시_새로_올린_이미지_삭제() {
+        when(boardMapper.countActiveByStoreIdAndBoardId(1, 5)).thenReturn(1);
+        BoardUpdateRequest req = new BoardUpdateRequest();
+        req.setFile(imageFile());
+        stubUploadReturning(9, "2026/11/10/b.png");
+        when(boardMapper.updateBoardImg(eq(1), eq(5), any(BoardUpdateParamImg.class))).thenReturn(0);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> boardService.updateBoard(login, 5, req));
+
+        assertEquals(ErrorCode.BOARD_NOT_FOUND, e.getErrorCode());
+        verify(imgService).deleteImageFile("2026/11/10/b.png");
+    }
+
+    @Test
+    public void 게시글삭제_성공() {
+        when(boardMapper.countActiveByStoreIdAndBoardId(1, 5)).thenReturn(1);
+        when(boardMapper.softDeleteBoard(1, 5)).thenReturn(1);
+
+        boardService.softDeleteBoard(login, 5);
+
+        verify(boardMapper).softDeleteBoard(1, 5);
     }
 }

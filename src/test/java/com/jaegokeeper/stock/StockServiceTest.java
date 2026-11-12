@@ -56,6 +56,9 @@ public class StockServiceTest {
         when(logMapper.insertLog(1, com.jaegokeeper.stock.enums.LogType.IN, 10)).thenReturn(1);
 
         stockService.inStock(login, 1, req);
+
+        verify(stockMapper).increaseQuantity(1, 1, 10);
+        verify(logMapper).insertLog(1, LogType.IN, 10);
     }
 
     @Test
@@ -115,6 +118,9 @@ public class StockServiceTest {
         when(logMapper.insertLog(1, com.jaegokeeper.stock.enums.LogType.OUT, 5)).thenReturn(1);
 
         stockService.outStock(login, 1, req);
+
+        verify(stockMapper).decreaseQuantity(1, 1, 5);
+        verify(logMapper).insertLog(1, LogType.OUT, 5);
     }
 
     @Test
