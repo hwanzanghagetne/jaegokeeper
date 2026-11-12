@@ -25,3 +25,17 @@ jobs:
 
       - name: Test
         run: mvn -B test
+
+      - name: Coverage summary
+        run: |
+          {
+            echo "### 테스트 커버리지 (JaCoCo)"
+            echo
+            echo "| 구분 | 비율 | 커버/전체 |"
+            echo "|---|---|---|"
+            awk -F, 'NR>1 { lm+=$8; lc+=$9; bm+=$6; bc+=$7 }
+              END {
+                printf "| 라인 | %.1f%% | %d/%d |\n", lc*100/(lm+lc), lc, lm+lc
+                printf "| 브랜치 | %.1f%% | %d/%d |\n", bc*100/(bm+bc), bc, bm+bc
+              }' target/site/jacoco/jacoco.csv
+          } >> "$GITHUB_STEP_SUMMARY"
