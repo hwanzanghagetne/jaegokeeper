@@ -5,6 +5,7 @@ import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.image.dto.ImageInfoDTO;
 import com.jaegokeeper.image.mapper.ImageMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ import java.util.UUID;
 
 import static com.jaegokeeper.exception.ErrorCode.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ImageService {
@@ -177,7 +179,8 @@ public class ImageService {
         if (key == null || key.isBlank()) return;
         try {
             s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucketName).key(key).build());
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            log.warn("[IMAGE] S3 객체 삭제 실패 key={}", key, e);
         }
     }
 }
