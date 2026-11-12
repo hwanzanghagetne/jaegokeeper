@@ -25,7 +25,7 @@ public class OwnerSignUpRequest {
     @NoArgsConstructor
     public static class AccountInfo {
 
-        @NotBlank @Email
+        @NotBlank @Email @Size(max = 255)
         private String email;
 
         @NotBlank @Size(min = 8, max = 72)

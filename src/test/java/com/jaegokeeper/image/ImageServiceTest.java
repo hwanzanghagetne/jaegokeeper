@@ -132,6 +132,15 @@ public class ImageServiceTest {
     }
 
     @Test
+    public void 업로드_원본_파일명이_255자를_넘으면_잘라서_저장() {
+        stubInsertWithId(1);
+
+        ImageInfoDTO uploaded = imageService.uploadImg(fileWith("a".repeat(300) + ".png", PNG));
+
+        assertEquals(255, uploaded.getOriginName().length());
+    }
+
+    @Test
     public void 업로드_PNG와_WebP도_파일내용으로_판별() {
         stubInsertWithId(1);
 

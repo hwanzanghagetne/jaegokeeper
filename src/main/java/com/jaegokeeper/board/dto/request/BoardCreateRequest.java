@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 
 @Getter
@@ -16,6 +17,7 @@ import jakarta.validation.constraints.NotBlank;
 public class BoardCreateRequest {
 
     @NotBlank(message = "title 필수입니다.")
+    @Size(max = 100, message = "title은 100자 이하입니다.")
     private String title;
 
     @NotBlank(message = "content 필수입니다.")

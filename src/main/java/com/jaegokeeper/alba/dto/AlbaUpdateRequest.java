@@ -20,7 +20,7 @@ public class AlbaUpdateRequest {
     @Size(max = 50, message = "알바 전화번호는 최대 50자까지 입력 가능합니다")
     private String albaPhone;
 
-    @Size(max = 50, message = "알바 근로상태는 최대 50자까지 입력 가능합니다")
+    @Size(max = 20, message = "알바 근로상태는 최대 20자까지 입력 가능합니다")
     private String albaStatus;
 
     @Email(message = "알바 이메일 형식이 올바르지 않습니다")

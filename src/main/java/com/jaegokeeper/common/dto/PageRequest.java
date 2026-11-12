@@ -14,6 +14,7 @@ import jakarta.validation.constraints.Min;
 public abstract class PageRequest {
 
     @Min(value = 1, message = "page는 1 이상입니다.")
+    @Max(value = 100_000, message = "page는 100,000 이하입니다.")
     private Integer page;
 
     @Min(value = 1, message = "size는 1 이상입니다.")

@@ -33,6 +33,7 @@ import static com.jaegokeeper.exception.ErrorCode.*;
 public class ImageService {
 
     private static final Set<String> ALLOWED_EXT = Set.of("jpg", "jpeg", "png", "webp");
+    private static final int MAX_ORIGIN_NAME_LENGTH = 255;
     private static final Duration PRESIGN_DURATION = Duration.ofMinutes(10);
     private static final byte[] JPEG_MAGIC = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF};
     private static final byte[] PNG_MAGIC = {(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
@@ -108,7 +109,8 @@ public class ImageService {
             }
 
             ImageInfoDTO dto = new ImageInfoDTO();
-            dto.setOriginName(originalName);
+            dto.setOriginName(originalName.length() > MAX_ORIGIN_NAME_LENGTH
+                    ? originalName.substring(0, MAX_ORIGIN_NAME_LENGTH) : originalName);
             dto.setImagePath(key);
 
             imageMapper.insertImgInfo(dto);
