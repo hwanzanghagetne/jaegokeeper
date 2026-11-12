@@ -22,37 +22,41 @@
           AND is_active = b'1'
     </update>
 
+    <sql id="itemListCondition">
+        i.store_id = #{storeId}
+        AND i.is_active = b'1'
+        <if test="excludeZero != null and excludeZero">
+            AND s.stock_amount > 0
+        </if>
+        <if test="filter != null and filter.name() == 'FAVORITE'">
+            AND i.is_pinned = 1
+        </if>
+        <if test="filter != null and filter.name() == 'LOW_STOCK'">
+            AND s.stock_amount &lt; (SELECT b.buffer_amount FROM buffer b WHERE b.item_id = i.item_id)
+        </if>
+        <if test="filter != null and filter.name() == 'HAS_REQUEST'">
+            AND EXISTS (
+                SELECT 1 FROM request r
+                WHERE r.item_id = i.item_id
+                  AND r.is_active = b'1'
+                  AND r.request_status NOT IN ('CANCEL','DONE','CONFIRM')
+            )
+        </if>
+        <if test="filter != null and filter.name() == 'BAD_STOCK'">
+            AND (SELECT MAX(l.created_at) FROM log l WHERE l.item_id = i.item_id AND l.log_type IN ('IN','OUT'))
+            &lt; DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 3 MONTH)
+        </if>
+        <if test="keyword != null">
+            AND i.item_name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+    </sql>
+
     <select id="countItemList" resultType="int">
         SELECT COUNT(*)
         FROM item i
         JOIN stock s ON s.item_id = i.item_id
         <where>
-            i.store_id = #{storeId}
-            AND i.is_active = b'1'
-            <if test="excludeZero != null and excludeZero">
-                AND s.stock_amount > 0
-            </if>
-            <if test="filter != null and filter.name() == 'FAVORITE'">
-                AND i.is_pinned = 1
-            </if>
-            <if test="filter != null and filter.name() == 'LOW_STOCK'">
-                AND s.stock_amount &lt; (SELECT b.buffer_amount FROM buffer b WHERE b.item_id = i.item_id)
-            </if>
-            <if test="filter != null and filter.name() == 'HAS_REQUEST'">
-                AND EXISTS (
-                    SELECT 1 FROM request r
-                    WHERE r.item_id = i.item_id
-                      AND r.is_active = b'1'
-                      AND r.request_status IN ('WAIT','WORKING','CONFIRM')
-                )
-            </if>
-            <if test="filter != null and filter.name() == 'BAD_STOCK'">
-                AND (SELECT MAX(l.created_at) FROM log l WHERE l.item_id = i.item_id AND l.log_type IN ('IN','OUT'))
-                &lt; DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 3 MONTH)
-            </if>
-            <if test="keyword != null">
-                AND i.item_name LIKE CONCAT('%', #{keyword}, '%')
-            </if>
+            <include refid="itemListCondition"/>
         </where>
     </select>
 
@@ -79,32 +83,7 @@
                   AND r2.is_active = b'1'
             )
         <where>
-            i.store_id = #{storeId}
-            AND i.is_active = b'1'
-            <if test="excludeZero">
-                AND s.stock_amount > 0
-            </if>
-            <if test="filter != null and filter.name() == 'FAVORITE'">
-                AND i.is_pinned = 1
-            </if>
-            <if test="filter != null and filter.name() == 'LOW_STOCK'">
-                AND s.stock_amount &lt; (SELECT b.buffer_amount FROM buffer b WHERE b.item_id = i.item_id)
-            </if>
-            <if test="filter != null and filter.name() == 'HAS_REQUEST'">
-                AND EXISTS (
-                    SELECT 1 FROM request r3
-                    WHERE r3.item_id = i.item_id
-                      AND r3.is_active = b'1'
-                      AND r3.request_status IN ('WAIT','WORKING','CONFIRM')
-                )
-            </if>
-            <if test="filter != null and filter.name() == 'BAD_STOCK'">
-                AND (SELECT MAX(l.created_at) FROM log l WHERE l.item_id = i.item_id AND l.log_type IN ('IN','OUT'))
-                &lt; DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 3 MONTH)
-            </if>
-            <if test="keyword != null">
-                AND i.item_name LIKE CONCAT('%', #{keyword}, '%')
-            </if>
+            <include refid="itemListCondition"/>
         </where>
         ORDER BY i.item_id DESC
         LIMIT #{size} OFFSET #{offset}

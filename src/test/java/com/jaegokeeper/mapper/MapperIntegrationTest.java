@@ -4,6 +4,10 @@ import com.jaegokeeper.alba.dto.AlbaDetailResponse;
 import com.jaegokeeper.alba.dto.AlbaUpdateRequest;
 import com.jaegokeeper.alba.mapper.AlbaMapper;
 import com.jaegokeeper.alba.model.Alba;
+import com.jaegokeeper.board.dto.response.BoardListResponse;
+import com.jaegokeeper.board.enums.BoardSearchType;
+import com.jaegokeeper.board.enums.BoardType;
+import com.jaegokeeper.board.mapper.BoardMapper;
 import com.jaegokeeper.image.mapper.ImageMapper;
 import com.jaegokeeper.item.dto.response.ItemDetailResponse;
 import com.jaegokeeper.item.dto.response.ItemListResponse;
@@ -81,6 +85,7 @@ public class MapperIntegrationTest {
     private ScheduleMapper scheduleMapper;
     private UserMapper userMapper;
     private ImageMapper imageMapper;
+    private BoardMapper boardMapper;
 
     @BeforeClass
     public static void startDatabaseAndContext() throws Exception {
@@ -142,6 +147,7 @@ public class MapperIntegrationTest {
         scheduleMapper = ctx.getBean(ScheduleMapper.class);
         userMapper = ctx.getBean(UserMapper.class);
         imageMapper = ctx.getBean(ImageMapper.class);
+        boardMapper = ctx.getBean(BoardMapper.class);
     }
 
 
@@ -181,6 +187,28 @@ public class MapperIntegrationTest {
 
     private void image(int id) {
         db.update("INSERT INTO image (image_id, image_path, origin_name) VALUES (?, ?, ?)", id, "path" + id + ".png", "origin" + id);
+    }
+
+    private void board(int id, int storeId, String type, String title, String content, String writer,
+                       boolean pinned, String createdAt) {
+        db.update("INSERT INTO board (board_id, store_id, board_type, title, content, writer, is_pinned, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                id, storeId, type, title, content, writer, pinned, createdAt);
+    }
+
+    private void log(int itemId, String type, String createdAt) {
+        db.update("INSERT INTO log (item_id, log_type, log_amount, created_at) VALUES (?, ?, 1, ?)", itemId, type, createdAt);
+    }
+
+    private List<Integer> itemIds(ItemFilter filter, String keyword, boolean excludeZero) {
+        List<ItemListResponse> list = itemMapper.findItemList(1, filter, keyword, excludeZero, 0, 50);
+        assertEquals(list.size(), itemMapper.countItemList(1, filter, keyword, excludeZero));
+        return list.stream().map(ItemListResponse::getItemId).sorted().collect(java.util.stream.Collectors.toList());
+    }
+
+    private List<Integer> boardIds(BoardType type, String keyword, BoardSearchType searchType) {
+        List<BoardListResponse> list = boardMapper.findBoardList(1, type, keyword, searchType, 50, 0);
+        assertEquals(list.size(), boardMapper.countBoardList(1, type, keyword, searchType));
+        return list.stream().map(BoardListResponse::getBoardId).collect(java.util.stream.Collectors.toList());
     }
 
     private List<Integer> requestIds(List<RequestListResponse> list) {
@@ -298,7 +326,7 @@ public class MapperIntegrationTest {
     }
 
     @Test
-    public void 요청_있음_필터는_대기_진행_승인_상태만_포함한다() {
+    public void 요청_있음_필터는_취소_완료_승인_상태를_제외하고_포함한다() {
         storeWithOwner(1);
         alba(1, 1, "010-1", null);
         String[] statuses = {"WAIT", "WORKING", "CONFIRM", "REVERT", "DONE", "CANCEL"};
@@ -309,9 +337,45 @@ public class MapperIntegrationTest {
 
         List<ItemListResponse> list = itemMapper.findItemList(1, ItemFilter.HAS_REQUEST, null, false, 0, 50);
 
-        assertEquals(List.of("item3", "item2", "item1"),
+        assertEquals(List.of("item4", "item2", "item1"),
                 list.stream().map(ItemListResponse::getItemName).collect(java.util.stream.Collectors.toList()));
         assertEquals(3, itemMapper.countItemList(1, ItemFilter.HAS_REQUEST, null, false));
+    }
+
+    @Test
+    public void 상품_목록_필터는_즐겨찾기_재고부족_키워드_재고0제외를_걸러내고_개수와_일치한다() {
+        storeWithOwner(1);
+        storeWithOwner(2);
+        item(1, 1, null);
+        item(2, 1, null);
+        item(3, 1, null);
+        item(4, 2, null);
+        db.update("UPDATE item SET is_pinned = 1 WHERE item_id = 2");
+        db.update("UPDATE stock SET stock_amount = 2 WHERE item_id = 3");
+        db.update("UPDATE stock SET stock_amount = 0 WHERE item_id = 1");
+
+        assertEquals(List.of(1, 2, 3), itemIds(null, null, false));
+        assertEquals(List.of(2, 3), itemIds(null, null, true));
+        assertEquals(List.of(2), itemIds(ItemFilter.FAVORITE, null, false));
+        assertEquals(List.of(1, 3), itemIds(ItemFilter.LOW_STOCK, null, false));
+        assertEquals(List.of(3), itemIds(ItemFilter.LOW_STOCK, null, true));
+        assertEquals(List.of(2), itemIds(null, "item2", false));
+        assertEquals(List.of(), itemIds(null, "없는이름", false));
+    }
+
+    @Test
+    public void 오래_움직이지_않은_상품_필터는_입고_출고_기록의_마지막_시각이_3개월_전인_상품만_걸린다() {
+        storeWithOwner(1);
+        for (int id = 1; id <= 4; id++) {
+            item(id, 1, null);
+        }
+        String yesterday = LocalDateTime.now().minusDays(1).toString().replace('T', ' ').substring(0, 19);
+        log(1, "OUT", "2020-01-02 00:00:00");
+        log(2, "IN", "2020-01-02 00:00:00");
+        log(2, "IN", yesterday);
+        log(3, "ADJUST", yesterday);
+
+        assertEquals(List.of(1), itemIds(ItemFilter.BAD_STOCK, null, false));
     }
 
     @Test
@@ -357,6 +421,27 @@ public class MapperIntegrationTest {
         assertEquals(Integer.valueOf(7), saved.getImageId());
         assertNotNull(imageMapper.findImgById(1, 7));
         assertNull(imageMapper.findImgById(2, 7));
+    }
+
+    @Test
+    public void 게시글_목록은_유형_검색_조건으로_걸러내고_고정글_최신순_번호순으로_정렬한다() {
+        storeWithOwner(1);
+        storeWithOwner(2);
+        board(1, 1, "NOTICE", "공지 하나", "본문 가", "홍길동", false, "2026-01-01 10:00:00");
+        board(2, 1, "NOTICE", "공지 둘", "본문 나", "김철수", true, "2026-01-01 09:00:00");
+        board(3, 1, "BOARD", "자유글", "공지 이야기", "홍길동", false, "2026-01-01 10:00:00");
+        board(4, 1, "BOARD", "삭제될 글", "본문", "홍길동", false, "2026-01-02 10:00:00");
+        board(5, 2, "NOTICE", "다른 매장", "본문", "홍길동", false, "2026-01-03 10:00:00");
+        db.update("UPDATE board SET is_active = b'0' WHERE board_id = 4");
+
+        assertEquals(List.of(2, 3, 1), boardIds(null, null, BoardSearchType.ALL));
+        assertEquals(List.of(2, 1), boardIds(BoardType.NOTICE, null, BoardSearchType.ALL));
+        assertEquals(List.of(1), boardIds(null, "하나", BoardSearchType.TITLE));
+        assertEquals(List.of(3), boardIds(null, "이야기", BoardSearchType.CONTENT));
+        assertEquals(List.of(3, 1), boardIds(null, "홍길동", BoardSearchType.WRITER));
+        assertEquals(List.of(3, 1), boardIds(null, "홍길동", BoardSearchType.ALL));
+        assertEquals(List.of(2, 3, 1), boardIds(null, "공지", BoardSearchType.ALL));
+        assertEquals(List.of(2, 3, 1), boardIds(null, "", null));
     }
 
     @Test
