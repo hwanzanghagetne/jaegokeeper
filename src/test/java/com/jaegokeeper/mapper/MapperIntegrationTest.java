@@ -41,7 +41,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -168,6 +175,26 @@ public class MapperIntegrationTest {
         db.update("INSERT INTO image (image_id, image_path, origin_name) VALUES (?, ?, ?)", id, "path" + id + ".png", "origin" + id);
     }
 
+    private void runConcurrently(int threads, Runnable task) throws Exception {
+        ExecutorService pool = Executors.newFixedThreadPool(threads);
+        CyclicBarrier startTogether = new CyclicBarrier(threads);
+        try {
+            List<Future<?>> futures = new ArrayList<>();
+            for (int i = 0; i < threads; i++) {
+                futures.add(pool.submit(() -> {
+                    startTogether.await();
+                    task.run();
+                    return null;
+                }));
+            }
+            for (Future<?> future : futures) {
+                future.get(30, TimeUnit.SECONDS);
+            }
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
     @Test
     public void 재고_상세는_snake_case_컬럼이_모두_매핑된다() {
         storeWithOwner(1);
@@ -201,6 +228,32 @@ public class MapperIntegrationTest {
 
         assertEquals(1, stockMapper.decreaseQuantity(1, 1, 4));
         assertEquals(Integer.valueOf(6), stockMapper.findStockAmountByItemId(1, 1));
+    }
+
+    @Test
+    public void 동시에_출고해도_재고만큼만_성공하고_음수가_되지_않는다() throws Exception {
+        storeWithOwner(1);
+        item(1, 1, null);
+        AtomicInteger succeeded = new AtomicInteger();
+
+        runConcurrently(30, () -> {
+            if (stockMapper.decreaseQuantity(1, 1, 1) == 1) {
+                succeeded.incrementAndGet();
+            }
+        });
+
+        assertEquals(10, succeeded.get());
+        assertEquals(Integer.valueOf(0), stockMapper.findStockAmountByItemId(1, 1));
+    }
+
+    @Test
+    public void 동시에_입고해도_갱신이_유실되지_않는다() throws Exception {
+        storeWithOwner(1);
+        item(1, 1, null);
+
+        runConcurrently(20, () -> stockMapper.increaseQuantity(1, 1, 1));
+
+        assertEquals(Integer.valueOf(30), stockMapper.findStockAmountByItemId(1, 1));
     }
 
     @Test
