@@ -5,6 +5,7 @@ import com.jaegokeeper.alba.dto.AlbaListResponse;
 import com.jaegokeeper.alba.dto.AlbaRegisterRequest;
 import com.jaegokeeper.alba.dto.AlbaUpdateRequest;
 import com.jaegokeeper.alba.mapper.AlbaMapper;
+import com.jaegokeeper.alba.model.Alba;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.mail.MailService;
 import com.jaegokeeper.exception.BusinessException;
@@ -38,52 +39,49 @@ public class AlbaService {
     @Transactional
     public int saveAlbaRegister(LoginContext login, AlbaRegisterRequest req) {
         int storeId = login.getStoreId();
-        req.setStoreId(storeId);
-        req.setAlbaEmail(normalizeOptionalEmail(req.getAlbaEmail()));
+        String albaEmail = normalizeOptionalEmail(req.getAlbaEmail());
         if (!albaMapper.existsByStoreId(storeId)) {
             throw new BusinessException(STORE_NOT_FOUND);
         }
         if (albaMapper.existsByAlbaPhone(storeId, req.getAlbaPhone(), null) > 0) {
             throw new BusinessException(ALBA_PHONE_DUPLICATE);
         }
-        if (req.getAlbaEmail() != null && albaMapper.existsByAlbaEmail(storeId, req.getAlbaEmail(), null) > 0) {
+        if (albaEmail != null && albaMapper.existsByAlbaEmail(storeId, albaEmail, null) > 0) {
             throw new BusinessException(ALBA_EMAIL_DUPLICATE);
         }
-        ImageInfoDTO imageDto = null;
+        ImageInfoDTO uploadedImage = null;
         try {
-            if (req.getFile() != null && !req.getFile().isEmpty()) {
-                imageDto = new ImageInfoDTO();
-                imageDto.setFile(req.getFile());
-                int imageId = imageService.uploadImg(imageDto);
-                req.setImageId(imageId);
-            }
+            uploadedImage = imageService.uploadIfPresent(req.getFile());
+            Integer imageId = (uploadedImage != null) ? uploadedImage.getImageId() : null;
 
-            albaMapper.insertAlba(req);
-            if (req.getAlbaId() == null) {
+            Alba alba = Alba.create(storeId, req.getAlbaName(), req.getAlbaPhone(),
+                    albaEmail, req.getAlbaStatus(), imageId);
+            albaMapper.insertAlba(alba);
+            if (alba.getAlbaId() == null) {
                 throw new BusinessException(INTERNAL_ERROR);
             }
 
             Set<String> scheduleTimes = normalizeScheduleTimes(req.getScheduleTimes());
             for (String scheduleTime : scheduleTimes) {
                 ScheduleRegisterRequest scheduleReq = new ScheduleRegisterRequest();
-                scheduleReq.setAlbaId(req.getAlbaId());
+                scheduleReq.setAlbaId(alba.getAlbaId());
                 scheduleReq.setScheduleTime(scheduleTime);
                 scheduleMapper.insertSchedule(scheduleReq);
             }
 
-            if (req.getAlbaEmail() != null) {
-                mailService.sendWelcome(req.getAlbaEmail(), req.getAlbaName());
+            if (albaEmail != null) {
+                mailService.sendWelcome(albaEmail, alba.getAlbaName());
             }
 
-            return req.getAlbaId();
+            return alba.getAlbaId();
         } catch (DuplicateKeyException e) {
-            if (imageDto != null) imageService.deleteImageFile(imageDto.getImagePath());
+            if (uploadedImage != null) imageService.deleteImageFile(uploadedImage.getImagePath());
             throw new BusinessException(SCHEDULE_TIME_DUPLICATE);
         } catch (DataIntegrityViolationException e) {
-            if (imageDto != null) imageService.deleteImageFile(imageDto.getImagePath());
+            if (uploadedImage != null) imageService.deleteImageFile(uploadedImage.getImagePath());
             throw new BusinessException(BAD_REQUEST);
         } catch (BusinessException e) {
-            if (imageDto != null) imageService.deleteImageFile(imageDto.getImagePath());
+            if (uploadedImage != null) imageService.deleteImageFile(uploadedImage.getImagePath());
             throw e;
         }
     }

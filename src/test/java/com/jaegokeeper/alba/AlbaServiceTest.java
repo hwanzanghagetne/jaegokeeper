@@ -4,25 +4,32 @@ import com.jaegokeeper.alba.dto.AlbaDetailResponse;
 import com.jaegokeeper.alba.dto.AlbaRegisterRequest;
 import com.jaegokeeper.alba.dto.AlbaUpdateRequest;
 import com.jaegokeeper.alba.mapper.AlbaMapper;
+import com.jaegokeeper.alba.model.Alba;
 import com.jaegokeeper.alba.service.AlbaService;
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.mail.MailService;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.exception.ErrorCode;
+import com.jaegokeeper.image.dto.ImageInfoDTO;
 import com.jaegokeeper.image.service.ImageService;
 import com.jaegokeeper.schedule.mapper.ScheduleMapper;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.mock.web.MockMultipartFile;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 public class AlbaServiceTest {
@@ -160,10 +167,10 @@ public class AlbaServiceTest {
         when(albaMapper.existsByAlbaPhone(1, "010-1234-5678", null)).thenReturn(0);
         when(albaMapper.existsByAlbaEmail(1, "alba@example.com", null)).thenReturn(0);
         doAnswer(invocation -> {
-            AlbaRegisterRequest arg = invocation.getArgument(0);
+            Alba arg = invocation.getArgument(0);
             arg.setAlbaId(100);
             return null;
-        }).when(albaMapper).insertAlba(any(AlbaRegisterRequest.class));
+        }).when(albaMapper).insertAlba(any(Alba.class));
 
         albaService.saveAlbaRegister(login, req);
 
@@ -179,13 +186,120 @@ public class AlbaServiceTest {
         when(albaMapper.existsByStoreId(1)).thenReturn(true);
         when(albaMapper.existsByAlbaPhone(1, "010-1234-5678", null)).thenReturn(0);
         doAnswer(invocation -> {
-            AlbaRegisterRequest arg = invocation.getArgument(0);
+            Alba arg = invocation.getArgument(0);
             arg.setAlbaId(101);
             return null;
-        }).when(albaMapper).insertAlba(any(AlbaRegisterRequest.class));
+        }).when(albaMapper).insertAlba(any(Alba.class));
 
         albaService.saveAlbaRegister(login, req);
 
         verify(mailService, never()).sendWelcome(any(), any());
+    }
+
+    private AlbaRegisterRequest registerRequest() {
+        AlbaRegisterRequest req = new AlbaRegisterRequest();
+        req.setAlbaName("홍길동");
+        req.setAlbaPhone("010-1234-5678");
+        return req;
+    }
+
+    private void stubInsertWithId(int albaId) {
+        doAnswer(invocation -> {
+            Alba arg = invocation.getArgument(0);
+            arg.setAlbaId(albaId);
+            return null;
+        }).when(albaMapper).insertAlba(any(Alba.class));
+    }
+
+    private ImageInfoDTO uploaded(int imageId, String path) {
+        ImageInfoDTO info = new ImageInfoDTO();
+        info.setImageId(imageId);
+        info.setImagePath(path);
+        return info;
+    }
+
+    @Test
+    public void 알바등록_매장은_세션에서_가져오고_파일이_없으면_이미지는_null() {
+        when(albaMapper.existsByStoreId(1)).thenReturn(true);
+        stubInsertWithId(100);
+
+        albaService.saveAlbaRegister(login, registerRequest());
+
+        ArgumentCaptor<Alba> captor = ArgumentCaptor.forClass(Alba.class);
+        verify(albaMapper).insertAlba(captor.capture());
+        assertEquals(Integer.valueOf(1), captor.getValue().getStoreId());
+        assertNull(captor.getValue().getImageId());
+    }
+
+    @Test
+    public void 알바등록_파일이_있으면_업로드한_이미지_ID로_저장() {
+        AlbaRegisterRequest req = registerRequest();
+        req.setFile(new MockMultipartFile("file", "a.png", "image/png", new byte[]{1}));
+        when(albaMapper.existsByStoreId(1)).thenReturn(true);
+        when(imageService.uploadIfPresent(req.getFile())).thenReturn(uploaded(9, "2026/11/10/a.png"));
+        stubInsertWithId(100);
+
+        albaService.saveAlbaRegister(login, req);
+
+        ArgumentCaptor<Alba> captor = ArgumentCaptor.forClass(Alba.class);
+        verify(albaMapper).insertAlba(captor.capture());
+        assertEquals(Integer.valueOf(9), captor.getValue().getImageId());
+    }
+
+    @Test
+    public void 알바등록_전화번호_중복이면_예외() {
+        when(albaMapper.existsByStoreId(1)).thenReturn(true);
+        when(albaMapper.existsByAlbaPhone(1, "010-1234-5678", null)).thenReturn(1);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> albaService.saveAlbaRegister(login, registerRequest()));
+
+        assertEquals(ErrorCode.ALBA_PHONE_DUPLICATE, e.getErrorCode());
+        verifyNoInteractions(imageService);
+        verify(albaMapper, never()).insertAlba(any());
+    }
+
+    @Test
+    public void 알바등록_이메일_중복이면_예외() {
+        AlbaRegisterRequest req = registerRequest();
+        req.setAlbaEmail("Alba@Example.com");
+        when(albaMapper.existsByStoreId(1)).thenReturn(true);
+        when(albaMapper.existsByAlbaEmail(1, "alba@example.com", null)).thenReturn(1);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> albaService.saveAlbaRegister(login, req));
+
+        assertEquals(ErrorCode.ALBA_EMAIL_DUPLICATE, e.getErrorCode());
+        verifyNoInteractions(imageService);
+    }
+
+    @Test
+    public void 알바등록_저장_실패시_올린_이미지_삭제() {
+        AlbaRegisterRequest req = registerRequest();
+        when(albaMapper.existsByStoreId(1)).thenReturn(true);
+        when(imageService.uploadIfPresent(any())).thenReturn(uploaded(9, "2026/11/10/a.png"));
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> albaService.saveAlbaRegister(login, req));
+
+        assertEquals(ErrorCode.INTERNAL_ERROR, e.getErrorCode());
+        verify(imageService).deleteImageFile("2026/11/10/a.png");
+    }
+
+    @Test
+    public void 알바등록_스케줄_중복키_예외면_올린_이미지_삭제() {
+        AlbaRegisterRequest req = registerRequest();
+        req.setScheduleTimes(java.util.List.of("월"));
+        when(albaMapper.existsByStoreId(1)).thenReturn(true);
+        when(imageService.uploadIfPresent(any())).thenReturn(uploaded(9, "2026/11/10/a.png"));
+        stubInsertWithId(100);
+        doThrow(new org.springframework.dao.DuplicateKeyException("dup"))
+                .when(scheduleMapper).insertSchedule(any());
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> albaService.saveAlbaRegister(login, req));
+
+        assertEquals(ErrorCode.SCHEDULE_TIME_DUPLICATE, e.getErrorCode());
+        verify(imageService).deleteImageFile("2026/11/10/a.png");
     }
 }

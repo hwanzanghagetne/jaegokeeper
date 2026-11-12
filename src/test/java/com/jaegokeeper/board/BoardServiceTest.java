@@ -34,7 +34,6 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -170,12 +169,11 @@ public class BoardServiceTest {
         return new MockMultipartFile("file", "a.png", "image/png", new byte[]{1, 2, 3});
     }
 
-    private void stubUploadReturning(int imageId, String imagePath) {
-        when(imgService.uploadImg(any(ImageInfoDTO.class))).thenAnswer(invocation -> {
-            ImageInfoDTO dto = invocation.getArgument(0);
-            dto.setImagePath(imagePath);
-            return imageId;
-        });
+    private ImageInfoDTO uploaded(int imageId, String imagePath) {
+        ImageInfoDTO info = new ImageInfoDTO();
+        info.setImageId(imageId);
+        info.setImagePath(imagePath);
+        return info;
     }
 
     @Test
@@ -224,27 +222,13 @@ public class BoardServiceTest {
         req.setContent("내용");
         req.setWriterType(BoardWriterType.ANONYMOUS);
         req.setFile(imageFile());
-        stubUploadReturning(9, "2026/11/10/a.png");
+        when(imgService.uploadIfPresent(any())).thenReturn(uploaded(9, "2026/11/10/a.png"));
         when(boardMapper.insertBoard(any(Board.class))).thenThrow(new IllegalStateException("db down"));
 
         assertThrows(IllegalStateException.class,
                 () -> boardService.createBoard(login, BoardType.NOTICE, req));
 
         verify(imgService).deleteImageFile("2026/11/10/a.png");
-    }
-
-    @Test
-    public void 게시글수정_파일_업로드와_이미지_삭제를_동시에_요청하면_예외() {
-        when(boardMapper.countActiveByStoreIdAndBoardId(1, 5)).thenReturn(1);
-        BoardUpdateRequest req = new BoardUpdateRequest();
-        req.setRemoveImage(true);
-        req.setFile(imageFile());
-
-        BusinessException e = assertThrows(BusinessException.class,
-                () -> boardService.updateBoard(login, 5, req));
-
-        assertEquals(ErrorCode.IMAGE_UPDATE_CONFLICT, e.getErrorCode());
-        verify(imgService, never()).uploadImg(any());
     }
 
     @Test
@@ -269,7 +253,7 @@ public class BoardServiceTest {
         when(boardMapper.countActiveByStoreIdAndBoardId(1, 5)).thenReturn(1);
         BoardUpdateRequest req = new BoardUpdateRequest();
         req.setFile(imageFile());
-        stubUploadReturning(9, "2026/11/10/b.png");
+        when(imgService.uploadForUpdate(any(), any())).thenReturn(uploaded(9, "2026/11/10/b.png"));
         when(boardMapper.updateBoardImg(eq(1), eq(5), any(BoardUpdateParamImg.class))).thenReturn(0);
 
         BusinessException e = assertThrows(BusinessException.class,

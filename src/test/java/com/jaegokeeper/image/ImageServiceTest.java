@@ -23,6 +23,7 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -59,10 +60,8 @@ public class ImageServiceTest {
         ReflectionTestUtils.setField(imageService, "bucketName", "test-bucket");
     }
 
-    private ImageInfoDTO dtoWith(String filename, byte[] content) {
-        ImageInfoDTO dto = new ImageInfoDTO();
-        dto.setFile(new MockMultipartFile("file", filename, "image/png", content));
-        return dto;
+    private MultipartFile fileWith(String filename, byte[] content) {
+        return new MockMultipartFile("file", filename, "image/png", content);
     }
 
     private void stubInsertWithId(int imageId) {
@@ -75,11 +74,8 @@ public class ImageServiceTest {
 
     @Test
     public void 업로드_파일없음_예외() {
-        ImageInfoDTO dto = new ImageInfoDTO();
-        dto.setFile(null);
-
         BusinessException e = assertThrows(BusinessException.class,
-                () -> imageService.uploadImg(dto));
+                () -> imageService.uploadImg(null));
 
         assertEquals(ErrorCode.BAD_REQUEST, e.getErrorCode());
     }
@@ -89,11 +85,8 @@ public class ImageServiceTest {
         MultipartFile file = mock(MultipartFile.class);
         when(file.isEmpty()).thenReturn(true);
 
-        ImageInfoDTO dto = new ImageInfoDTO();
-        dto.setFile(file);
-
         BusinessException e = assertThrows(BusinessException.class,
-                () -> imageService.uploadImg(dto));
+                () -> imageService.uploadImg(file));
 
         assertEquals(ErrorCode.BAD_REQUEST, e.getErrorCode());
     }
@@ -101,7 +94,7 @@ public class ImageServiceTest {
     @Test
     public void 업로드_허용되지않는확장자_예외() {
         BusinessException e = assertThrows(BusinessException.class,
-                () -> imageService.uploadImg(dtoWith("document.txt", PNG)));
+                () -> imageService.uploadImg(fileWith("document.txt", PNG)));
 
         assertEquals(ErrorCode.IMAGE_INVALID_FORMAT, e.getErrorCode());
     }
@@ -109,7 +102,7 @@ public class ImageServiceTest {
     @Test
     public void 업로드_확장자없는파일명_예외() {
         BusinessException e = assertThrows(BusinessException.class,
-                () -> imageService.uploadImg(dtoWith("noextension", PNG)));
+                () -> imageService.uploadImg(fileWith("noextension", PNG)));
 
         assertEquals(ErrorCode.IMAGE_INVALID_FORMAT, e.getErrorCode());
     }
@@ -119,7 +112,7 @@ public class ImageServiceTest {
         byte[] html = "<html><script>alert(1)</script></html>".getBytes(StandardCharsets.UTF_8);
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> imageService.uploadImg(dtoWith("evil.png", html)));
+                () -> imageService.uploadImg(fileWith("evil.png", html)));
 
         assertEquals(ErrorCode.IMAGE_INVALID_FORMAT, e.getErrorCode());
         verifyNoInteractions(s3Client);
@@ -130,9 +123,11 @@ public class ImageServiceTest {
     public void 업로드_JPEG는_콘텐츠타입_image_jpeg로_저장() {
         stubInsertWithId(7);
 
-        int imageId = imageService.uploadImg(dtoWith("photo.jpg", JPEG));
+        ImageInfoDTO uploaded = imageService.uploadImg(fileWith("photo.jpg", JPEG));
 
-        assertEquals(7, imageId);
+        assertEquals(7, uploaded.getImageId());
+        assertEquals("photo.jpg", uploaded.getOriginName());
+        assertTrue(uploaded.getImagePath().endsWith(".jpg"));
         assertEquals("image/jpeg", capturedPutRequest().contentType());
     }
 
@@ -140,8 +135,8 @@ public class ImageServiceTest {
     public void 업로드_PNG와_WebP도_파일내용으로_판별() {
         stubInsertWithId(1);
 
-        imageService.uploadImg(dtoWith("a.png", PNG));
-        imageService.uploadImg(dtoWith("b.webp", WEBP));
+        imageService.uploadImg(fileWith("a.png", PNG));
+        imageService.uploadImg(fileWith("b.webp", WEBP));
 
         ArgumentCaptor<PutObjectRequest> captor = ArgumentCaptor.forClass(PutObjectRequest.class);
         verify(s3Client, times(2)).putObject(captor.capture(), any(RequestBody.class));
@@ -153,7 +148,7 @@ public class ImageServiceTest {
     public void 업로드_확장자와_내용이_달라도_내용을_기준으로_콘텐츠타입_저장() {
         stubInsertWithId(1);
 
-        imageService.uploadImg(dtoWith("photo.jpg", PNG));
+        imageService.uploadImg(fileWith("photo.jpg", PNG));
 
         assertEquals("image/png", capturedPutRequest().contentType());
     }
@@ -163,13 +158,48 @@ public class ImageServiceTest {
         doThrow(new IllegalStateException("db down")).when(imageMapper).insertImgInfo(any(ImageInfoDTO.class));
 
         BusinessException e = assertThrows(BusinessException.class,
-                () -> imageService.uploadImg(dtoWith("photo.jpg", JPEG)));
+                () -> imageService.uploadImg(fileWith("photo.jpg", JPEG)));
 
         assertEquals(ErrorCode.INTERNAL_ERROR, e.getErrorCode());
         ArgumentCaptor<DeleteObjectRequest> captor = ArgumentCaptor.forClass(DeleteObjectRequest.class);
         verify(s3Client).deleteObject(captor.capture());
         assertEquals("test-bucket", captor.getValue().bucket());
         assertTrue(captor.getValue().key().endsWith(".jpg"));
+    }
+
+    @Test
+    public void 파일이_있으면_업로드하고_없으면_null() {
+        stubInsertWithId(3);
+
+        assertEquals(3, imageService.uploadIfPresent(fileWith("a.png", PNG)).getImageId());
+        assertNull(imageService.uploadIfPresent(null));
+        assertNull(imageService.uploadIfPresent(new MockMultipartFile("file", "a.png", "image/png", new byte[0])));
+    }
+
+    @Test
+    public void 수정_파일_업로드와_이미지_삭제를_동시에_요청하면_예외() {
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> imageService.uploadForUpdate(fileWith("a.png", PNG), true));
+
+        assertEquals(ErrorCode.IMAGE_UPDATE_CONFLICT, e.getErrorCode());
+        verifyNoInteractions(s3Client);
+    }
+
+    @Test
+    public void 수정_삭제만_요청하거나_아무것도_없으면_업로드하지_않음() {
+        assertNull(imageService.uploadForUpdate(null, true));
+        assertNull(imageService.uploadForUpdate(null, null));
+        assertNull(imageService.uploadForUpdate(new MockMultipartFile("file", "a.png", "image/png", new byte[0]), true));
+
+        verifyNoInteractions(s3Client);
+    }
+
+    @Test
+    public void 수정_파일만_있으면_업로드() {
+        stubInsertWithId(8);
+
+        assertEquals(8, imageService.uploadForUpdate(fileWith("a.png", PNG), null).getImageId());
+        assertEquals(8, imageService.uploadForUpdate(fileWith("a.png", PNG), false).getImageId());
     }
 
     @Test

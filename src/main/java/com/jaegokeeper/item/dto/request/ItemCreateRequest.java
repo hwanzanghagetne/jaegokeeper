@@ -1,9 +1,9 @@
 package com.jaegokeeper.item.dto.request;
 
-import com.jaegokeeper.image.dto.ImageInfoDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -16,7 +16,7 @@ import static com.jaegokeeper.stock.StockConstants.MAX_AMOUNT;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ItemCreateRequest extends ImageInfoDTO {
+public class ItemCreateRequest {
 
     @NotBlank(message = "itemName은 필수입니다.")
     @Size(max = 50, message = "itemName은 50자 이하입니다.")
@@ -26,4 +26,6 @@ public class ItemCreateRequest extends ImageInfoDTO {
     @Min(value = 0, message = "stockAmount는 0 이상입니다.")
     @Max(value = MAX_AMOUNT, message = "stockAmount는 1,000,000 이하입니다.")
     private Integer stockAmount;
+
+    private MultipartFile file;
 }

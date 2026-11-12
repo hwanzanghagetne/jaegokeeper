@@ -92,7 +92,7 @@
         </if>
     </select>
 
-    <insert id="insertAlba" parameterType="com.jaegokeeper.alba.dto.AlbaRegisterRequest"
+    <insert id="insertAlba" parameterType="com.jaegokeeper.alba.model.Alba"
             useGeneratedKeys="true" keyProperty="albaId">
         INSERT INTO alba (store_id, alba_name, alba_phone, alba_email, alba_status, created_at, updated_at, is_active, image_id)
         VALUES (#{storeId}, #{albaName}, #{albaPhone}, #{albaEmail}, #{albaStatus}, NOW(), NOW(), b'1', #{imageId})

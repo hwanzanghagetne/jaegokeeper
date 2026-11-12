@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -44,7 +43,7 @@ public class ItemService {
             throw new BusinessException(STORE_NOT_FOUND);
         }
 
-        ImageInfoDTO uploadedImage = uploadImageDtoIfPresent(dto);
+        ImageInfoDTO uploadedImage = imgService.uploadIfPresent(dto.getFile());
         Integer imageId = (uploadedImage != null) ? uploadedImage.getImageId() : null;
         try {
             Item item = Item.create(storeId, dto.getItemName(), imageId);
@@ -102,7 +101,8 @@ public class ItemService {
     public void updateItem(LoginContext login, Integer itemId, ItemUpdateRequest dto) {
         int storeId = login.getStoreId();
         boolean wantsRemove = Boolean.TRUE.equals(dto.getRemoveImage());
-        Integer newImageId = resolveImageIdForUpdate(dto.getFile(), dto.getRemoveImage(), dto);
+        ImageInfoDTO uploadedImage = imgService.uploadForUpdate(dto.getFile(), dto.getRemoveImage());
+        Integer newImageId = (uploadedImage != null) ? uploadedImage.getImageId() : null;
 
         try {
             ItemUpdateParamImg updateItem = new ItemUpdateParamImg(
@@ -122,7 +122,7 @@ public class ItemService {
                 stockService.adjustStock(login, itemId, stockAdjustRequest);
             }
         } catch (Exception e) {
-            if (newImageId != null) imgService.deleteImageFile(dto.getImagePath());
+            if (uploadedImage != null) imgService.deleteImageFile(uploadedImage.getImagePath());
             throw e;
         }
     }
@@ -133,22 +133,6 @@ public class ItemService {
         if (updated == 0) {
             throw new BusinessException(ITEM_NOT_FOUND);
         }
-    }
-
-    private ImageInfoDTO uploadImageDtoIfPresent(ImageInfoDTO dto) {
-        if (dto.getFile() == null || dto.getFile().isEmpty()) return null;
-        imgService.uploadImg(dto);
-        return dto;
-    }
-
-    private Integer resolveImageIdForUpdate(MultipartFile file, Boolean removeImage, ImageInfoDTO dto) {
-        boolean hasFile = (file != null && !file.isEmpty());
-        boolean wantsRemove = Boolean.TRUE.equals(removeImage);
-        if (wantsRemove && hasFile) {
-            throw new BusinessException(IMAGE_UPDATE_CONFLICT);
-        }
-        if (!hasFile) return null;
-        return imgService.uploadImg(dto);
     }
 
 }

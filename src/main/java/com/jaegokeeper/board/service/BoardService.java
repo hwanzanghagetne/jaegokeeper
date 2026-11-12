@@ -20,7 +20,6 @@ import com.jaegokeeper.common.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -71,7 +70,8 @@ public class BoardService {
         }
         String writer = resolveWriter(storeId, writerType, dto.getWriterId());
 
-        Integer imageId = uploadImageIfPresent(dto);
+        ImageInfoDTO uploadedImage = imgService.uploadIfPresent(dto.getFile());
+        Integer imageId = (uploadedImage != null) ? uploadedImage.getImageId() : null;
 
         Board board = Board.create(
                 storeId,
@@ -86,7 +86,7 @@ public class BoardService {
                 throw new BusinessException(INTERNAL_ERROR);
             }
         } catch (Exception e) {
-            if (imageId != null) imgService.deleteImageFile(dto.getImagePath());
+            if (uploadedImage != null) imgService.deleteImageFile(uploadedImage.getImagePath());
             throw e;
         }
         return board.getBoardId();
@@ -105,7 +105,8 @@ public class BoardService {
         String writer = (writerType != null) ? resolveWriter(storeId, writerType, dto.getWriterId()) : null;
 
         boolean wantsRemove = Boolean.TRUE.equals(dto.getRemoveImage());
-        Integer newImageId = resolveImageIdForUpdate(dto.getFile(), dto.getRemoveImage(), dto);
+        ImageInfoDTO uploadedImage = imgService.uploadForUpdate(dto.getFile(), dto.getRemoveImage());
+        Integer newImageId = (uploadedImage != null) ? uploadedImage.getImageId() : null;
 
         try {
             BoardUpdateParamImg updateBoard = new BoardUpdateParamImg(
@@ -121,7 +122,7 @@ public class BoardService {
                 throw new BusinessException(BOARD_NOT_FOUND);
             }
         } catch (Exception e) {
-            if (newImageId != null) imgService.deleteImageFile(dto.getImagePath());
+            if (uploadedImage != null) imgService.deleteImageFile(uploadedImage.getImagePath());
             throw e;
         }
     }
@@ -155,21 +156,6 @@ public class BoardService {
             throw new BusinessException(ALBA_NOT_IN_STORE);
         }
         return albaMapper.findAlbaNameByAlbaId(writerId);
-    }
-
-    private Integer uploadImageIfPresent(ImageInfoDTO dto) {
-        if (dto.getFile() == null || dto.getFile().isEmpty()) return null;
-        return imgService.uploadImg(dto);
-    }
-
-    private Integer resolveImageIdForUpdate(MultipartFile file, Boolean removeImage, ImageInfoDTO dto) {
-        boolean hasFile = (file != null && !file.isEmpty());
-        boolean wantsRemove = Boolean.TRUE.equals(removeImage);
-        if (wantsRemove && hasFile) {
-            throw new BusinessException(IMAGE_UPDATE_CONFLICT);
-        }
-        if (!hasFile) return null;
-        return imgService.uploadImg(dto);
     }
 
 }

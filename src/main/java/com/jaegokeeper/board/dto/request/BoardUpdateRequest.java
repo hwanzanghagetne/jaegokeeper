@@ -1,17 +1,17 @@
 package com.jaegokeeper.board.dto.request;
 
 import com.jaegokeeper.board.enums.BoardWriterType;
-import com.jaegokeeper.image.dto.ImageInfoDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.constraints.NotBlank;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class BoardUpdateRequest extends ImageInfoDTO {
+public class BoardUpdateRequest {
 
     private String title;
 
@@ -22,4 +22,6 @@ public class BoardUpdateRequest extends ImageInfoDTO {
     private Integer writerId;
 
     private Boolean removeImage;
+
+    private MultipartFile file;
 }

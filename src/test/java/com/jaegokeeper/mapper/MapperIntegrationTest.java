@@ -1,7 +1,9 @@
 package com.jaegokeeper.mapper;
 
+import com.jaegokeeper.alba.dto.AlbaDetailResponse;
 import com.jaegokeeper.alba.dto.AlbaUpdateRequest;
 import com.jaegokeeper.alba.mapper.AlbaMapper;
+import com.jaegokeeper.alba.model.Alba;
 import com.jaegokeeper.image.mapper.ImageMapper;
 import com.jaegokeeper.item.dto.response.ItemDetailResponse;
 import com.jaegokeeper.item.dto.response.ItemListResponse;
@@ -227,6 +229,23 @@ public class MapperIntegrationTest {
 
         assertNotNull(detail);
         assertEquals(LogType.OUT, detail.getLastLogType());
+    }
+
+    @Test
+    public void 알바_등록은_생성된_ID를_채우고_이미지는_등록한_매장에서만_조회된다() {
+        storeWithOwner(1);
+        storeWithOwner(2);
+        image(7);
+
+        Alba alba = Alba.create(1, "홍길동", "010-1", "a@test.com", "STAFF", 7);
+        albaMapper.insertAlba(alba);
+
+        assertNotNull(alba.getAlbaId());
+        AlbaDetailResponse saved = albaMapper.getAlbaById(1, alba.getAlbaId());
+        assertEquals("홍길동", saved.getAlbaName());
+        assertEquals(Integer.valueOf(7), saved.getImageId());
+        assertNotNull(imageMapper.findImgById(1, 7));
+        assertNull(imageMapper.findImgById(2, 7));
     }
 
     @Test

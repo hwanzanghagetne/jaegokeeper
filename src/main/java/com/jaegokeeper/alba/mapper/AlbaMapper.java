@@ -2,8 +2,8 @@ package com.jaegokeeper.alba.mapper;
 
 import com.jaegokeeper.alba.dto.AlbaDetailResponse;
 import com.jaegokeeper.alba.dto.AlbaListResponse;
-import com.jaegokeeper.alba.dto.AlbaRegisterRequest;
 import com.jaegokeeper.alba.dto.AlbaUpdateRequest;
+import com.jaegokeeper.alba.model.Alba;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -12,7 +12,7 @@ import java.util.List;
 @Mapper
 public interface AlbaMapper {
 
-    void insertAlba(AlbaRegisterRequest req);
+    void insertAlba(Alba alba);
 
     boolean existsByStoreId(int storeId);
 

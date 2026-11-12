@@ -15,10 +15,6 @@ import java.util.List;
 @NoArgsConstructor
 public class AlbaRegisterRequest {
 
-    private Integer albaId;
-
-    private Integer storeId;
-
     @NotBlank(message = "알바 이름은 필수입니다.")
     @Size(max = 50, message = "알바 이름은 최대 50자까지 입력 가능합니다.")
     private String albaName;
@@ -33,8 +29,6 @@ public class AlbaRegisterRequest {
     @Email(message = "알바 이메일 형식이 올바르지 않습니다.")
     @Size(max = 255, message = "알바 이메일은 최대 255자까지 입력 가능합니다.")
     private String albaEmail;
-
-    private Integer imageId;
 
     private List<String> scheduleTimes;
 

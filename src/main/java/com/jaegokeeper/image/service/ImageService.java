@@ -61,10 +61,21 @@ public class ImageService {
         return filename.substring(dot + 1).toLowerCase();
     }
 
-    @Transactional
-    public int uploadImg(ImageInfoDTO dto) {
-        MultipartFile file = dto.getFile();
+    public ImageInfoDTO uploadIfPresent(MultipartFile file) {
+        if (file == null || file.isEmpty()) return null;
+        return uploadImg(file);
+    }
 
+    public ImageInfoDTO uploadForUpdate(MultipartFile file, Boolean removeImage) {
+        boolean hasFile = file != null && !file.isEmpty();
+        if (hasFile && Boolean.TRUE.equals(removeImage)) {
+            throw new BusinessException(IMAGE_UPDATE_CONFLICT);
+        }
+        return uploadIfPresent(file);
+    }
+
+    @Transactional
+    public ImageInfoDTO uploadImg(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new BusinessException(BAD_REQUEST);
         }
@@ -96,12 +107,13 @@ public class ImageService {
                 );
             }
 
+            ImageInfoDTO dto = new ImageInfoDTO();
             dto.setOriginName(originalName);
             dto.setImagePath(key);
 
             imageMapper.insertImgInfo(dto);
 
-            return dto.getImageId();
+            return dto;
         } catch (BusinessException e) {
             deleteFromS3Quietly(key);
             throw e;
