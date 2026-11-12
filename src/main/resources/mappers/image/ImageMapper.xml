@@ -20,13 +20,15 @@
         VALUES (#{imagePath}, #{originName})
     </insert>
 
-    <select id="findImgById"
-            parameterType="int"
-            resultMap="ImageInfoResultMap"
-    >
-        SELECT *
-        FROM image
-        WHERE image_id = #{imageId}
+    <select id="findImgById" resultMap="ImageInfoResultMap">
+        SELECT i.image_id, i.image_path, i.origin_name
+        FROM image i
+        WHERE i.image_id = #{imageId}
+          AND (
+              EXISTS (SELECT 1 FROM item WHERE image_id = i.image_id AND store_id = #{storeId})
+              OR EXISTS (SELECT 1 FROM alba WHERE image_id = i.image_id AND store_id = #{storeId})
+              OR EXISTS (SELECT 1 FROM board WHERE image_id = i.image_id AND store_id = #{storeId})
+          )
     </select>
 
 </mapper>

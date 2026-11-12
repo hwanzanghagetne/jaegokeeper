@@ -1,12 +1,16 @@
 package com.jaegokeeper.image.controller;
 
+import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.image.dto.ImageInfoDTO;
-import com.jaegokeeper.image.dto.ImageUploadRequest;
 import com.jaegokeeper.image.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -15,19 +19,12 @@ public class ImageController {
 
     private final ImageService imageService;
 
-    @PostMapping("/upload")
-    public ResponseEntity<Integer> uploadImg(ImageUploadRequest req) {
-        ImageInfoDTO dto = new ImageInfoDTO();
-        dto.setFile(req.getFile());
-        int imageId = imageService.uploadImg(dto);
-        return ResponseEntity.status(201).body(imageId);
-    }
-
     @GetMapping("/find/{imageId}")
-    public ResponseEntity<Void> findImgById(@PathVariable int imageId) {
-        ImageInfoDTO info = imageService.findImgById(imageId);
+    public ResponseEntity<Void> findImgById(
+            @PathVariable int imageId,
+            @AuthenticationPrincipal LoginContext login) {
+        ImageInfoDTO info = imageService.findImgById(login.getStoreId(), imageId);
         String presignedUrl = imageService.generatePresignedUrl(info.getImagePath());
-
         return ResponseEntity.status(302)
                 .header(HttpHeaders.LOCATION, presignedUrl)
                 .build();

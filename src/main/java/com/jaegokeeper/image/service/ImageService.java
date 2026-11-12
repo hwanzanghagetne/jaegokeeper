@@ -17,10 +17,12 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
 
@@ -32,6 +34,10 @@ public class ImageService {
 
     private static final Set<String> ALLOWED_EXT = Set.of("jpg", "jpeg", "png", "webp");
     private static final Duration PRESIGN_DURATION = Duration.ofMinutes(10);
+    private static final byte[] JPEG_MAGIC = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF};
+    private static final byte[] PNG_MAGIC = {(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
+    private static final byte[] RIFF_MAGIC = "RIFF".getBytes(StandardCharsets.US_ASCII);
+    private static final byte[] WEBP_MAGIC = "WEBP".getBytes(StandardCharsets.US_ASCII);
 
     private final ImageMapper imageMapper;
     private final S3Client s3Client;
@@ -69,31 +75,26 @@ public class ImageService {
             throw new BusinessException(IMAGE_INVALID_FORMAT);
         }
 
-        Path tempPath = null;
         String key = null;
 
         try {
-            tempPath = Files.createTempFile("img-upload-", "." + ext);
-            file.transferTo(tempPath);
-
-            String mimeType = Files.probeContentType(tempPath);
-            if (mimeType == null || !mimeType.startsWith("image/")) {
-                throw new BusinessException(IMAGE_INVALID_FORMAT);
-            }
+            String mimeType = detectImageType(file);
 
             LocalDate d = LocalDate.now(DateTimeConstants.KST);
             String relDir = String.format("%04d/%02d/%02d", d.getYear(), d.getMonthValue(), d.getDayOfMonth());
             String storedName = UUID.randomUUID().toString().replace("-", "") + "." + ext;
             key = relDir + "/" + storedName;
 
-            s3Client.putObject(
-                    PutObjectRequest.builder()
-                            .bucket(bucketName)
-                            .key(key)
-                            .contentType(mimeType)
-                            .build(),
-                    RequestBody.fromFile(tempPath)
-            );
+            try (InputStream in = file.getInputStream()) {
+                s3Client.putObject(
+                        PutObjectRequest.builder()
+                                .bucket(bucketName)
+                                .key(key)
+                                .contentType(mimeType)
+                                .build(),
+                        RequestBody.fromInputStream(in, file.getSize())
+                );
+            }
 
             dto.setOriginName(originalName);
             dto.setImagePath(key);
@@ -107,14 +108,12 @@ public class ImageService {
         } catch (Exception e) {
             deleteFromS3Quietly(key);
             throw new BusinessException(INTERNAL_ERROR, e);
-        } finally {
-            deleteTempQuietly(tempPath);
         }
     }
 
     @Transactional(readOnly = true)
-    public ImageInfoDTO findImgById(int imageId) {
-        ImageInfoDTO dto = imageMapper.findImgById(imageId);
+    public ImageInfoDTO findImgById(int storeId, int imageId) {
+        ImageInfoDTO dto = imageMapper.findImgById(storeId, imageId);
         if (dto == null) {
             throw new BusinessException(IMAGE_NOT_FOUND);
         }
@@ -145,18 +144,25 @@ public class ImageService {
         deleteFromS3Quietly(key);
     }
 
+    private String detectImageType(MultipartFile file) throws IOException {
+        byte[] head = new byte[12];
+        try (InputStream in = file.getInputStream()) {
+            in.readNBytes(head, 0, head.length);
+        }
+        if (startsWith(head, JPEG_MAGIC, 0)) return "image/jpeg";
+        if (startsWith(head, PNG_MAGIC, 0)) return "image/png";
+        if (startsWith(head, RIFF_MAGIC, 0) && startsWith(head, WEBP_MAGIC, 8)) return "image/webp";
+        throw new BusinessException(IMAGE_INVALID_FORMAT);
+    }
+
+    private boolean startsWith(byte[] data, byte[] prefix, int offset) {
+        return Arrays.equals(Arrays.copyOfRange(data, offset, offset + prefix.length), prefix);
+    }
+
     private void deleteFromS3Quietly(String key) {
         if (key == null || key.isBlank()) return;
         try {
             s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucketName).key(key).build());
-        } catch (Exception ignored) {
-        }
-    }
-
-    private void deleteTempQuietly(Path path) {
-        if (path == null) return;
-        try {
-            Files.deleteIfExists(path);
         } catch (Exception ignored) {
         }
     }
