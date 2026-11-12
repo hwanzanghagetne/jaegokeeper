@@ -1,7 +1,9 @@
 package com.jaegokeeper.exception;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.jaegokeeper.auth.enums.Provider;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -98,8 +100,7 @@ public class GlobalExceptionHandler {
                 request.getMethod(), request.getRequestURI(), request.getParameterMap());
 
         if (e.getCause() instanceof InvalidFormatException ife
-                && ife.getTargetType() != null
-                && ife.getTargetType().isEnum()) {
+                && ife.getTargetType() == Provider.class) {
             ErrorResponse response = new ErrorResponse(
                     PROVIDER_INVALID.name(),
                     PROVIDER_INVALID.getMessage(),
@@ -142,6 +143,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ErrorResponse> handleUploadTooLarge(Exception e, HttpServletRequest request) {
         return clientError(FILE_TOO_LARGE, e, request);
+    }
+
+    @ExceptionHandler(ConcurrencyFailureException.class)
+    public ResponseEntity<ErrorResponse> handleConcurrencyFailure(Exception e, HttpServletRequest request) {
+        return clientError(STATE_CONFLICT, e, request);
     }
 
     @ExceptionHandler(Exception.class)

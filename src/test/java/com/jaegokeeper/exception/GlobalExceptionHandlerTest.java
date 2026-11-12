@@ -1,11 +1,16 @@
 package com.jaegokeeper.exception;
 
+import com.jaegokeeper.auth.enums.Provider;
+import com.jaegokeeper.board.enums.BoardType;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.dao.DeadlockLoserDataAccessException;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -31,10 +36,33 @@ public class GlobalExceptionHandlerTest {
             throw new MaxUploadSizeExceededException(1);
         }
 
+        @PostMapping("/board-type")
+        public String boardType(@RequestBody BoardTypeBody body) {
+            return "ok";
+        }
+
+        @PostMapping("/provider")
+        public String provider(@RequestBody ProviderBody body) {
+            return "ok";
+        }
+
+        @GetMapping("/deadlock")
+        public String deadlock() {
+            throw new DeadlockLoserDataAccessException("deadlock", null);
+        }
+
         @GetMapping("/boom")
         public String boom() {
             throw new IllegalStateException("boom");
         }
+    }
+
+    static class BoardTypeBody {
+        public BoardType type;
+    }
+
+    static class ProviderBody {
+        public Provider provider;
     }
 
     private MockMvc mockMvc;
@@ -78,6 +106,27 @@ public class GlobalExceptionHandlerTest {
         mockMvc.perform(post("/upload"))
                 .andExpect(status().isPayloadTooLarge())
                 .andExpect(content().string(containsString("\"code\":\"FILE_TOO_LARGE\"")));
+    }
+
+    @Test
+    public void 소셜_제공자가_아닌_열거형_값이_틀리면_BAD_REQUEST() throws Exception {
+        mockMvc.perform(post("/board-type").contentType(MediaType.APPLICATION_JSON).content("{\"type\":\"FOO\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("\"code\":\"BAD_REQUEST\"")));
+    }
+
+    @Test
+    public void 소셜_제공자_값이_틀리면_PROVIDER_INVALID() throws Exception {
+        mockMvc.perform(post("/provider").contentType(MediaType.APPLICATION_JSON).content("{\"provider\":\"FOO\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("\"code\":\"PROVIDER_INVALID\"")));
+    }
+
+    @Test
+    public void 교착_예외는_409_STATE_CONFLICT() throws Exception {
+        mockMvc.perform(get("/deadlock"))
+                .andExpect(status().isConflict())
+                .andExpect(content().string(containsString("\"code\":\"STATE_CONFLICT\"")));
     }
 
     @Test
