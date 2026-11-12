@@ -1,12 +1,10 @@
 package com.jaegokeeper.auth.dto;
 
-import lombok.Builder;
 import lombok.Getter;
 
 import java.io.Serializable;
 
 @Getter
-@Builder
 public class LoginContext implements Serializable {
     private static final long serialVersionUID = 1L;
 

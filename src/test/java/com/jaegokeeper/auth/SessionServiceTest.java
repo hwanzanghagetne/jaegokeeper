@@ -54,12 +54,10 @@ public class SessionServiceTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        try {
-            sessionService.createSession(1, "LOCAL", request, response);
-            fail("BusinessException이 발생해야 합니다");
-        } catch (BusinessException e) {
-            assertEquals(ErrorCode.USER_NOT_FOUND, e.getErrorCode());
-        }
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> sessionService.createSession(1, "LOCAL", request, response));
+
+        assertEquals(ErrorCode.USER_NOT_FOUND, e.getErrorCode());
     }
 
     @Test

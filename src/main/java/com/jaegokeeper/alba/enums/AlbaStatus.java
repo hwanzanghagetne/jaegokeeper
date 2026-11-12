@@ -1,7 +1,7 @@
 package com.jaegokeeper.alba.enums;
 
 public enum AlbaStatus {
-    STAFF,   // 재직
-    PART,    // 단기
+    STAFF,
+    PART,
     RESIGN;
 }

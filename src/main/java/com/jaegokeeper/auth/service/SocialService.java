@@ -3,12 +3,14 @@ package com.jaegokeeper.auth.service;
 import com.jaegokeeper.auth.dto.LoginTarget;
 import com.jaegokeeper.auth.dto.PendingSocialSignup;
 import com.jaegokeeper.auth.dto.SocialCompleteResponse;
+import com.jaegokeeper.auth.dto.UidDTO;
+import com.jaegokeeper.auth.dto.UserDTO;
 import com.jaegokeeper.auth.mapper.UserAuthMapper;
 import com.jaegokeeper.auth.utils.SocialProfile;
 import com.jaegokeeper.auth.utils.SocialVerifier;
 import com.jaegokeeper.exception.BusinessException;
-import com.jaegokeeper.onboarding.service.OnboardingService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,18 +23,15 @@ import static com.jaegokeeper.exception.ErrorCode.*;
 public class SocialService {
 
     private final UserAuthMapper userAuthMapper;
-    private final OnboardingService onboardingService;
     private final PendingSocialSignupService pendingSocialSignupService;
     private final Map<String, SocialVerifier> verifiersByProvider;
 
     public SocialService(
             UserAuthMapper userAuthMapper,
-            OnboardingService onboardingService,
             PendingSocialSignupService pendingSocialSignupService,
             List<SocialVerifier> verifiers
     ) {
         this.userAuthMapper = userAuthMapper;
-        this.onboardingService = onboardingService;
         this.pendingSocialSignupService = pendingSocialSignupService;
 
         Map<String, SocialVerifier> m = new HashMap<>();
@@ -58,14 +57,14 @@ public class SocialService {
     }
 
     private SocialCompleteResponse findOrPrepareSignup(String provider, SocialProfile profile) {
-        LoginTarget tgt = userAuthMapper.findByProviderUid(provider, profile.getProviderUid());
+        LoginTarget target = userAuthMapper.findByProviderUid(provider, profile.getProviderUid());
 
-        if (tgt != null) {
-            if (!tgt.getIsActive()) throw new BusinessException(USER_NOT_ACTIVE);
-            return SocialCompleteResponse.login(tgt.getUserId());
+        if (target != null) {
+            if (!Boolean.TRUE.equals(target.getIsActive())) throw new BusinessException(USER_NOT_ACTIVE);
+            return SocialCompleteResponse.login(target.getUserId());
         }
 
-        Integer linkedUserId = onboardingService.linkExistingUserByVerifiedEmail(provider, profile);
+        Integer linkedUserId = linkExistingUserByVerifiedEmail(provider, profile);
         if (linkedUserId != null) {
             return SocialCompleteResponse.login(linkedUserId);
         }
@@ -77,5 +76,42 @@ public class SocialService {
                 pending.getEmail(),
                 pending.getDisplayName()
         );
+    }
+
+    private Integer linkExistingUserByVerifiedEmail(String provider, SocialProfile profile) {
+        String email = profile.getEmail() != null ? profile.getEmail().trim().toLowerCase() : null;
+
+        if (email == null || email.isEmpty() || !profile.isEmailVerified()) {
+            return null;
+        }
+
+        UserDTO existing = userAuthMapper.findUserByEmail(email);
+        if (existing == null) {
+            return null;
+        }
+
+        return linkProviderToExistingUser(existing, provider, profile.getProviderUid());
+    }
+
+    private int linkProviderToExistingUser(UserDTO existing, String provider, String providerUid) {
+        if (!Boolean.TRUE.equals(existing.getIsActive())) {
+            throw new BusinessException(USER_NOT_ACTIVE);
+        }
+
+        UidDTO linked = new UidDTO();
+        linked.setUserId(existing.getUserId());
+        linked.setProvider(provider);
+        linked.setProviderUid(providerUid);
+
+        try {
+            userAuthMapper.insertAuth(linked);
+        } catch (DuplicateKeyException e) {
+            UidDTO existingAuth = userAuthMapper.findAuthByUserAndProvider(existing.getUserId(), provider);
+            if (existingAuth == null || !providerUid.equals(existingAuth.getProviderUid())) {
+                throw new BusinessException(FORBIDDEN);
+            }
+        }
+
+        return existing.getUserId();
     }
 }

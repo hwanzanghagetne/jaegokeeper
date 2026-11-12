@@ -111,4 +111,20 @@ public class SocialControllerWebTest {
         verify(socialService).complete("KAKAO", "token-1");
         verify(sessionService).createSession(eq(25), eq("KAKAO"), any(HttpServletRequest.class), any(HttpServletResponse.class));
     }
+
+    @Test
+    public void 소셜로그인_신규사용자는_세션없이_202와_가입토큰_응답() throws Exception {
+        String body = "{\"provider\":\"GOOGLE\",\"accessToken\":\"token-1\"}";
+        when(socialService.complete(eq("GOOGLE"), eq("token-1")))
+                .thenReturn(SocialCompleteResponse.signupRequired("signup-token", "GOOGLE", "new@example.com", "신규"));
+
+        mockMvc.perform(post("/auth/social/complete")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isAccepted())
+                .andExpect(content().string(containsString("\"signupRequired\":true")))
+                .andExpect(content().string(containsString("\"signupToken\":\"signup-token\"")));
+
+        verifyNoInteractions(sessionService);
+    }
 }

@@ -8,7 +8,6 @@ import com.jaegokeeper.auth.mapper.UserAuthMapper;
 import com.jaegokeeper.auth.service.PendingSocialSignupService;
 import com.jaegokeeper.auth.service.SessionService;
 import com.jaegokeeper.auth.utils.PasswordHasher;
-import com.jaegokeeper.auth.utils.SocialProfile;
 import com.jaegokeeper.email.service.EmailAuthService;
 import com.jaegokeeper.exception.BusinessException;
 import com.jaegokeeper.onboarding.dto.OwnerSignUpRequest;
@@ -67,22 +66,6 @@ public class OnboardingService {
         return toResponse(user, store);
     }
 
-    @Transactional
-    public Integer linkExistingUserByVerifiedEmail(String provider, SocialProfile profile) {
-        String email = profile.getEmail() != null ? profile.getEmail().trim().toLowerCase() : null;
-
-        if (email == null || email.isEmpty() || !profile.isEmailVerified()) {
-            return null;
-        }
-
-        UserDTO existing = userAuthMapper.findUserByEmail(email);
-        if (existing == null) {
-            return null;
-        }
-
-        return linkProviderToExistingUser(existing, provider, profile.getProviderUid());
-    }
-
     private UserDTO createUser(String email, String passHash, String userName, String userPhone,
                                String provider, String providerUid) {
         if (userAuthMapper.findUserByEmail(email) != null) {
@@ -134,28 +117,6 @@ public class OnboardingService {
         }
 
         return storeDto;
-    }
-
-    private int linkProviderToExistingUser(UserDTO existing, String provider, String providerUid) {
-        if (!Boolean.TRUE.equals(existing.getIsActive())) {
-            throw new BusinessException(USER_NOT_ACTIVE);
-        }
-
-        UidDTO linked = new UidDTO();
-        linked.setUserId(existing.getUserId());
-        linked.setProvider(provider);
-        linked.setProviderUid(providerUid);
-
-        try {
-            userAuthMapper.insertAuth(linked);
-        } catch (DuplicateKeyException e) {
-            UidDTO existingAuth = userAuthMapper.findAuthByUserAndProvider(existing.getUserId(), provider);
-            if (existingAuth == null || !providerUid.equals(existingAuth.getProviderUid())) {
-                throw new BusinessException(FORBIDDEN);
-            }
-        }
-
-        return existing.getUserId();
     }
 
     private String normalizeVerifiedSocialEmail(PendingSocialSignup pending) {

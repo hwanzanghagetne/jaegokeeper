@@ -5,7 +5,7 @@
 
 <mapper namespace="com.jaegokeeper.auth.mapper.UserAuthMapper">
 
-    <select id="findByProviderUid" parameterType="com.jaegokeeper.auth.dto.UidDTO" resultType="com.jaegokeeper.auth.dto.LoginTarget">
+    <select id="findByProviderUid" resultType="com.jaegokeeper.auth.dto.LoginTarget">
         SELECT
             u.user_id AS userId,
             u.user_name AS userName,
@@ -59,15 +59,14 @@
         VALUES (#{userId}, #{provider}, #{providerUid}, NULL)
     </insert>
 
-
     <select id="findUserByEmail" resultType="com.jaegokeeper.auth.dto.UserDTO">
         SELECT
-            user_id as userId,
-            pass_hash as passHash,
-            user_name as userName,
-            user_mail as userMail,
-            user_phone as userPhone,
-            is_active as isActive
+            user_id AS userId,
+            pass_hash AS passHash,
+            user_name AS userName,
+            user_mail AS userMail,
+            user_phone AS userPhone,
+            is_active AS isActive
         FROM user
         WHERE user_mail = #{email}
         LIMIT 1
@@ -82,19 +81,6 @@
         FROM uid
         WHERE user_id = #{userId}
           AND provider = #{provider}
-        LIMIT 1
-    </select>
-
-    <select id="findUserById" parameterType="java.lang.Integer" resultType="com.jaegokeeper.auth.dto.UserDTO">
-        SELECT
-            user_id as userId,
-            pass_hash as passHash,
-            user_name as userName,
-            user_mail as userMail,
-            user_phone as userPhone,
-            is_active as isActive
-        FROM user
-        WHERE user_id = #{userId}
         LIMIT 1
     </select>
 

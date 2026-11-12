@@ -22,18 +22,14 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -76,13 +72,33 @@ public class OnboardingServiceTest {
     public void 일반가입_이미가입된이메일_예외() {
         when(userAuthMapper.findUserByEmail("owner@test.com")).thenReturn(new UserDTO());
 
-        try {
-            onboardingService.ownerSignUp(ownerSignUpRequest("owner@test.com"));
-            fail("BusinessException이 발생해야 합니다");
-        } catch (BusinessException e) {
-            assertEquals(ErrorCode.EMAIL_ALREADY_EXISTS, e.getErrorCode());
-        }
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> onboardingService.ownerSignUp(ownerSignUpRequest("owner@test.com")));
+
+        assertEquals(ErrorCode.EMAIL_ALREADY_EXISTS, e.getErrorCode());
         verify(storeMapper, never()).insertStore(any());
+    }
+
+    @Test
+    public void 일반가입_유저_저장이_실패하면_가입실패_예외() {
+        when(userAuthMapper.insertUser(any(UserDTO.class))).thenReturn(0);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> onboardingService.ownerSignUp(ownerSignUpRequest("owner@test.com")));
+
+        assertEquals(ErrorCode.REGISTER_FAILED, e.getErrorCode());
+        verify(storeMapper, never()).insertStore(any());
+    }
+
+    @Test
+    public void 일반가입_점포_저장이_실패하면_서버오류_예외() {
+        stubInserts();
+        when(storeMapper.insertStore(any(StoreDto.class))).thenReturn(0);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> onboardingService.ownerSignUp(ownerSignUpRequest("owner@test.com")));
+
+        assertEquals(ErrorCode.INTERNAL_ERROR, e.getErrorCode());
     }
 
     @Test
@@ -102,12 +118,10 @@ public class OnboardingServiceTest {
     public void 소셜가입_이메일미인증_예외() {
         when(pendingSocialSignupService.consume("token")).thenReturn(pendingSignup("social@test.com", false));
 
-        try {
-            onboardingService.socialOwnerSignUp(socialSignUpRequest(), null, null);
-            fail("BusinessException이 발생해야 합니다");
-        } catch (BusinessException e) {
-            assertEquals(ErrorCode.EMAIL_NOT_VERIFIED, e.getErrorCode());
-        }
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> onboardingService.socialOwnerSignUp(socialSignUpRequest(), null, null));
+
+        assertEquals(ErrorCode.EMAIL_NOT_VERIFIED, e.getErrorCode());
         verify(userAuthMapper, never()).insertUser(any());
     }
 
@@ -116,75 +130,12 @@ public class OnboardingServiceTest {
         when(pendingSocialSignupService.consume("token")).thenReturn(pendingSignup("social@test.com", true));
         when(userAuthMapper.findUserByEmail("social@test.com")).thenReturn(new UserDTO());
 
-        try {
-            onboardingService.socialOwnerSignUp(socialSignUpRequest(), null, null);
-            fail("BusinessException이 발생해야 합니다");
-        } catch (BusinessException e) {
-            assertEquals(ErrorCode.EMAIL_ALREADY_EXISTS, e.getErrorCode());
-        }
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> onboardingService.socialOwnerSignUp(socialSignUpRequest(), null, null));
+
+        assertEquals(ErrorCode.EMAIL_ALREADY_EXISTS, e.getErrorCode());
         verify(storeMapper, never()).insertStore(any());
         verify(sessionService, never()).createSession(anyInt(), any(), any(), any());
-    }
-
-    @Test
-    public void 소셜연동_이메일없으면_null반환() {
-        SocialProfile profile = new SocialProfile("provider-uid", "tester", null, false);
-
-        Integer userId = onboardingService.linkExistingUserByVerifiedEmail("GOOGLE", profile);
-
-        assertNull(userId);
-    }
-
-    @Test
-    public void 소셜연동_기존연동과_providerUid불일치_예외() {
-        String provider = "GOOGLE";
-        SocialProfile profile = new SocialProfile("new-uid", "tester", "test@example.com", true);
-
-        UserDTO existing = new UserDTO();
-        existing.setUserId(1);
-        existing.setIsActive(true);
-        when(userAuthMapper.findUserByEmail(eq("test@example.com"))).thenReturn(existing);
-
-        doThrow(new DuplicateKeyException("dup"))
-                .when(userAuthMapper)
-                .insertAuth(any(UidDTO.class));
-
-        UidDTO linked = new UidDTO();
-        linked.setUserId(1);
-        linked.setProvider(provider);
-        linked.setProviderUid("old-uid");
-        when(userAuthMapper.findAuthByUserAndProvider(1, provider)).thenReturn(linked);
-
-        try {
-            onboardingService.linkExistingUserByVerifiedEmail(provider, profile);
-            fail("BusinessException이 발생해야 합니다");
-        } catch (BusinessException e) {
-            assertEquals(ErrorCode.FORBIDDEN, e.getErrorCode());
-        }
-    }
-
-    @Test
-    public void 소셜연동_기존동일연동이면_성공() {
-        String provider = "GOOGLE";
-        SocialProfile profile = new SocialProfile("same-uid", "tester", "test@example.com", true);
-
-        UserDTO existing = new UserDTO();
-        existing.setUserId(1);
-        existing.setIsActive(true);
-        when(userAuthMapper.findUserByEmail(eq("test@example.com"))).thenReturn(existing);
-
-        doThrow(new DuplicateKeyException("dup"))
-                .when(userAuthMapper)
-                .insertAuth(any(UidDTO.class));
-
-        UidDTO linked = new UidDTO();
-        linked.setUserId(1);
-        linked.setProvider(provider);
-        linked.setProviderUid("same-uid");
-        when(userAuthMapper.findAuthByUserAndProvider(1, provider)).thenReturn(linked);
-
-        Integer userId = onboardingService.linkExistingUserByVerifiedEmail(provider, profile);
-        assertEquals(Integer.valueOf(1), userId);
     }
 
     private void stubInserts() {

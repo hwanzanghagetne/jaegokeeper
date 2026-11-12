@@ -2,6 +2,7 @@ package com.jaegokeeper.mail;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
@@ -46,5 +47,29 @@ public class MailServiceTest {
         gmailMailService.sendWelcome("test@example.com", "홍길동");
 
         verify(mailSender).send(message);
+    }
+
+    @Test
+    public void 첫_전송이_실패해도_한번_더_시도해서_성공하면_종료() throws Exception {
+        MimeMessage message = new MimeMessage(Session.getInstance(new Properties()));
+        when(mailSender.createMimeMessage()).thenReturn(message);
+        when(mailTemplateEngine.process(eq("signup"), any())).thenReturn("<html>123456</html>");
+        doThrow(new MailSendException("smtp down")).doNothing().when(mailSender).send(message);
+
+        gmailMailService.sendSignupCode("test@example.com", "123456");
+
+        verify(mailSender, times(2)).send(message);
+    }
+
+    @Test
+    public void 두번_모두_실패해도_예외를_던지지_않고_두번만_시도() throws Exception {
+        MimeMessage message = new MimeMessage(Session.getInstance(new Properties()));
+        when(mailSender.createMimeMessage()).thenReturn(message);
+        when(mailTemplateEngine.process(eq("welcome"), any())).thenReturn("<html>홍길동</html>");
+        doThrow(new MailSendException("smtp down")).when(mailSender).send(message);
+
+        gmailMailService.sendWelcome("test@example.com", "홍길동");
+
+        verify(mailSender, times(2)).send(message);
     }
 }

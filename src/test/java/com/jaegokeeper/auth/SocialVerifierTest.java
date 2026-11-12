@@ -17,6 +17,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -82,6 +84,47 @@ public class SocialVerifierTest {
 
         assertRejected(kakao);
     }
+
+    @Test
+    public void 구글_프로필은_이름_이메일_이메일인증여부를_그대로_매핑() throws Exception {
+        stubGoogle("{\"aud\":\"my-client-id\"}");
+
+        SocialProfile profile = google.verify("token");
+
+        assertEquals("n", profile.getDisplayName());
+        assertEquals("a@b.com", profile.getEmail());
+        assertTrue(profile.isEmailVerified());
+    }
+
+    @Test
+    public void 카카오_프로필은_닉네임_이메일_이메일인증여부를_매핑() throws Exception {
+        stubKakao("{\"app_id\":12345}");
+        when(restTemplate.exchange(eq("https://kapi.kakao.com/v2/user/me"), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(ResponseEntity.ok("{\"id\":777,\"kakao_account\":{\"email\":\"k@b.com\",\"is_email_verified\":true,\"profile\":{\"nickname\":\"닉\"}}}"));
+
+        SocialProfile profile = kakao.verify("token");
+
+        assertEquals("닉", profile.getDisplayName());
+        assertEquals("k@b.com", profile.getEmail());
+        assertTrue(profile.isEmailVerified());
+    }
+
+    @Test
+    public void 카카오_계정정보가_없으면_이메일_없는_프로필() throws Exception {
+        stubKakao("{\"app_id\":12345}");
+
+        SocialProfile profile = kakao.verify("token");
+
+        assertNull(profile.getEmail());
+        assertFalse(profile.isEmailVerified());
+    }
+
+    @Test
+    public void 제공자_이름은_Provider_enum과_같다() {
+        assertEquals("GOOGLE", google.provider());
+        assertEquals("KAKAO", kakao.provider());
+    }
+
 
     private void stubGoogle(String tokeninfoBody) {
         when(restTemplate.getForObject(startsWith("https://oauth2.googleapis.com/tokeninfo"), eq(String.class), eq("token")))

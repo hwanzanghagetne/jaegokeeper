@@ -9,12 +9,10 @@ import jakarta.validation.constraints.NotNull;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class SocialRequest {
     @NotNull(message = "provider는 필수입니다")
-    Provider provider;
+    private Provider provider;
 
     @NotBlank(message = "accessToken은 필수입니다")
-    String accessToken;
+    private String accessToken;
 }

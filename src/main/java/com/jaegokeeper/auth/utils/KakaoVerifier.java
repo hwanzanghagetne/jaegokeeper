@@ -2,9 +2,12 @@ package com.jaegokeeper.auth.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jaegokeeper.auth.enums.Provider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,44 +21,38 @@ public class KakaoVerifier implements SocialVerifier {
     @Value("${KAKAO_APP_ID:}")
     private String appId;
 
-    @Override public String provider() { return "KAKAO"; }
+    @Override
+    public String provider() {
+        return Provider.KAKAO.name();
+    }
 
     @Override
     public SocialProfile verify(String accessToken) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
 
-        JsonNode info = om.readTree(restTemplate.exchange(
+        String tokenAppId = om.readTree(restTemplate.exchange(
                 "https://kapi.kakao.com/v1/user/access_token_info",
                 HttpMethod.GET, new HttpEntity<>(headers), String.class
-        ).getBody());
-        String tokenAppId = info.has("app_id") ? info.get("app_id").asText() : null;
+        ).getBody()).path("app_id").asText(null);
         if (appId.isBlank() || !appId.equals(tokenAppId)) {
             throw new IllegalArgumentException("kakao token app_id mismatch");
         }
 
-        ResponseEntity<String> res = restTemplate.exchange(
+        JsonNode user = om.readTree(restTemplate.exchange(
                 "https://kapi.kakao.com/v2/user/me",
                 HttpMethod.GET, new HttpEntity<>(headers), String.class
-        );
+        ).getBody());
 
-        JsonNode n = om.readTree(res.getBody());
-        String id = n.has("id") ? n.get("id").asText() : null;
-        String nickname = null;
-        String email = null;
-        boolean emailVerified = false;
-
-        JsonNode kakaoAccount = n.get("kakao_account");
-        if (kakaoAccount != null) {
-            JsonNode profile = kakaoAccount.get("profile");
-            if (profile != null && profile.has("nickname")) nickname = profile.get("nickname").asText();
-            if (kakaoAccount.has("email")) email = kakaoAccount.get("email").asText();
-            if (kakaoAccount.has("is_email_verified")) {
-                emailVerified = kakaoAccount.get("is_email_verified").asBoolean(false);
-            }
-        }
-
+        String id = user.path("id").asText(null);
         if (id == null) throw new IllegalArgumentException("kakao id missing");
-        return new SocialProfile(id, nickname, email, emailVerified);
+
+        JsonNode account = user.path("kakao_account");
+        return new SocialProfile(
+                id,
+                account.path("profile").path("nickname").asText(null),
+                account.path("email").asText(null),
+                account.path("is_email_verified").asBoolean(false)
+        );
     }
 }

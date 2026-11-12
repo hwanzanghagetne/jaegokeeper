@@ -4,7 +4,6 @@ import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.auth.dto.SessionResponse;
 import com.jaegokeeper.exception.BusinessException;
 import io.swagger.v3.oas.annotations.Operation;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import static com.jaegokeeper.exception.ErrorCode.LOGIN_REQUIRED;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/auth/session")
 public class SessionController {
 

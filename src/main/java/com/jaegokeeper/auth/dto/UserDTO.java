@@ -15,9 +15,7 @@ public class UserDTO {
     private String userPhone;
     private Boolean isActive;
 
-    private String userRole;
     private String passHash;
-    private String passChk;
     private Boolean emailVerified;
 
 }

@@ -2,9 +2,12 @@ package com.jaegokeeper.auth.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jaegokeeper.auth.enums.Provider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,38 +21,35 @@ public class GoogleVerifier implements SocialVerifier {
     @Value("${GOOGLE_CLIENT_ID:}")
     private String clientId;
 
-    @Override public String provider() { return "GOOGLE"; }
+    @Override
+    public String provider() {
+        return Provider.GOOGLE.name();
+    }
 
     @Override
     public SocialProfile verify(String accessToken) throws Exception {
-        String aud = text(om.readTree(restTemplate.getForObject(
-                "https://oauth2.googleapis.com/tokeninfo?access_token={token}", String.class, accessToken)), "aud");
+        String aud = om.readTree(restTemplate.getForObject(
+                "https://oauth2.googleapis.com/tokeninfo?access_token={token}", String.class, accessToken))
+                .path("aud").asText(null);
         if (clientId.isBlank() || !clientId.equals(aud)) {
             throw new IllegalArgumentException("google token audience mismatch");
         }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
-        ResponseEntity<String> res = restTemplate.exchange(
+        JsonNode userInfo = om.readTree(restTemplate.exchange(
                 "https://www.googleapis.com/oauth2/v3/userinfo",
                 HttpMethod.GET, new HttpEntity<>(headers), String.class
-        );
+        ).getBody());
 
-        JsonNode n = om.readTree(res.getBody());
-        String sub   = text(n, "sub");
-        String name  = text(n, "name");
-        String email = text(n, "email");
-        boolean emailVerified = bool(n, "email_verified");
+        String sub = userInfo.path("sub").asText(null);
         if (sub == null) throw new IllegalArgumentException("google userinfo sub missing");
 
-        return new SocialProfile(sub, name, email, emailVerified);
-    }
-
-    private String text(JsonNode n, String k) {
-        return (n != null && n.has(k) && !n.get(k).isNull()) ? n.get(k).asText() : null;
-    }
-
-    private boolean bool(JsonNode n, String k) {
-        return n != null && n.has(k) && !n.get(k).isNull() && n.get(k).asBoolean(false);
+        return new SocialProfile(
+                sub,
+                userInfo.path("name").asText(null),
+                userInfo.path("email").asText(null),
+                userInfo.path("email_verified").asBoolean(false)
+        );
     }
 }
