@@ -43,7 +43,7 @@
                     SELECT 1 FROM request r
                     WHERE r.item_id = i.item_id
                       AND r.is_active = b'1'
-                      AND r.request_status NOT IN ('CANCEL','DONE','CONFIRM')
+                      AND r.request_status IN ('WAIT','WORKING','CONFIRM')
                 )
             </if>
             <if test="filter != null and filter.name() == 'BAD_STOCK'">
@@ -95,7 +95,7 @@
                     SELECT 1 FROM request r3
                     WHERE r3.item_id = i.item_id
                       AND r3.is_active = b'1'
-                      AND r3.request_status NOT IN ('CANCEL','DONE','CONFIRM')
+                      AND r3.request_status IN ('WAIT','WORKING','CONFIRM')
                 )
             </if>
             <if test="filter != null and filter.name() == 'BAD_STOCK'">

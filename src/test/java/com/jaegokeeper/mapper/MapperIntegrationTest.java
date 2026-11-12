@@ -7,7 +7,10 @@ import com.jaegokeeper.alba.model.Alba;
 import com.jaegokeeper.image.mapper.ImageMapper;
 import com.jaegokeeper.item.dto.response.ItemDetailResponse;
 import com.jaegokeeper.item.dto.response.ItemListResponse;
+import com.jaegokeeper.item.enums.ItemFilter;
 import com.jaegokeeper.item.mapper.ItemMapper;
+import com.jaegokeeper.request.dto.request.RequestUpdateRequest;
+import com.jaegokeeper.request.dto.response.RequestListResponse;
 import com.jaegokeeper.request.mapper.RequestMapper;
 import com.jaegokeeper.schedule.dto.ScheduleUpdateRequest;
 import com.jaegokeeper.schedule.dto.WorkInOutRequest;
@@ -171,8 +174,17 @@ public class MapperIntegrationTest {
                 id, itemId, albaId);
     }
 
+    private void requestWithStatus(int id, int itemId, int albaId, String status) {
+        db.update("INSERT INTO request (request_id, item_id, alba_id, request_amount, request_type, request_status, created_at) VALUES (?, ?, ?, 1, 'ORDER', ?, '2026-01-01 10:00:00')",
+                id, itemId, albaId, status);
+    }
+
     private void image(int id) {
         db.update("INSERT INTO image (image_id, image_path, origin_name) VALUES (?, ?, ?)", id, "path" + id + ".png", "origin" + id);
+    }
+
+    private List<Integer> requestIds(List<RequestListResponse> list) {
+        return list.stream().map(RequestListResponse::getRequestId).collect(java.util.stream.Collectors.toList());
     }
 
     private void runConcurrently(int threads, Runnable task) throws Exception {
@@ -254,6 +266,52 @@ public class MapperIntegrationTest {
         runConcurrently(20, () -> stockMapper.increaseQuantity(1, 1, 1));
 
         assertEquals(Integer.valueOf(30), stockMapper.findStockAmountByItemId(1, 1));
+    }
+
+    @Test
+    public void 요청_목록은_같은_초에_쌓인_요청도_페이지_경계에서_중복_누락_없이_나뉜다() {
+        storeWithOwner(1);
+        item(1, 1, null);
+        alba(1, 1, "010-1", null);
+        for (int id = 1; id <= 3; id++) {
+            requestWithStatus(id, 1, 1, "WAIT");
+        }
+
+        List<Integer> firstPage = requestIds(requestMapper.findRequestList(1, null, null, 0, 2));
+        List<Integer> secondPage = requestIds(requestMapper.findRequestList(1, null, null, 2, 2));
+
+        assertEquals(List.of(3, 2), firstPage);
+        assertEquals(List.of(1), secondPage);
+    }
+
+    @Test
+    public void 삭제된_요청은_수정되지_않는다() {
+        storeWithOwner(1);
+        item(1, 1, null);
+        alba(1, 1, "010-1", null);
+        request(1, 1, 1);
+        requestMapper.softDeleteRequest(1, 1);
+        RequestUpdateRequest update = new RequestUpdateRequest();
+        update.setRequestAmount(5);
+
+        assertEquals(0, requestMapper.updateRequest(1, 1, update));
+    }
+
+    @Test
+    public void 요청_있음_필터는_대기_진행_승인_상태만_포함한다() {
+        storeWithOwner(1);
+        alba(1, 1, "010-1", null);
+        String[] statuses = {"WAIT", "WORKING", "CONFIRM", "REVERT", "DONE", "CANCEL"};
+        for (int i = 0; i < statuses.length; i++) {
+            item(i + 1, 1, null);
+            requestWithStatus(i + 1, i + 1, 1, statuses[i]);
+        }
+
+        List<ItemListResponse> list = itemMapper.findItemList(1, ItemFilter.HAS_REQUEST, null, false, 0, 50);
+
+        assertEquals(List.of("item3", "item2", "item1"),
+                list.stream().map(ItemListResponse::getItemName).collect(java.util.stream.Collectors.toList()));
+        assertEquals(3, itemMapper.countItemList(1, ItemFilter.HAS_REQUEST, null, false));
     }
 
     @Test

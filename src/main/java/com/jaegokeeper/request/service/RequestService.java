@@ -102,16 +102,19 @@ public class RequestService {
     @Transactional
     public void updateRequest(LoginContext login, Integer requestId, RequestUpdateRequest dto) {
         int storeId = login.getStoreId();
-        RequestStatus status = requestMapper.findRequestStatus(storeId, requestId);
-        if (status == null) {
+        RequestDetailResponse current = requestMapper.findRequestDetail(storeId, requestId);
+        if (current == null) {
             throw new BusinessException(REQUEST_NOT_FOUND);
         }
-        if (status != RequestStatus.WAIT) {
+        if (current.getRequestStatus() != RequestStatus.WAIT) {
             throw new BusinessException(REQUEST_STATUS_NOT_WAIT);
         }
-        if (dto.getRequestType() == RequestType.ORDER
-                && dto.getRequestAmount() != null && dto.getRequestAmount() < 1) {
-            throw new BusinessException(REQUEST_AMOUNT_INVALID);
+        if (dto.getRequestType() != null || dto.getRequestAmount() != null) {
+            RequestType type = dto.getRequestType() != null ? dto.getRequestType() : current.getRequestType();
+            Integer amount = dto.getRequestAmount() != null ? dto.getRequestAmount() : current.getRequestAmount();
+            if (type == RequestType.ORDER && (amount == null || amount < 1)) {
+                throw new BusinessException(REQUEST_AMOUNT_INVALID);
+            }
         }
         if (dto.getAlbaId() != null
                 && albaMapper.countByStoreIdAndAlbaId(storeId, dto.getAlbaId()) != 1) {

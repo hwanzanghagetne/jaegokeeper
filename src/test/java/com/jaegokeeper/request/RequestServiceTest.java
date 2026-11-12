@@ -11,6 +11,7 @@ import com.jaegokeeper.request.dto.request.RequestCreateRequest;
 import com.jaegokeeper.request.dto.request.RequestPageRequest;
 import com.jaegokeeper.request.dto.request.RequestStatusUpdateRequest;
 import com.jaegokeeper.request.dto.request.RequestUpdateRequest;
+import com.jaegokeeper.request.dto.response.RequestDetailResponse;
 import com.jaegokeeper.request.dto.response.RequestListResponse;
 import com.jaegokeeper.request.enums.RequestType;
 import com.jaegokeeper.request.model.Request;
@@ -236,9 +237,17 @@ public class RequestServiceTest {
         verify(requestMapper).softDeleteRequest(1, 7);
     }
 
+    private RequestDetailResponse current(RequestStatus status, RequestType type, Integer amount) {
+        RequestDetailResponse detail = new RequestDetailResponse();
+        detail.setRequestStatus(status);
+        detail.setRequestType(type);
+        detail.setRequestAmount(amount);
+        return detail;
+    }
+
     @Test
     public void 요청수정_대상없으면_예외() {
-        when(requestMapper.findRequestStatus(1, 5)).thenReturn(null);
+        when(requestMapper.findRequestDetail(1, 5)).thenReturn(null);
 
         BusinessException e = assertThrows(BusinessException.class,
                 () -> requestService.updateRequest(login, 5, new RequestUpdateRequest()));
@@ -248,7 +257,7 @@ public class RequestServiceTest {
 
     @Test
     public void 요청수정_대기상태가_아니면_예외() {
-        when(requestMapper.findRequestStatus(1, 5)).thenReturn(RequestStatus.CONFIRM);
+        when(requestMapper.findRequestDetail(1, 5)).thenReturn(current(RequestStatus.CONFIRM, RequestType.ORDER, 3));
 
         BusinessException e = assertThrows(BusinessException.class,
                 () -> requestService.updateRequest(login, 5, new RequestUpdateRequest()));
@@ -259,7 +268,7 @@ public class RequestServiceTest {
 
     @Test
     public void 요청수정_발주로_바꾸면서_수량이_0이면_예외() {
-        when(requestMapper.findRequestStatus(1, 5)).thenReturn(RequestStatus.WAIT);
+        when(requestMapper.findRequestDetail(1, 5)).thenReturn(current(RequestStatus.WAIT, RequestType.CHECK, 0));
         RequestUpdateRequest req = new RequestUpdateRequest();
         req.setRequestType(RequestType.ORDER);
         req.setRequestAmount(0);
@@ -271,8 +280,46 @@ public class RequestServiceTest {
     }
 
     @Test
+    public void 요청수정_기존_발주의_수량만_0으로_바꾸면_예외() {
+        when(requestMapper.findRequestDetail(1, 5)).thenReturn(current(RequestStatus.WAIT, RequestType.ORDER, 3));
+        RequestUpdateRequest req = new RequestUpdateRequest();
+        req.setRequestAmount(0);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> requestService.updateRequest(login, 5, req));
+
+        assertEquals(ErrorCode.REQUEST_AMOUNT_INVALID, e.getErrorCode());
+        verify(requestMapper, never()).updateRequest(anyInt(), anyInt(), any());
+    }
+
+    @Test
+    public void 요청수정_수량_0인_확인요청의_유형만_발주로_바꾸면_예외() {
+        when(requestMapper.findRequestDetail(1, 5)).thenReturn(current(RequestStatus.WAIT, RequestType.CHECK, 0));
+        RequestUpdateRequest req = new RequestUpdateRequest();
+        req.setRequestType(RequestType.ORDER);
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> requestService.updateRequest(login, 5, req));
+
+        assertEquals(ErrorCode.REQUEST_AMOUNT_INVALID, e.getErrorCode());
+        verify(requestMapper, never()).updateRequest(anyInt(), anyInt(), any());
+    }
+
+    @Test
+    public void 요청수정_확인요청의_수량이_0이어도_유형이나_수량을_안_바꾸면_통과() {
+        when(requestMapper.findRequestDetail(1, 5)).thenReturn(current(RequestStatus.WAIT, RequestType.CHECK, 0));
+        RequestUpdateRequest req = new RequestUpdateRequest();
+        req.setRequestAmount(0);
+        when(requestMapper.updateRequest(1, 5, req)).thenReturn(1);
+
+        requestService.updateRequest(login, 5, req);
+
+        verify(requestMapper).updateRequest(1, 5, req);
+    }
+
+    @Test
     public void 요청수정_다른_매장_알바로_바꾸면_예외() {
-        when(requestMapper.findRequestStatus(1, 5)).thenReturn(RequestStatus.WAIT);
+        when(requestMapper.findRequestDetail(1, 5)).thenReturn(current(RequestStatus.WAIT, RequestType.ORDER, 3));
         when(albaMapper.countByStoreIdAndAlbaId(1, 9)).thenReturn(0);
         RequestUpdateRequest req = new RequestUpdateRequest();
         req.setAlbaId(9);
@@ -285,7 +332,7 @@ public class RequestServiceTest {
 
     @Test
     public void 요청수정_갱신된_행이_없으면_대기상태_아님_예외() {
-        when(requestMapper.findRequestStatus(1, 5)).thenReturn(RequestStatus.WAIT);
+        when(requestMapper.findRequestDetail(1, 5)).thenReturn(current(RequestStatus.WAIT, RequestType.ORDER, 3));
         RequestUpdateRequest req = new RequestUpdateRequest();
         when(requestMapper.updateRequest(1, 5, req)).thenReturn(0);
 
@@ -297,7 +344,7 @@ public class RequestServiceTest {
 
     @Test
     public void 요청수정_성공() {
-        when(requestMapper.findRequestStatus(1, 5)).thenReturn(RequestStatus.WAIT);
+        when(requestMapper.findRequestDetail(1, 5)).thenReturn(current(RequestStatus.WAIT, RequestType.ORDER, 3));
         RequestUpdateRequest req = new RequestUpdateRequest();
         req.setRequestAmount(3);
         when(requestMapper.updateRequest(1, 5, req)).thenReturn(1);

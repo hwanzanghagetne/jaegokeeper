@@ -35,7 +35,7 @@
             <if test="requestType != null">AND r.request_type = #{requestType}</if>
             <if test="requestStatus != null">AND r.request_status = #{requestStatus}</if>
         </where>
-        ORDER BY r.created_at DESC
+        ORDER BY r.created_at DESC, r.request_id DESC
         LIMIT #{size} OFFSET #{offset}
     </select>
 
@@ -92,6 +92,7 @@
         </set>
         WHERE r.request_id = #{requestId}
           AND i.store_id = #{storeId}
+          AND r.is_active = b'1'
           AND r.request_status = 'WAIT'
     </update>
 
