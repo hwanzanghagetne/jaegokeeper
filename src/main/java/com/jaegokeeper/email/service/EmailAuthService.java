@@ -18,33 +18,37 @@ public class EmailAuthService {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final EmailAuthMapper emailAuthMapper;
-    private final UserMapper usrMapper;
+    private final UserMapper userMapper;
     private final MailService mailService;
 
     public void sendCode(String email) {
-        int exists = usrMapper.countByEmail(email);
-        if (exists > 0) {
+        String normalized = normalize(email);
+        if (userMapper.countByEmail(normalized) > 0) {
             throw new BusinessException(EMAIL_ALREADY_EXISTS);
         }
 
         String code = generate6DigitCode();
 
-        emailAuthMapper.upsertAuthCode(email, code);
-        mailService.sendSignupCode(email, code);
+        emailAuthMapper.upsertAuthCode(normalized, code);
+        mailService.sendSignupCode(normalized, code);
     }
 
     public void verifyCode(String email, String code) {
-        int updated = emailAuthMapper.verifyCode(email, code);
+        int updated = emailAuthMapper.verifyCode(normalize(email), code);
         if (updated != 1) {
             throw new BusinessException(EMAIL_CODE_INVALID);
         }
     }
 
     public void assertVerified(String email) {
-        Integer verified = emailAuthMapper.isVerified(email);
+        Integer verified = emailAuthMapper.isVerified(normalize(email));
         if (verified == null || verified != 1) {
             throw new BusinessException(EMAIL_NOT_VERIFIED);
         }
+    }
+
+    private String normalize(String email) {
+        return email.trim().toLowerCase();
     }
 
     private String generate6DigitCode() {

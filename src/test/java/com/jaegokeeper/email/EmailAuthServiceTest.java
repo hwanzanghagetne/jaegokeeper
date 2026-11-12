@@ -33,7 +33,7 @@ public class EmailAuthServiceTest {
     private EmailAuthMapper emailAuthMapper;
 
     @Mock
-    private UserMapper usrMapper;
+    private UserMapper userMapper;
 
     @Mock
     private MailService mailService;
@@ -69,7 +69,7 @@ public class EmailAuthServiceTest {
 
     @Test
     public void 인증번호_발송_이미_가입된_이메일이면_예외이고_메일을_보내지_않음() {
-        when(usrMapper.countByEmail("test@example.com")).thenReturn(1);
+        when(userMapper.countByEmail("test@example.com")).thenReturn(1);
 
         BusinessException e = assertThrows(BusinessException.class,
                 () -> emailAuthService.sendCode("test@example.com"));
@@ -81,7 +81,7 @@ public class EmailAuthServiceTest {
 
     @Test
     public void 인증번호_발송_6자리_코드를_저장하고_같은_코드를_메일로_보냄() {
-        when(usrMapper.countByEmail("test@example.com")).thenReturn(0);
+        when(userMapper.countByEmail("test@example.com")).thenReturn(0);
 
         emailAuthService.sendCode("test@example.com");
 
@@ -91,6 +91,21 @@ public class EmailAuthServiceTest {
         verify(mailService).sendSignupCode(eq("test@example.com"), sent.capture());
         assertTrue(stored.getValue().matches("\\d{6}"));
         assertEquals(stored.getValue(), sent.getValue());
+    }
+
+    @Test
+    public void 이메일은_공백과_대소문자를_정리해서_발송_확인_조회에_사용() {
+        when(userMapper.countByEmail("test@example.com")).thenReturn(0);
+        when(emailAuthMapper.verifyCode("test@example.com", "123456")).thenReturn(1);
+        when(emailAuthMapper.isVerified("test@example.com")).thenReturn(1);
+
+        emailAuthService.sendCode(" Test@Example.com ");
+        emailAuthService.verifyCode(" Test@Example.com ", "123456");
+        emailAuthService.assertVerified(" Test@Example.com ");
+
+        verify(emailAuthMapper).upsertAuthCode(eq("test@example.com"), anyString());
+        verify(emailAuthMapper).verifyCode("test@example.com", "123456");
+        verify(emailAuthMapper).isVerified("test@example.com");
     }
 
     @Test

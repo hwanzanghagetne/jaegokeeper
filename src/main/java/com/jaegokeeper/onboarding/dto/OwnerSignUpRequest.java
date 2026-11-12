@@ -1,10 +1,13 @@
 package com.jaegokeeper.onboarding.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
+
+import java.nio.charset.StandardCharsets;
 
 @Getter
 @NoArgsConstructor
@@ -33,5 +36,11 @@ public class OwnerSignUpRequest {
 
         @Size(max = 20)
         private String userPhone;
+
+        @JsonIgnore
+        @AssertTrue(message = "비밀번호는 72바이트 이하여야 합니다.")
+        public boolean isPasswordWithinByteLimit() {
+            return password == null || password.getBytes(StandardCharsets.UTF_8).length <= 72;
+        }
     }
 }
