@@ -1,4 +1,4 @@
-package com.jaegokeeper.common;
+package com.jaegokeeper.item;
 
 import com.jaegokeeper.auth.dto.LoginContext;
 import com.jaegokeeper.common.dto.PageResponse;
@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(MockitoJUnitRunner.class)
-public class StoreScopeInterceptorWebTest {
+public class ItemControllerWebTest {
 
     @Mock
     private ItemService itemService;

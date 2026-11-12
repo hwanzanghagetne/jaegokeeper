@@ -64,28 +64,24 @@ public class RequestServiceTest {
         RequestStatusUpdateRequest req = new RequestStatusUpdateRequest();
         req.setRequestStatus(RequestStatus.CONFIRM);
 
-        try {
-            requestService.updateRequestStatus(login, 999, req);
-            fail("BusinessException이 발생해야 합니다");
-        } catch (BusinessException e) {
-            assertEquals(ErrorCode.REQUEST_NOT_FOUND, e.getErrorCode());
-        }
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> requestService.updateRequestStatus(login, 999, req));
+
+        assertEquals(ErrorCode.REQUEST_NOT_FOUND, e.getErrorCode());
     }
 
     @Test
-    public void 요청상태변경_상태전이불가_예외() {
+    public void 요청상태변경_동시_변경으로_갱신된_행이_없으면_STATE_CONFLICT() {
         when(requestMapper.findRequestStatus(1, 1)).thenReturn(RequestStatus.CONFIRM);
         when(requestMapper.updateRequestStatus(1, 1, RequestStatus.CONFIRM, RequestStatus.CONFIRM)).thenReturn(0);
 
         RequestStatusUpdateRequest req = new RequestStatusUpdateRequest();
         req.setRequestStatus(RequestStatus.CONFIRM);
 
-        try {
-            requestService.updateRequestStatus(login, 1, req);
-            fail("BusinessException이 발생해야 합니다");
-        } catch (BusinessException e) {
-            assertEquals(ErrorCode.STATE_CONFLICT, e.getErrorCode());
-        }
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> requestService.updateRequestStatus(login, 1, req));
+
+        assertEquals(ErrorCode.STATE_CONFLICT, e.getErrorCode());
     }
 
     @Test
@@ -95,12 +91,10 @@ public class RequestServiceTest {
         RequestStatusUpdateRequest req = new RequestStatusUpdateRequest();
         req.setRequestStatus(RequestStatus.CONFIRM);
 
-        try {
-            requestService.updateRequestStatus(login, 1, req);
-            fail("BusinessException이 발생해야 합니다");
-        } catch (BusinessException e) {
-            assertEquals(ErrorCode.REQUEST_ALREADY_CLOSED, e.getErrorCode());
-        }
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> requestService.updateRequestStatus(login, 1, req));
+
+        assertEquals(ErrorCode.REQUEST_ALREADY_CLOSED, e.getErrorCode());
     }
 
     @Test
@@ -110,12 +104,10 @@ public class RequestServiceTest {
         RequestStatusUpdateRequest req = new RequestStatusUpdateRequest();
         req.setRequestStatus(RequestStatus.WAIT);
 
-        try {
-            requestService.updateRequestStatus(login, 1, req);
-            fail("BusinessException이 발생해야 합니다");
-        } catch (BusinessException e) {
-            assertEquals(ErrorCode.REQUEST_ALREADY_CLOSED, e.getErrorCode());
-        }
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> requestService.updateRequestStatus(login, 1, req));
+
+        assertEquals(ErrorCode.REQUEST_ALREADY_CLOSED, e.getErrorCode());
     }
 
     @Test
@@ -136,12 +128,10 @@ public class RequestServiceTest {
     public void 요청상세_존재하지않는요청_예외() {
         when(requestMapper.findRequestDetail(1, 999)).thenReturn(null);
 
-        try {
-            requestService.getRequestDetail(login, 999);
-            fail("BusinessException이 발생해야 합니다");
-        } catch (BusinessException e) {
-            assertEquals(ErrorCode.REQUEST_NOT_FOUND, e.getErrorCode());
-        }
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> requestService.getRequestDetail(login, 999));
+
+        assertEquals(ErrorCode.REQUEST_NOT_FOUND, e.getErrorCode());
     }
 
     private RequestCreateRequest createReq(Integer itemId, Integer albaId, RequestType type, Integer amount) {

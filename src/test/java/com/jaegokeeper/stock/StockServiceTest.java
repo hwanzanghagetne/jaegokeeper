@@ -53,7 +53,7 @@ public class StockServiceTest {
         req.setAmount(10);
 
         when(stockMapper.increaseQuantity(1, 1, 10)).thenReturn(1);
-        when(logMapper.insertLog(1, com.jaegokeeper.stock.enums.LogType.IN, 10)).thenReturn(1);
+        when(logMapper.insertLog(1, LogType.IN, 10)).thenReturn(1);
 
         stockService.inStock(login, 1, req);
 
@@ -68,12 +68,10 @@ public class StockServiceTest {
 
         when(stockMapper.increaseQuantity(1, 999, 10)).thenReturn(0);
 
-        try {
-            stockService.inStock(login, 999, req);
-            fail("BusinessException이 발생해야 합니다");
-        } catch (BusinessException e) {
-            assertEquals(ErrorCode.STOCK_NOT_FOUND, e.getErrorCode());
-        }
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> stockService.inStock(login, 999, req));
+
+        assertEquals(ErrorCode.STOCK_NOT_FOUND, e.getErrorCode());
     }
 
 
@@ -85,12 +83,10 @@ public class StockServiceTest {
         when(stockMapper.findStockAmountByItemId(1, 1)).thenReturn(10);
         when(stockMapper.decreaseQuantity(1, 1, 100)).thenReturn(0);
 
-        try {
-            stockService.outStock(login, 1, req);
-            fail("BusinessException이 발생해야 합니다");
-        } catch (BusinessException e) {
-            assertEquals(ErrorCode.STOCK_QUANTITY_NOT_ENOUGH, e.getErrorCode());
-        }
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> stockService.outStock(login, 1, req));
+
+        assertEquals(ErrorCode.STOCK_QUANTITY_NOT_ENOUGH, e.getErrorCode());
     }
 
     @Test
@@ -100,12 +96,10 @@ public class StockServiceTest {
 
         when(stockMapper.findStockAmountByItemId(1, 999)).thenReturn(null);
 
-        try {
-            stockService.outStock(login, 999, req);
-            fail("BusinessException이 발생해야 합니다");
-        } catch (BusinessException e) {
-            assertEquals(ErrorCode.STOCK_NOT_FOUND, e.getErrorCode());
-        }
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> stockService.outStock(login, 999, req));
+
+        assertEquals(ErrorCode.STOCK_NOT_FOUND, e.getErrorCode());
     }
 
     @Test
@@ -115,7 +109,7 @@ public class StockServiceTest {
 
         when(stockMapper.findStockAmountByItemId(1, 1)).thenReturn(10);
         when(stockMapper.decreaseQuantity(1, 1, 5)).thenReturn(1);
-        when(logMapper.insertLog(1, com.jaegokeeper.stock.enums.LogType.OUT, 5)).thenReturn(1);
+        when(logMapper.insertLog(1, LogType.OUT, 5)).thenReturn(1);
 
         stockService.outStock(login, 1, req);
 
